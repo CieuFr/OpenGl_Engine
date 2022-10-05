@@ -330,7 +330,11 @@ namespace M3D_ISICG
 															 0xFF000000
 #endif
 			);
-			SDL_SaveBMP( surf, screenshotName.c_str() );
+
+			if ( SDL_SaveBMP( surf, screenshotName.c_str() ) != 0 )
+			{
+				std::cerr << "Error on SDL_SaveBMP: " << SDL_GetError() << std::endl;
+			}
 
 			SDL_FreeSurface( surf );
 			delete[] pixels;
