@@ -24,8 +24,12 @@ namespace M3D_ISICG
 	  private:
 		// ================ Scene data.
 		// ================
+		std::vector<Vec2f> triangleVertexes;
 
 		// ================ GL data.
+		GLuint aProgram = GL_INVALID_VALUE;
+		GLuint VBO		= GL_INVALID_VALUE;
+		GLuint VAO		= GL_INVALID_VALUE;
 		// ================
 
 		// ================ Settings.
