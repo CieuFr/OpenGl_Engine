@@ -27,6 +27,12 @@ namespace M3D_ISICG
 		std::vector<Vec2f> triangleVertices;
 		std::vector<Vec4f> triangleColors;
 		std::vector<int>   eboPositions;
+		GLuint			   aTranslationX;
+		GLuint			   luminosityUint;
+
+		GLfloat			   _time = 0;
+		GLfloat			   _luminosity = 1;
+		bool			   luminosityNeedsUpdating = false;
 
 		// ================ GL data.
 		GLuint aProgram = GL_INVALID_VALUE;
