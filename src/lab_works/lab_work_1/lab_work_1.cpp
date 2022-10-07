@@ -11,6 +11,8 @@ namespace M3D_ISICG
 		glDeleteProgram( aProgram );
 		glDisableVertexArrayAttrib( VAO, 0 );
 		glDeleteVertexArrays( 1, &VAO );
+		// Delete VBO
+		glDeleteBuffers( 1, &VBO );
 	}
 
 	bool LabWork1::init()
@@ -88,8 +90,7 @@ namespace M3D_ISICG
 		// Remplissage VBO 
 		glNamedBufferData( VBO, triangleVertexes.size() * sizeof(Vec2f), triangleVertexes.data(), GL_STATIC_DRAW );
 
-		// Delete VBO 
-		glDeleteBuffers( 1, &VBO );
+
 
 		// Création VAO  Vertex Array Object
 		glCreateVertexArrays( 1, &VAO );
@@ -98,7 +99,7 @@ namespace M3D_ISICG
 		glEnableVertexArrayAttrib( VAO, 0 );
 
 		//Definissez le format de l’attribut 
-		glVertexArrayAttribFormat( VAO, 0, 2, GL_FLOAT_VEC2,GL_TRUE,0);
+		glVertexArrayAttribFormat( VAO, 0, 2, GL_FLOAT,GL_FALSE,0);
 
 		//Liez le VAO et le VBO
 		glVertexArrayVertexBuffer( VAO, 0, VBO, 0, sizeof( Vec2f ) );
@@ -117,9 +118,9 @@ namespace M3D_ISICG
 
 	void LabWork1::render() { 
 		//glClearColor
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT );
 		glBindVertexArray( VAO );
-		glDrawArrays( GL_POINTS / GL_LINES / GL_TRIANGLES ,0,3);
+		glDrawArrays(GL_TRIANGLES ,0,3);
 		glBindVertexArray(0);
 	}
 
