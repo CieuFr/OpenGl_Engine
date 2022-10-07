@@ -97,6 +97,9 @@
     <ClCompile Include="src\utils\image.cpp">
       <Filter>Source Files\utils</Filter>
     </ClCompile>
+    <ClCompile Include="src\lab_works\lab_work_2\lab_work_2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\application.hpp">
@@ -159,6 +162,7 @@
     <ClInclude Include="src\utils\file_path.hpp">
       <Filter>Source Files\utils</Filter>
     </ClInclude>
+    <ClInclude Include="src\lab_works\lab_work_2\lab_work_2.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\lab_works\lab_work_1\shaders\lw1.frag">
@@ -167,5 +171,7 @@
     <None Include="src\lab_works\lab_work_1\shaders\lw1.vert">
       <Filter>Source Files\lab_works\lab_work_1\shaders</Filter>
     </None>
+    <None Include="src\lab_works\lab_work_2\shaders\lw1.frag" />
+    <None Include="src\lab_works\lab_work_2\shaders\lw1.vert" />
   </ItemGroup>
 </Project>
