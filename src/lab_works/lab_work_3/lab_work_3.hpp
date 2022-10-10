@@ -43,12 +43,14 @@ namespace M3D_ISICG
 		// ================
 
 		Mesh _cube;
+		GLuint matrixLtoW;
 
 		std::vector<Vec2f> triangleVertices;
 		std::vector<Vec4f> triangleColors;
 		std::vector<int>   eboPositions;
 		GLuint			   aTranslationX;
 		GLuint			   luminosityUint;
+		
 
 		GLfloat			   _time = 0;
 		GLfloat			   _luminosity = 1;

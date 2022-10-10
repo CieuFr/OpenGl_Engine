@@ -43,7 +43,7 @@ namespace M3D_ISICG
 		cube.vectorColors.push_back( getRandomVec3f() );
 		cube.vectorColors.push_back( getRandomVec3f() );
 
-		for (int i = 0; i < 5; i++) {		
+		for (int i = 0; i < 4; i++) {		
 				cube.vectorIndices.push_back( i );
 				cube.vectorIndices.push_back( (i+1)%4 );
 				cube.vectorIndices.push_back( i + 4 );
@@ -92,7 +92,9 @@ namespace M3D_ISICG
 			cube.vectorIndices.data(),
 			GL_STATIC_DRAW );
 		
-		
+		cube.transformationMatrice = Mat4f( 1.0f );
+		cube.transformationMatrice = glm::scale( cube.transformationMatrice, Vec3f( 0.8f, 0.8f, 0.8f ));
+
 		return cube;
 		
 	}
@@ -104,7 +106,7 @@ namespace M3D_ISICG
 		glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );
 
 	
-		
+		glEnable(GL_DEPTH_TEST);  
 
 		//Chemin des shaders 
 		const std::string vertexShaderStr = readFile( _shaderFolder + "lw3.vert" );
@@ -163,15 +165,19 @@ namespace M3D_ISICG
 		glDeleteShader( aFragmentShader );
 
 
+		_cube = _createCube();
 
 		// Get Uniform luminosity
 		luminosityUint = glGetUniformLocation( aProgram, "luminosity" );
 		glProgramUniform1f( aProgram, luminosityUint, _luminosity );
 
+		// MATRIX L TO W 
+		matrixLtoW = glGetUniformLocation( aProgram, "matrixLtoW" );
+		glProgramUniformMatrix4fv( aProgram, matrixLtoW, 1, GL_FALSE, glm::value_ptr(_cube.transformationMatrice) );
+		
 
 
-		_cube = _createCube();
-
+	
 
 
 		glCreateVertexArrays( 1, &_cube.VAO );
@@ -207,13 +213,14 @@ namespace M3D_ISICG
 
 	void LabWork3::animate( const float p_deltaTime ) {
 		
-		
+		_cube.transformationMatrice = glm::rotate( _cube.transformationMatrice, p_deltaTime, Vec3f( 1, 1, 0 ) );
+		glProgramUniformMatrix4fv( aProgram, matrixLtoW, 1, GL_FALSE, glm::value_ptr( _cube.transformationMatrice ) );
 	
 	}
 
 	void LabWork3::render() { 
 		//glClearColor
-		glClear(GL_COLOR_BUFFER_BIT );
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		glBindVertexArray( _cube.VAO );
 		glDrawElements( GL_TRIANGLES, _cube.vectorIndices.size(), GL_UNSIGNED_INT, 0 );
 		//glDrawArrays(GL_TRIANGLES ,0,triangleVertexes.size());
