@@ -159,11 +159,6 @@ namespace M3D_ISICG
 			}
 		}
 
-		
-
-		
-
-
 			// Remplissage VBO SOMMET
 		glNamedBufferData( VBO, triangleVertices.size() * sizeof( Vec2f ), triangleVertices.data(), GL_STATIC_DRAW );
 
@@ -172,7 +167,6 @@ namespace M3D_ISICG
 
 		glNamedBufferData( EBO, eboPositions.size() * sizeof( int ), eboPositions.data(), GL_STATIC_DRAW );
 		
-
 		// Création VAO  Vertex Array Object
 		glCreateVertexArrays( 1, &VAO );
 		

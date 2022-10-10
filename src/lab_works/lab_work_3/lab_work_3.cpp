@@ -7,23 +7,13 @@
 
 namespace M3D_ISICG
 {
-	struct Mesh
-	{
-		Vec3f					  vectorPositions;
-		Vec3f					  vectorColors;
-		std::vector<unsigned int> vectorIndices;
-		Mat4f					  transformationMatrice;
-		GLuint					  VBO;
-		GLuint					  VAO;
-		GLuint					  EBO;
-	};
 
 	const std::string LabWork3::_shaderFolder = "src/lab_works/lab_work_3/shaders/";
 
 	LabWork3::~LabWork3() {
 		glDeleteProgram( aProgram );
-		glDisableVertexArrayAttrib( _cube.VAO, 0 );
-		glDeleteVertexArrays( 1, &_cube.VAO );
+		glDisableVertexArrayAttrib( VAO, 0 );
+		glDeleteVertexArrays( 1, &VAO );
 		// Delete VBO
 		glDeleteBuffers( 1, &_cube.VBOVertices );
 		// Delete VBO
@@ -78,6 +68,30 @@ namespace M3D_ISICG
 		cube.vectorIndices.push_back( 6 );
 		cube.vectorIndices.push_back( 7 );
 
+
+		glCreateBuffers( 1, &cube.VBOVertices );
+		glCreateBuffers( 1, &cube.EBO );
+		glCreateBuffers( 1, &cube.VBOColors );
+
+		
+		glNamedBufferData(
+			cube.VBOVertices,
+			cube.vectorPositions.size() * sizeof( Vec3f ),
+			cube.vectorPositions.data(),
+			GL_STATIC_DRAW );
+
+		glNamedBufferData(
+			cube.VBOColors, 
+			cube.vectorColors.size() * sizeof( Vec3f ),
+			cube.vectorColors.data(), 
+			GL_STATIC_DRAW );
+
+		glNamedBufferData(
+			cube.EBO,
+			cube.vectorIndices.size() * sizeof( int ),
+			cube.vectorIndices.data(),
+			GL_STATIC_DRAW );
+		
 		
 		return cube;
 		
@@ -158,59 +172,24 @@ namespace M3D_ISICG
 
 		_cube = _createCube();
 
-		// Init VBO  Vertex Buffer Object Sommet
-		glCreateBuffers( 1, &_cube.VBOVertices );
-
-		// Creation EBO Sommet
-		glCreateBuffers( 1, &_cube.EBO );
-
-        // Init VBO  Vertex Buffer Object COULEUR
-		glCreateBuffers( 1, &_cube.VBOColors );
 
 
-		
-
-		glNamedBufferData( _cube.VBOVertices,
-						   _cube.vectorPositions.size() * sizeof( Vec3f ),
-						   _cube.vectorPositions.data(),
-						   GL_STATIC_DRAW );
-
-		glNamedBufferData(
-			_cube.VBOColors, _cube.vectorColors.size() * sizeof( Vec3f ), _cube.vectorColors.data(), GL_STATIC_DRAW );
-
-		glNamedBufferData(
-			_cube.EBO, _cube.vectorIndices.size() * sizeof( int ), _cube.vectorIndices.data(), GL_STATIC_DRAW );
-		
-
-		// Création VAO  Vertex Array Object
 		glCreateVertexArrays( 1, &_cube.VAO );
 		
-		//Activez l’attribut 0 du VAO
+
 		glEnableVertexArrayAttrib( _cube.VAO, 0 );
-		// Activez l’attribut 0 du VAO COULEUR
-		glEnableVertexArrayAttrib( _cube.VAO, 1 );
-
-		//Definissez le format de l’attribut 
-		glVertexArrayAttribFormat( _cube.VAO, 0, 2, GL_FLOAT, GL_FALSE, 0 );
-
-		// Definissez le format de l’attribut
-		glVertexArrayAttribFormat( _cube.VAO, 1, 4, GL_FLOAT, GL_TRUE, 0 );
-
-		//Liez le VAO et le VBO SOMMET
-		glVertexArrayVertexBuffer( _cube.VAO, 0, VBO, 0, sizeof( Vec2f ) );
-
-		// Liez le VAO et le VBO COULEUR
-		glVertexArrayVertexBuffer( _cube.VAO, 1, VBO2, 0, sizeof( Vec4f ) );
-
-		//Connectez le VAO avec le Vertex shader
+		glVertexArrayAttribFormat( _cube.VAO, 0, 3, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayVertexBuffer( _cube.VAO, 0, _cube.VBOVertices, 0, sizeof( Vec3f ) );
 		glVertexArrayAttribBinding( _cube.VAO, 0, 0 );
 
-			// Connectez le VAO avec le Vertex shader
+
+		glEnableVertexArrayAttrib( _cube.VAO, 1 );
+		glVertexArrayAttribFormat( _cube.VAO, 1, 3, GL_FLOAT, GL_TRUE, 0 );
+		glVertexArrayVertexBuffer( _cube.VAO, 1, _cube.VBOColors, 0, sizeof( Vec3f ) );
 		glVertexArrayAttribBinding( _cube.VAO, 1, 1 );
 
-		
 
-		//Link EBO VAO
+
 		glVertexArrayElementBuffer( _cube.VAO, _cube.EBO );
 
 	
@@ -235,8 +214,8 @@ namespace M3D_ISICG
 	void LabWork3::render() { 
 		//glClearColor
 		glClear(GL_COLOR_BUFFER_BIT );
-		glBindVertexArray( VAO );
-		glDrawElements( GL_TRIANGLES, eboPositions.size(), GL_UNSIGNED_INT, 0 );
+		glBindVertexArray( _cube.VAO );
+		glDrawElements( GL_TRIANGLES, _cube.vectorIndices.size(), GL_UNSIGNED_INT, 0 );
 		//glDrawArrays(GL_TRIANGLES ,0,triangleVertexes.size());
 		glBindVertexArray(0);
 
