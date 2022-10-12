@@ -64,7 +64,7 @@ namespace M3D_ISICG
 		_computeViewMatrix();
 	}
 
-	void Camera::setFovy( const float p_fovy )
+	void Camera::setFovy( const float p_fovy ) // fovy en radians
 	{
 		_fovy = p_fovy;
 		_computeProjectionMatrix();
@@ -72,10 +72,13 @@ namespace M3D_ISICG
 
 	void Camera::_computeViewMatrix()
 	{ 
+		_viewMatrix = glm::lookAt( _position, Vec3f( 0.0f, 0.0f, 0.0f ), _up );
+		
 	}
 
 	void Camera::_computeProjectionMatrix()
 	{
+		_projectionMatrix = glm::perspective( _fovy, _aspectRatio, _zNear, _zFar );
 	}
 
 	void Camera::_updateVectors()

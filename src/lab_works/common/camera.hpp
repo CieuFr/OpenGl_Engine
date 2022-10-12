@@ -3,6 +3,7 @@
 
 #include "GL/gl3w.h"
 #include "define.hpp"
+#include "../common/camera.hpp"
 
 namespace M3D_ISICG
 {

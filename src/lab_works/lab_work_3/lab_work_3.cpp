@@ -5,6 +5,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "utils/random.hpp"
 
+
 namespace M3D_ISICG
 {
 
@@ -167,6 +168,8 @@ namespace M3D_ISICG
 
 		_cube = _createCube();
 
+		_initCamera();
+
 		// Get Uniform luminosity
 		luminosityUint = glGetUniformLocation( aProgram, "luminosity" );
 		glProgramUniform1f( aProgram, luminosityUint, _luminosity );
@@ -174,8 +177,12 @@ namespace M3D_ISICG
 		// MATRIX L TO W 
 		matrixLtoW = glGetUniformLocation( aProgram, "matrixLtoW" );
 		glProgramUniformMatrix4fv( aProgram, matrixLtoW, 1, GL_FALSE, glm::value_ptr(_cube.transformationMatrice) );
-		
 
+		matrixWtoVGluint = glGetUniformLocation( aProgram, "matrixLtoW" );
+		glProgramUniformMatrix4fv( aProgram, matrixWtoVGluint, 1, GL_FALSE, glm::value_ptr( _matrixWtoV ) );
+
+		matrixVtoCGluint = glGetUniformLocation( aProgram, "matrixVtoC" );
+		glProgramUniformMatrix4fv( aProgram, matrixVtoCGluint, 1, GL_FALSE, glm::value_ptr( _matrixVtoC ) );
 
 	
 
@@ -243,6 +250,34 @@ namespace M3D_ISICG
 		ImGui::Begin( "Settings lab work 1" );
 		ImGui::Text( "No setting available!" );
 		ImGui::End();
+	}
+
+	void LabWork3::_updateViewMatrix() {
+
+		_matrixWtoV = _camera.getViewMatrix();
+		glProgramUniformMatrix4fv( aProgram, matrixWtoVGluint, 1, GL_FALSE, glm::value_ptr( _matrixWtoV ) );
+		
+	}
+
+	void LabWork3::_updateProjectionMatrix()
+	{
+		_matrixVtoC = _camera.getProjectionMatrix();
+		for ( int i = 0; i < _matrixVtoC.length(); i++ )
+		{
+			for ( int j = 0; j < _matrixVtoC.length(); j++ ) {
+				std::cout << _matrixVtoC[ i ][ j ];
+			}
+		}
+		
+		glProgramUniformMatrix4fv( aProgram, matrixVtoCGluint, 1, GL_FALSE, glm::value_ptr( _matrixVtoC ) );
+		
+	}
+
+	void LabWork3::_initCamera() { 
+		_camera.setPosition( Vec3f( 0.f, 1.f, 3.f ) );
+		_camera.print();
+		_updateViewMatrix();
+		_updateProjectionMatrix();
 	}
 
 } // namespace M3D_ISICG

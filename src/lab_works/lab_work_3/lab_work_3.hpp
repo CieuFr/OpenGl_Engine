@@ -5,6 +5,7 @@
 #include "common/base_lab_work.hpp"
 #include "define.hpp"
 #include <vector>
+#include "../common/camera.hpp"
 
 namespace M3D_ISICG
 {
@@ -38,12 +39,21 @@ namespace M3D_ISICG
 
 	  private:
 
+		Camera _camera;
+
 		Mesh _createCube();
+		void _updateViewMatrix();
+		void _updateProjectionMatrix();
+		void _initCamera();
 		// ================ Scene data.
 		// ================
 
 		Mesh _cube;
 		GLuint matrixLtoW;
+		GLuint matrixWtoVGluint;
+		GLuint matrixVtoCGluint;
+		Mat4f  _matrixWtoV = MAT4F_ID;
+		Mat4f  _matrixVtoC = MAT4F_ID;
 
 		std::vector<Vec2f> triangleVertices;
 		std::vector<Vec4f> triangleColors;
