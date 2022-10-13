@@ -93,7 +93,7 @@ namespace M3D_ISICG
 			cube.vectorIndices.data(),
 			GL_STATIC_DRAW );
 		
-		cube.transformationMatrice = Mat4f( 1.0f );
+		//cube.transformationMatrice = Mat4f( 1.0f );
 		cube.transformationMatrice = glm::scale( cube.transformationMatrice, Vec3f( 0.8f, 0.8f, 0.8f ));
 
 		return cube;
@@ -178,7 +178,7 @@ namespace M3D_ISICG
 		matrixLtoW = glGetUniformLocation( aProgram, "matrixLtoW" );
 		glProgramUniformMatrix4fv( aProgram, matrixLtoW, 1, GL_FALSE, glm::value_ptr(_cube.transformationMatrice) );
 
-		matrixWtoVGluint = glGetUniformLocation( aProgram, "matrixLtoW" );
+		matrixWtoVGluint = glGetUniformLocation( aProgram, "matrixWtoV" );
 		glProgramUniformMatrix4fv( aProgram, matrixWtoVGluint, 1, GL_FALSE, glm::value_ptr( _matrixWtoV ) );
 
 		matrixVtoCGluint = glGetUniformLocation( aProgram, "matrixVtoC" );
@@ -236,10 +236,26 @@ namespace M3D_ISICG
 		if (luminosityNeedsUpdating) {
 			glProgramUniform1f( aProgram, luminosityUint, _luminosity );
 		}
+		if ( fovyNeedsUpdating )
+		{
+			_updateViewMatrix();
+			_updateProjectionMatrix();
+			_camera.setFovy(_fovy);
+		}
+
 	}
 
 	void LabWork3::handleEvents( const SDL_Event & p_event )
-	{}
+	{
+		switch ( p_event.key.keysym.sym)
+		{
+		case SDLK_LEFT:
+		case SDLK_q: _camera.moveRight( -0.05 ); break;
+
+		
+		}
+		_updateViewMatrix();
+	}
 
 	void LabWork3::displayUI()
 	{
@@ -247,6 +263,8 @@ namespace M3D_ISICG
 		if (ImGui::ColorEdit3("BackGround Color", glm::value_ptr(_bgColor))) {
 			glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );
 		};
+
+		fovyNeedsUpdating = ImGui::SliderFloat( "Fovy", &_fovy, 0, 180 );
 		ImGui::Begin( "Settings lab work 1" );
 		ImGui::Text( "No setting available!" );
 		ImGui::End();
@@ -262,20 +280,14 @@ namespace M3D_ISICG
 	void LabWork3::_updateProjectionMatrix()
 	{
 		_matrixVtoC = _camera.getProjectionMatrix();
-		for ( int i = 0; i < _matrixVtoC.length(); i++ )
-		{
-			for ( int j = 0; j < _matrixVtoC.length(); j++ ) {
-				std::cout << _matrixVtoC[ i ][ j ];
-			}
-		}
-		
 		glProgramUniformMatrix4fv( aProgram, matrixVtoCGluint, 1, GL_FALSE, glm::value_ptr( _matrixVtoC ) );
 		
 	}
 
 	void LabWork3::_initCamera() { 
+		_camera.setScreenSize( 1280, 720 );
 		_camera.setPosition( Vec3f( 0.f, 1.f, 3.f ) );
-		_camera.print();
+		_camera.setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
 		_updateViewMatrix();
 		_updateProjectionMatrix();
 	}

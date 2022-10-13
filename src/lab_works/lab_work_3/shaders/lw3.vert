@@ -9,8 +9,7 @@ uniform mat4 matrixVtoC;
 
 
 void main() {
-	mat4 matrixLtoC = matrixVtoC * matrixWtoV * matrixLtoW;
-	gl_Position = matrixLtoC * aVertexPosition ;
+	gl_Position = matrixVtoC * matrixWtoV * matrixLtoW * aVertexPosition ;
 	aFragColor = aVertexColor;
 
 }

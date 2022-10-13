@@ -17,7 +17,7 @@ namespace M3D_ISICG
 			std::vector<Vec3f>	  vectorPositions;
 			std::vector<Vec3f>		  vectorColors;
 			std::vector<unsigned int> vectorIndices;
-			Mat4f					  transformationMatrice;
+			Mat4f					  transformationMatrice = MAT4F_ID;
 			GLuint					  VBOVertices = GL_INVALID_VALUE;
 			GLuint					  VBOColors	  = GL_INVALID_VALUE;
 			GLuint					  VAO		  = GL_INVALID_VALUE;
@@ -65,6 +65,8 @@ namespace M3D_ISICG
 		GLfloat			   _time = 0;
 		GLfloat			   _luminosity = 1;
 		bool			   luminosityNeedsUpdating = false;
+		float			   _fovy;
+		bool			   fovyNeedsUpdating = false;
 
 		// ================ GL data.
 		GLuint aProgram = GL_INVALID_VALUE;
