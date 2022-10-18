@@ -251,8 +251,12 @@ namespace M3D_ISICG
 		{
 		case SDLK_LEFT:
 		case SDLK_q: _camera.moveRight( -0.05 ); break;
-
-		
+		case SDLK_RIGHT:
+		case SDLK_d: _camera.moveRight( 0.05 ); break;
+		case SDLK_UP:
+		case SDLK_z: _camera.moveUp( 0.05 ); break;
+		case SDLK_DOWN:
+		case SDLK_s: _camera.moveUp( -0.05 ); break;		
 		}
 		_updateViewMatrix();
 	}
