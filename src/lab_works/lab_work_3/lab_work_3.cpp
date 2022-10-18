@@ -93,6 +93,22 @@ namespace M3D_ISICG
 			cube.vectorIndices.data(),
 			GL_STATIC_DRAW );
 		
+
+		glCreateVertexArrays( 1, &cube.VAO );
+
+		glEnableVertexArrayAttrib( cube.VAO, 0 );
+		glVertexArrayAttribFormat( cube.VAO, 0, 3, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayVertexBuffer( cube.VAO, 0, cube.VBOVertices, 0, sizeof( Vec3f ) );
+		glVertexArrayAttribBinding( cube.VAO, 0, 0 );
+
+		glEnableVertexArrayAttrib( cube.VAO, 1 );
+		glVertexArrayAttribFormat( cube.VAO, 1, 3, GL_FLOAT, GL_TRUE, 0 );
+		glVertexArrayVertexBuffer( cube.VAO, 1, cube.VBOColors, 0, sizeof( Vec3f ) );
+		glVertexArrayAttribBinding( cube.VAO, 1, 1 );
+
+		glVertexArrayElementBuffer( cube.VAO, cube.EBO );
+
+
 		//cube.transformationMatrice = Mat4f( 1.0f );
 		cube.transformationMatrice = glm::scale( cube.transformationMatrice, Vec3f( 0.8f, 0.8f, 0.8f ));
 
@@ -168,45 +184,18 @@ namespace M3D_ISICG
 
 		_cube = _createCube();
 
+		_cube2 = _createCube();
+
+		_cube2.transformationMatrice = glm::translate( _cube2.transformationMatrice, Vec3f( 3.0f, .0f, .0f ) );
+
 		_initCamera();
 
 		// Get Uniform luminosity
 		luminosityUint = glGetUniformLocation( aProgram, "luminosity" );
 		glProgramUniform1f( aProgram, luminosityUint, _luminosity );
 
-		// MATRIX L TO W 
-		matrixLtoW = glGetUniformLocation( aProgram, "matrixLtoW" );
-		glProgramUniformMatrix4fv( aProgram, matrixLtoW, 1, GL_FALSE, glm::value_ptr(_cube.transformationMatrice) );
-
-		matrixWtoVGluint = glGetUniformLocation( aProgram, "matrixWtoV" );
-		glProgramUniformMatrix4fv( aProgram, matrixWtoVGluint, 1, GL_FALSE, glm::value_ptr( _matrixWtoV ) );
-
-		matrixVtoCGluint = glGetUniformLocation( aProgram, "matrixVtoC" );
-		glProgramUniformMatrix4fv( aProgram, matrixVtoCGluint, 1, GL_FALSE, glm::value_ptr( _matrixVtoC ) );
-
-	
-
-
-		glCreateVertexArrays( 1, &_cube.VAO );
-		
-
-		glEnableVertexArrayAttrib( _cube.VAO, 0 );
-		glVertexArrayAttribFormat( _cube.VAO, 0, 3, GL_FLOAT, GL_FALSE, 0 );
-		glVertexArrayVertexBuffer( _cube.VAO, 0, _cube.VBOVertices, 0, sizeof( Vec3f ) );
-		glVertexArrayAttribBinding( _cube.VAO, 0, 0 );
-
-
-		glEnableVertexArrayAttrib( _cube.VAO, 1 );
-		glVertexArrayAttribFormat( _cube.VAO, 1, 3, GL_FLOAT, GL_TRUE, 0 );
-		glVertexArrayVertexBuffer( _cube.VAO, 1, _cube.VBOColors, 0, sizeof( Vec3f ) );
-		glVertexArrayAttribBinding( _cube.VAO, 1, 1 );
-
-
-
-		glVertexArrayElementBuffer( _cube.VAO, _cube.EBO );
-
-	
-
+		// Get Uniform transformationMatrix
+		transformationMatrix = glGetUniformLocation( aProgram, "transformationMatrix" );
 
 		
 			// INIT du program
@@ -219,17 +208,36 @@ namespace M3D_ISICG
 
 
 	void LabWork3::animate( const float p_deltaTime ) {
-		
+
 		_cube.transformationMatrice = glm::rotate( _cube.transformationMatrice, p_deltaTime, Vec3f( 1, 1, 0 ) );
-		glProgramUniformMatrix4fv( aProgram, matrixLtoW, 1, GL_FALSE, glm::value_ptr( _cube.transformationMatrice ) );
-	
+
+		_cube2.transformationMatrice = glm::translate( _cube2.transformationMatrice, Vec3f( -3.0f, .0f, .0f ) );
+		_cube2.transformationMatrice = glm::rotate( _cube2.transformationMatrice, p_deltaTime, Vec3f( 0, 1, 0 ) );
+		_cube2.transformationMatrice = glm::translate( _cube2.transformationMatrice, Vec3f( 3.0f, .0f, .0f ) );
+
+		
 	}
 
 	void LabWork3::render() { 
 		//glClearColor
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+		_transformationMatrix = _matrixVtoC * _matrixWtoV * _cube.transformationMatrice;
+		glProgramUniformMatrix4fv(
+			aProgram, transformationMatrix, 1, GL_FALSE, glm::value_ptr( _transformationMatrix ) );
+
 		glBindVertexArray( _cube.VAO );
 		glDrawElements( GL_TRIANGLES, _cube.vectorIndices.size(), GL_UNSIGNED_INT, 0 );
+
+		
+		_transformationMatrix = _matrixVtoC * _matrixWtoV * _cube2.transformationMatrice;
+		glProgramUniformMatrix4fv(
+			aProgram, transformationMatrix, 1, GL_FALSE, glm::value_ptr( _transformationMatrix ) );
+
+		glBindVertexArray( _cube2.VAO );
+		glDrawElements( GL_TRIANGLES, _cube2.vectorIndices.size(), GL_UNSIGNED_INT, 0 );
+
+
 		//glDrawArrays(GL_TRIANGLES ,0,triangleVertexes.size());
 		glBindVertexArray(0);
 
@@ -256,7 +264,11 @@ namespace M3D_ISICG
 		case SDLK_UP:
 		case SDLK_z: _camera.moveUp( 0.05 ); break;
 		case SDLK_DOWN:
-		case SDLK_s: _camera.moveUp( -0.05 ); break;		
+		case SDLK_s: _camera.moveUp( -0.05 ); break;
+		case SDLK_r: _camera.moveFront(0.05); break;
+		case SDLK_f: _camera.moveFront( -0.05 ); break;
+
+
 		}
 		_updateViewMatrix();
 	}
@@ -277,14 +289,13 @@ namespace M3D_ISICG
 	void LabWork3::_updateViewMatrix() {
 
 		_matrixWtoV = _camera.getViewMatrix();
-		glProgramUniformMatrix4fv( aProgram, matrixWtoVGluint, 1, GL_FALSE, glm::value_ptr( _matrixWtoV ) );
-		
+		_transformationMatrix = _matrixVtoC * _matrixWtoV * _cube.transformationMatrice;
 	}
 
 	void LabWork3::_updateProjectionMatrix()
 	{
 		_matrixVtoC = _camera.getProjectionMatrix();
-		glProgramUniformMatrix4fv( aProgram, matrixVtoCGluint, 1, GL_FALSE, glm::value_ptr( _matrixVtoC ) );
+		_transformationMatrix = _matrixVtoC * _matrixWtoV * _cube.transformationMatrice;
 		
 	}
 
@@ -294,6 +305,8 @@ namespace M3D_ISICG
 		_camera.setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
 		_updateViewMatrix();
 		_updateProjectionMatrix();
+		_transformationMatrix = _matrixVtoC * _matrixWtoV * _cube.transformationMatrice;
+	
 	}
 
 } // namespace M3D_ISICG

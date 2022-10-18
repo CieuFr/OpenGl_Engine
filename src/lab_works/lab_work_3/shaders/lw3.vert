@@ -3,13 +3,12 @@
 layout( location = 0 ) in vec4 aVertexPosition;
 layout( location = 1 ) in vec4 aVertexColor;
 out vec4 aFragColor;
-uniform mat4 matrixLtoW;
-uniform mat4 matrixWtoV;
-uniform mat4 matrixVtoC;
+
+uniform mat4 transformationMatrix;
 
 
 void main() {
-	gl_Position = matrixVtoC * matrixWtoV * matrixLtoW * aVertexPosition ;
+	gl_Position = transformationMatrix * aVertexPosition ;
 	aFragColor = aVertexColor;
 
 }

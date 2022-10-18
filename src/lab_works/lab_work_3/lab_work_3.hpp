@@ -49,9 +49,10 @@ namespace M3D_ISICG
 		// ================
 
 		Mesh _cube;
-		GLuint matrixLtoW;
-		GLuint matrixWtoVGluint;
-		GLuint matrixVtoCGluint;
+		Mesh _cube2;
+
+		GLuint transformationMatrix;
+		Mat4f  _transformationMatrix = MAT4F_ID;
 		Mat4f  _matrixWtoV = MAT4F_ID;
 		Mat4f  _matrixVtoC = MAT4F_ID;
 
