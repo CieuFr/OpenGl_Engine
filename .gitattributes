@@ -56,3 +56,4 @@
 /lib/stb/stb_truetype.h filter=lfs diff=lfs merge=lfs -text
 /lib/stb/stb_vorbis.c filter=lfs diff=lfs merge=lfs -text
 /lib/stb/stb_voxel_render.h filter=lfs diff=lfs merge=lfs -text
+/data/models/bunny.obj filter=lfs diff=lfs merge=lfs -text

@@ -35,6 +35,7 @@
     <ClCompile Include="src\lab_works\common\lab_work_manager.cpp" />
     <ClCompile Include="src\lab_works\lab_work_2\lab_work_2.cpp" />
     <ClCompile Include="src\lab_works\lab_work_3\lab_work_3.cpp" />
+    <ClCompile Include="src\lab_works\lab_work_4\lab_work_4.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\utils\image.cpp" />
   </ItemGroup>
@@ -58,6 +59,7 @@
     <ClInclude Include="src\lab_works\lab_work_1\lab_work_1.hpp" />
     <ClInclude Include="src\lab_works\lab_work_2\lab_work_2.hpp" />
     <ClInclude Include="src\lab_works\lab_work_3\lab_work_3.hpp" />
+    <ClInclude Include="src\lab_works\lab_work_4\lab_work_4.hpp" />
     <ClInclude Include="src\utils\file_path.hpp" />
     <ClInclude Include="src\utils\gl_utils.hpp" />
     <ClInclude Include="src\utils\image.hpp" />
@@ -65,12 +67,18 @@
     <ClInclude Include="src\utils\read_file.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="C:\Users\leiglat1\Downloads\bunny.mtl" />
+    <None Include="C:\Users\leiglat1\Downloads\mesh.frag" />
+    <None Include="C:\Users\leiglat1\Downloads\mesh.vert" />
     <None Include="src\lab_works\lab_work_1\shaders\lw1.frag" />
     <None Include="src\lab_works\lab_work_1\shaders\lw1.vert" />
     <None Include="src\lab_works\lab_work_2\shaders\lw1.frag" />
     <None Include="src\lab_works\lab_work_2\shaders\lw1.vert" />
     <None Include="src\lab_works\lab_work_3\shaders\lw3.frag" />
     <None Include="src\lab_works\lab_work_3\shaders\lw3.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="C:\Users\leiglat1\Downloads\bunny.obj" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

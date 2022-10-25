@@ -3,6 +3,7 @@
 #include "lab_work_1/lab_work_1.hpp"
 #include "lab_work_2/lab_work_2.hpp"
 #include "lab_work_3/lab_work_3.hpp"
+#include "lab_work_4/lab_work_4.hpp"
 
 namespace M3D_ISICG
 {
@@ -48,6 +49,17 @@ namespace M3D_ISICG
 				delete _current;			  // Delete old lab work .
 				_current = new LabWork3();	  // Create new lab work .
 				_type	 = TYPE ::LAB_WORK_3; // Update type .
+				_current->init();			  // Don ’t forget to call init ().
+			}
+		}
+
+		if ( ImGui ::MenuItem( " Lab work 4 " ) )
+		{
+			if ( _type != TYPE ::LAB_WORK_4 ) // Change only if needed .
+			{
+				delete _current;			  // Delete old lab work .
+				_current = new LabWork4();	  // Create new lab work .
+				_type	 = TYPE ::LAB_WORK_4; // Update type .
 				_current->init();			  // Don ’t forget to call init ().
 			}
 		}
