@@ -6,6 +6,8 @@
 #include "define.hpp"
 #include <vector>
 #include "../common/camera.hpp"
+#include "../common/TrackBallCamera.hpp"
+
 
 namespace M3D_ISICG
 {
@@ -39,7 +41,7 @@ namespace M3D_ISICG
 
 	  private:
 
-		Camera _camera;
+		TrackBallCamera _camera;
 
 		Mesh _createCube();
 		void _updateViewMatrix();
@@ -68,6 +70,13 @@ namespace M3D_ISICG
 		bool			   luminosityNeedsUpdating = false;
 		float			   _fovy;
 		bool			   fovyNeedsUpdating = false;
+
+		bool trackballSwitch = false;
+
+		bool perspecOrtho;
+		bool perspecNeedsUpdating = false;
+		float _cameraSpeed		   = 0.1f;
+		float _cameraSensitivity   = 0.1f;
 
 		// ================ GL data.
 		GLuint aProgram = GL_INVALID_VALUE;

@@ -251,26 +251,56 @@ namespace M3D_ISICG
 			_camera.setFovy(_fovy);
 		}
 
+		if ( perspecNeedsUpdating )
+		{
+			_camera.switchPerspect();
+			_updateProjectionMatrix();
+			perspecNeedsUpdating = false;
+		}
+
 	}
 
 	void LabWork3::handleEvents( const SDL_Event & p_event )
 	{
-		switch ( p_event.key.keysym.sym)
+		if ( p_event.type == SDL_KEYDOWN )
 		{
-		case SDLK_LEFT:
-		case SDLK_q: _camera.moveRight( -0.05 ); break;
-		case SDLK_RIGHT:
-		case SDLK_d: _camera.moveRight( 0.05 ); break;
-		case SDLK_UP:
-		case SDLK_z: _camera.moveUp( 0.05 ); break;
-		case SDLK_DOWN:
-		case SDLK_s: _camera.moveUp( -0.05 ); break;
-		case SDLK_r: _camera.moveFront(0.05); break;
-		case SDLK_f: _camera.moveFront( -0.05 ); break;
-
-
+			switch ( p_event.key.keysym.scancode )
+			{
+			case SDL_SCANCODE_W: // Front
+				_camera.moveFront( _cameraSpeed );
+				_updateViewMatrix();
+				break;
+			case SDL_SCANCODE_S: // Back
+				_camera.moveFront( -_cameraSpeed );
+				_updateViewMatrix();
+				break;
+			case SDL_SCANCODE_A: // Left
+				_camera.moveRight( -_cameraSpeed );
+				_updateViewMatrix();
+				break;
+			case SDL_SCANCODE_D: // Right
+				_camera.moveRight( _cameraSpeed );
+				_updateViewMatrix();
+				break;
+			case SDL_SCANCODE_R: // Up
+				_camera.moveUp( _cameraSpeed );
+				_updateViewMatrix();
+				break;
+			case SDL_SCANCODE_F: // Bottom
+				_camera.moveUp( -_cameraSpeed );
+				_updateViewMatrix();
+				break;
+			default: break;
+			}
 		}
-		_updateViewMatrix();
+
+		// Rotate when left click + motion (if not on Imgui widget).
+		if ( p_event.type == SDL_MOUSEMOTION && p_event.motion.state & SDL_BUTTON_LMASK
+			 && !ImGui::GetIO().WantCaptureMouse )
+		{
+			_camera.rotate( p_event.motion.xrel * _cameraSensitivity, p_event.motion.yrel * _cameraSensitivity );
+			_updateViewMatrix();
+		}
 	}
 
 	void LabWork3::displayUI()
@@ -279,6 +309,10 @@ namespace M3D_ISICG
 		if (ImGui::ColorEdit3("BackGround Color", glm::value_ptr(_bgColor))) {
 			glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );
 		};
+
+		ImGui::Checkbox( "Trackball", &trackballSwitch );
+		perspecNeedsUpdating = ImGui::Checkbox( "Ortho", &perspecOrtho );
+
 
 		fovyNeedsUpdating = ImGui::SliderFloat( "Fovy", &_fovy, 0, 180 );
 		ImGui::Begin( "Settings lab work 1" );

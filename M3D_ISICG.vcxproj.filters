@@ -103,6 +103,9 @@
     <ClCompile Include="src\lab_works\lab_work_3\lab_work_3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\lab_works\common\TrackBallCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\application.hpp">
@@ -167,6 +170,8 @@
     </ClInclude>
     <ClInclude Include="src\lab_works\lab_work_2\lab_work_2.hpp" />
     <ClInclude Include="src\lab_works\lab_work_3\lab_work_3.hpp" />
+    <ClInclude Include="src\lab_works\common\BaseCamera.hpp" />
+    <ClInclude Include="src\lab_works\common\TrackBallCamera.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\lab_works\lab_work_1\shaders\lw1.frag">

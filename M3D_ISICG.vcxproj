@@ -30,6 +30,7 @@
     <ClCompile Include="src\lab_works\common\camera.cpp" />
     <ClCompile Include="src\lab_works\common\models\triangle_mesh.cpp" />
     <ClCompile Include="src\lab_works\common\models\triangle_mesh_model.cpp" />
+    <ClCompile Include="src\lab_works\common\TrackBallCamera.cpp" />
     <ClCompile Include="src\lab_works\lab_work_1\lab_work_1.cpp" />
     <ClCompile Include="src\lab_works\common\lab_work_manager.cpp" />
     <ClCompile Include="src\lab_works\lab_work_2\lab_work_2.cpp" />
@@ -46,12 +47,14 @@
     <ClInclude Include="lib\imgui\imgui_internal.h" />
     <ClInclude Include="src\application.hpp" />
     <ClInclude Include="src\define.hpp" />
+    <ClInclude Include="src\lab_works\common\BaseCamera.hpp" />
     <ClInclude Include="src\lab_works\common\base_lab_work.hpp" />
     <ClInclude Include="src\lab_works\common\camera.hpp" />
     <ClInclude Include="src\lab_works\common\lab_work_manager.hpp" />
     <ClInclude Include="src\lab_works\common\models\base_model.hpp" />
     <ClInclude Include="src\lab_works\common\models\triangle_mesh.hpp" />
     <ClInclude Include="src\lab_works\common\models\triangle_mesh_model.hpp" />
+    <ClInclude Include="src\lab_works\common\TrackBallCamera.hpp" />
     <ClInclude Include="src\lab_works\lab_work_1\lab_work_1.hpp" />
     <ClInclude Include="src\lab_works\lab_work_2\lab_work_2.hpp" />
     <ClInclude Include="src\lab_works\lab_work_3\lab_work_3.hpp" />
