@@ -13,15 +13,7 @@ namespace M3D_ISICG
 
 	LabWork4::~LabWork4() {
 		glDeleteProgram( aProgram );
-		glDisableVertexArrayAttrib( VAO, 0 );
-		glDeleteVertexArrays( 1, &VAO );
-		// Delete VBO
-		glDeleteBuffers( 1, &_cube.VBOVertices );
-		// Delete VBO
-		glDeleteBuffers( 1, &_cube.VBOColors );
 
-			// Delete VBO
-		glDeleteBuffers( 1, &_cube.EBO );
 	}
 
 	
@@ -103,7 +95,8 @@ namespace M3D_ISICG
 
 
 		//=============TP 4 ==============/
-		_tmm.load( "bunny.obj", FilePath("/data/models/" );
+
+		_tmm.load("bunny", FilePath("./data/models/bunny.obj" ));
 
 		
 
@@ -130,8 +123,7 @@ namespace M3D_ISICG
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		
-		glBindVertexArray(0);
-
+	
 		if (luminosityNeedsUpdating) {
 			glProgramUniform1f( aProgram, luminosityUint, _luminosity );
 		}
@@ -140,6 +132,7 @@ namespace M3D_ISICG
 			_updateViewMatrix();
 			_updateProjectionMatrix();
 			_camera.setFovy(_fovy);
+			//fovyNeedsUpdating = false;
 		}
 
 		if ( perspecNeedsUpdating )
@@ -148,6 +141,11 @@ namespace M3D_ISICG
 			_updateProjectionMatrix();
 			perspecNeedsUpdating = false;
 		}
+
+		glProgramUniformMatrix4fv(
+			aProgram, transformationMatrix, 1, GL_FALSE, glm::value_ptr( _transformationMatrix ) );
+
+		_tmm.render( aProgram );
 
 	}
 
@@ -214,13 +212,13 @@ namespace M3D_ISICG
 	void LabWork4::_updateViewMatrix() {
 
 		_matrixWtoV = _camera.getViewMatrix();
-		_transformationMatrix = _matrixVtoC * _matrixWtoV * _cube.transformationMatrice;
+		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 	}
 
 	void LabWork4::_updateProjectionMatrix()
 	{
 		_matrixVtoC = _camera.getProjectionMatrix();
-		_transformationMatrix = _matrixVtoC * _matrixWtoV * _cube.transformationMatrice;
+		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 		
 	}
 
@@ -230,7 +228,7 @@ namespace M3D_ISICG
 		_camera.setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
 		_updateViewMatrix();
 		_updateProjectionMatrix();
-		_transformationMatrix = _matrixVtoC * _matrixWtoV * _cube.transformationMatrice;
+		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 	
 	}
 

@@ -13,15 +13,18 @@ namespace M3D_ISICG
 
 	LabWork3::~LabWork3() {
 		glDeleteProgram( aProgram );
-		glDisableVertexArrayAttrib( VAO, 0 );
-		glDeleteVertexArrays( 1, &VAO );
-		// Delete VBO
-		glDeleteBuffers( 1, &_cube.VBOVertices );
-		// Delete VBO
-		glDeleteBuffers( 1, &_cube.VBOColors );
 
-			// Delete VBO
+
+		glDeleteBuffers( 1, &_cube.VBOVertices );
+		glDeleteBuffers( 1, &_cube.VBOColors );
 		glDeleteBuffers( 1, &_cube.EBO );
+		glDeleteVertexArrays( 1, &_cube.VAO );
+
+
+		glDeleteBuffers( 1, &_cube2.VBOVertices );
+		glDeleteBuffers( 1, &_cube2.VBOColors );
+		glDeleteBuffers( 1, &_cube2.EBO );
+		glDeleteVertexArrays( 1, &_cube2.VAO );
 	}
 
 	LabWork3::Mesh LabWork3::_createCube()

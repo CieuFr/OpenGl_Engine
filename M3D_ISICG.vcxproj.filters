@@ -190,9 +190,5 @@
     <None Include="src\lab_works\lab_work_3\shaders\lw3.vert" />
     <None Include="C:\Users\leiglat1\Downloads\mesh.vert" />
     <None Include="C:\Users\leiglat1\Downloads\mesh.frag" />
-    <None Include="C:\Users\leiglat1\Downloads\bunny.mtl" />
-  </ItemGroup>
-  <ItemGroup>
-    <Object Include="C:\Users\leiglat1\Downloads\bunny.obj" />
   </ItemGroup>
 </Project>

@@ -28,7 +28,7 @@ namespace M3D_ISICG
 		// Set the color used by glClear to clear the color buffer (in render()).
 		glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );
 
-	
+		glDisable( GL_DEPTH_TEST );
 		
 
 		//Chemin des shaders 

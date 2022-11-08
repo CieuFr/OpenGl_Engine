@@ -21,6 +21,9 @@ namespace M3D_ISICG
 
 	void TriangleMesh::render( const GLuint p_glProgram ) const
 	{
+		glBindVertexArray( _vao );
+		glDrawElements( GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0 );
+		glBindVertexArray( 0 );
 	}
 
 	void TriangleMesh::cleanGL()
@@ -40,12 +43,14 @@ namespace M3D_ISICG
 		glCreateBuffers( 1, &_vbo );
 		glCreateBuffers( 1, &_ebo );
 		glNamedBufferData( _vbo,
-						   _vertices.size() * sizeof( Vec3f ),
+						   _vertices.size() * sizeof( Vertex ),
 						   _vertices.data(),
 						   GL_STATIC_DRAW );
 
-			glNamedBufferData(
-			_ebo, _indices.size() * sizeof( int ), _indices.data(), GL_STATIC_DRAW );
+		glNamedBufferData(_ebo,
+			_indices.size() * sizeof( int ),
+			_indices.data(),
+			GL_STATIC_DRAW );
 
 
 		glCreateVertexArrays( 1, &_vao );
@@ -56,17 +61,12 @@ namespace M3D_ISICG
 		glEnableVertexArrayAttrib( _vao, 3 );
 		glEnableVertexArrayAttrib( _vao, 4 );
 
-		glVertexArrayAttribFormat( _vao, 0, 3, GL_FLOAT, GL_FALSE, 0 );
-		glVertexArrayAttribFormat( _vao, 1, 3, GL_FLOAT, GL_FALSE, 0 );
-		glVertexArrayAttribFormat( _vao, 2, 3, GL_FLOAT, GL_FALSE, 0 );
-		glVertexArrayAttribFormat( _vao, 3, 3, GL_FLOAT, GL_FALSE, 0 );
-		glVertexArrayAttribFormat( _vao, 4, 3, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayAttribFormat( _vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof( Vertex, _position ) );
+		glVertexArrayAttribFormat( _vao, 1, 3, GL_FLOAT, GL_FALSE, offsetof( Vertex, _normal ) );
+		glVertexArrayAttribFormat( _vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof( Vertex, _texCoords ) );
+		glVertexArrayAttribFormat( _vao, 3, 3, GL_FLOAT, GL_FALSE, offsetof( Vertex, _tangent ) );
+		glVertexArrayAttribFormat( _vao, 4, 3, GL_FLOAT, GL_FALSE, offsetof( Vertex, _bitangent ) );
 
-		glVertexArrayVertexBuffer( _vao, 0, _vbo, offsetof( Vertex, _position ), sizeof( Vec3f ) );
-		glVertexArrayVertexBuffer( _vao, 1, _vbo, offsetof( Vertex, _normal ), sizeof( Vec3f ) );
-		glVertexArrayVertexBuffer( _vao, 2, _vbo, offsetof( Vertex, _texCoords ), sizeof( Vec3f ) );
-		glVertexArrayVertexBuffer( _vao, 3, _vbo, offsetof( Vertex, _tangent ), sizeof( Vec3f ) );
-		glVertexArrayVertexBuffer( _vao, 4, _vbo, offsetof( Vertex, _bitangent ), sizeof( Vec3f ) );
 
 		glVertexArrayAttribBinding( _vao, 0, 0 );
 		glVertexArrayAttribBinding( _vao, 1, 1 );
@@ -74,7 +74,10 @@ namespace M3D_ISICG
 		glVertexArrayAttribBinding( _vao, 3, 3 );
 		glVertexArrayAttribBinding( _vao, 4, 4 );
 
+		glVertexArrayVertexBuffer( _vao, 0, _vbo, 0, sizeof( Vertex ) );
+
 		glVertexArrayElementBuffer( _vao,_ebo );
+
 
 	}
 } // namespace M3D_ISICG

@@ -17,18 +17,6 @@ namespace M3D_ISICG
 {
 	class LabWork4 : public BaseLabWork
 	{
-		// MESH
-		struct Mesh
-		{
-			std::vector<Vec3f>	  vectorPositions;
-			std::vector<Vec3f>		  vectorColors;
-			std::vector<unsigned int> vectorIndices;
-			Mat4f					  transformationMatrice = MAT4F_ID;
-			GLuint					  VBOVertices = GL_INVALID_VALUE;
-			GLuint					  VBOColors	  = GL_INVALID_VALUE;
-			GLuint					  VAO		  = GL_INVALID_VALUE;
-			GLuint					  EBO		  = GL_INVALID_VALUE;
-		};
 
 	  public:
 		LabWork4() : BaseLabWork() {}
@@ -46,7 +34,6 @@ namespace M3D_ISICG
 	  private:
 
 		TrackBallCamera _camera;
-
 		
 		void _updateViewMatrix();
 		void _updateProjectionMatrix();
@@ -57,22 +44,15 @@ namespace M3D_ISICG
 	// =================TP 4 ==================
 
 		TriangleMeshModel _tmm;
-		TriangleMesh _tm;
 
 
 		// =================FIN TP 4 =============
-
-
-	
 
 		GLuint transformationMatrix;
 		Mat4f  _transformationMatrix = MAT4F_ID;
 		Mat4f  _matrixWtoV = MAT4F_ID;
 		Mat4f  _matrixVtoC = MAT4F_ID;
 
-		std::vector<Vec2f> triangleVertices;
-		std::vector<Vec4f> triangleColors;
-		std::vector<int>   eboPositions;
 		GLuint			   aTranslationX;
 		GLuint			   luminosityUint;
 		
@@ -92,10 +72,7 @@ namespace M3D_ISICG
 
 		// ================ GL data.
 		GLuint aProgram = GL_INVALID_VALUE;
-		GLuint VBO		= GL_INVALID_VALUE;
-		GLuint VBO2		= GL_INVALID_VALUE;
-		GLuint VAO		= GL_INVALID_VALUE;
-		GLuint EBO		= GL_INVALID_VALUE;
+
 		// ================
 
 		// ================ Settings.
