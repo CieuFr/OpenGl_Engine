@@ -19,11 +19,11 @@ namespace M3D_ISICG
 		inline const Mat4f & getViewMatrix() const { return _viewMatrix; }
 		inline const Mat4f & getProjectionMatrix() const { return _projectionMatrix; }
 	
-
+		Vec3f _position = VEC3F_ZERO;
 	  protected:
 		bool _orthoPerspec = false;
 
-		Vec3f _position		= VEC3F_ZERO;
+		
 		Vec3f _invDirection = Vec3f( 0.f, 0.f, 1.f );  // Dw dans le cours.
 		Vec3f _right		= Vec3f( -1.f, 0.f, 0.f ); // Rw dans le cours.
 		Vec3f _up			= Vec3f( 0.f, 1.f, 0.f );  // Uw dans le cours.

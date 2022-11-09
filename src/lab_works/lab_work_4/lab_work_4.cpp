@@ -92,6 +92,8 @@ namespace M3D_ISICG
 		// Get Uniform transformationMatrix
 		transformationMatrix = glGetUniformLocation( aProgram, "uMVPMatrix" );
 
+		
+
 
 
 		//=============TP 4 ==============/
@@ -143,8 +145,35 @@ namespace M3D_ISICG
 		}
 
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
+		
+
+		
+		Mat3f normalMatrix = glm::transpose( glm::inverse( _tmm._transformation ) );
+
+
 		glProgramUniformMatrix4fv(
 			aProgram, transformationMatrix, 1, GL_FALSE, glm::value_ptr( _transformationMatrix ) );
+
+
+		glProgramUniformMatrix3fv( aProgram,
+								   glGetUniformLocation( aProgram, "normalMatrix" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( normalMatrix ) );
+
+
+		glProgramUniformMatrix4fv( aProgram,
+								   glGetUniformLocation( aProgram, "MVMatrix" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( _tmm._transformation ) );
+
+
+		glProgramUniform3fv( aProgram,
+								   glGetUniformLocation( aProgram, "lightPos" ),
+								   1,
+								   glm::value_ptr( _camera._position ) );
+
 
 		_tmm.render( aProgram );
 

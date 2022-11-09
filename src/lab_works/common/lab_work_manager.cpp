@@ -9,7 +9,7 @@ namespace M3D_ISICG
 {
 	LabWorkManager::LabWorkManager()
 	{
-		_current = new LabWork3();
+		_current = new LabWork4();
 		_type	 = TYPE::LAB_WORK_1;
 	}
 

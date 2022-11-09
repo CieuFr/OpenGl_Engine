@@ -21,6 +21,17 @@ namespace M3D_ISICG
 
 	void TriangleMesh::render( const GLuint p_glProgram ) const
 	{
+		
+		glProgramUniform3fv( p_glProgram,
+							 glGetUniformLocation( p_glProgram, "ambient" ),
+							 1,
+							 glm::value_ptr( _material._ambient) );
+
+		glProgramUniform3fv(
+			p_glProgram, glGetUniformLocation( p_glProgram, "diffuse" ), 1, glm::value_ptr( _material._diffuse ) );
+
+
+
 		glBindVertexArray( _vao );
 		glDrawElements( GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0 );
 		glBindVertexArray( 0 );
@@ -40,6 +51,9 @@ namespace M3D_ISICG
 
 	void TriangleMesh::_setupGL()
 	{		
+		
+		/*
+
 		glCreateBuffers( 1, &_vbo );
 		glCreateBuffers( 1, &_ebo );
 		glNamedBufferData( _vbo,
@@ -78,6 +92,38 @@ namespace M3D_ISICG
 
 		glVertexArrayElementBuffer( _vao,_ebo );
 
+		*/
+		glCreateBuffers( 1, &_vbo );
+		glNamedBufferData( _vbo, _vertices.size() * sizeof( Vertex ), _vertices.data(), GL_STATIC_DRAW );
+		glCreateVertexArrays( 1, &_vao );
 
+		glEnableVertexArrayAttrib( _vao, 0 );
+		glVertexArrayAttribFormat( _vao, 0, 3, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayVertexBuffer( _vao, 0, _vbo, offsetof( Vertex, _position ), sizeof( Vertex ) );
+		glVertexArrayAttribBinding( _vao, 0, 0 );
+
+		glEnableVertexArrayAttrib( _vao, 1 );
+		glVertexArrayAttribFormat( _vao, 1, 3, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayVertexBuffer( _vao, 1, _vbo, offsetof( Vertex, _normal ), sizeof( Vertex ) );
+		glVertexArrayAttribBinding( _vao, 1, 1 );
+
+		glEnableVertexArrayAttrib( _vao, 2 );
+		glVertexArrayAttribFormat( _vao, 2, 2, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayVertexBuffer( _vao, 2, _vbo, offsetof( Vertex, _texCoords ), sizeof( Vertex ) );
+		glVertexArrayAttribBinding( _vao, 2, 2 );
+
+		glEnableVertexArrayAttrib( _vao, 3 );
+		glVertexArrayAttribFormat( _vao, 3, 3, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayVertexBuffer( _vao, 3, _vbo, offsetof( Vertex, _tangent ), sizeof( Vertex ) );
+		glVertexArrayAttribBinding( _vao, 3, 3 );
+
+		glEnableVertexArrayAttrib( _vao, 4 );
+		glVertexArrayAttribFormat( _vao, 4, 3, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayVertexBuffer( _vao, 4, _vbo, offsetof( Vertex, _bitangent ), sizeof( Vertex ) );
+		glVertexArrayAttribBinding( _vao, 4, 4 );
+
+		glCreateBuffers( 1, &_ebo );
+		glNamedBufferData( _ebo, _indices.size() * sizeof( unsigned int ), _indices.data(), GL_STATIC_DRAW );
+		glVertexArrayElementBuffer( _vao, _ebo );
 	}
 } // namespace M3D_ISICG

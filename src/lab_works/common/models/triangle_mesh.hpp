@@ -57,8 +57,12 @@ namespace M3D_ISICG
 
 		void cleanGL();
 
+		
+
 	  private:
 		void _setupGL();
+
+		
 
 	  public:
 		std::string _name = "Unknown";
@@ -74,6 +78,7 @@ namespace M3D_ISICG
 		GLuint _vao = GL_INVALID_INDEX; // Vertex Array Object
 		GLuint _vbo = GL_INVALID_INDEX; // Vertex Buffer Object
 		GLuint _ebo = GL_INVALID_INDEX; // Element Buffer Object
+		GLuint aFragColorUint = GL_INVALID_INDEX;
 	};
 } // namespace M3D_ISICG
 

@@ -55,7 +55,7 @@ namespace M3D_ISICG
 
 		GLuint			   aTranslationX;
 		GLuint			   luminosityUint;
-		
+	
 
 		GLfloat			   _time = 0;
 		GLfloat			   _luminosity = 1;
