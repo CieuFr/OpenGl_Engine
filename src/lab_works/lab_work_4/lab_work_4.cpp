@@ -90,7 +90,7 @@ namespace M3D_ISICG
 		glProgramUniform1f( aProgram, luminosityUint, _luminosity );
 
 		// Get Uniform transformationMatrix
-		transformationMatrix = glGetUniformLocation( aProgram, "transformationMatrix" );
+		transformationMatrix = glGetUniformLocation( aProgram, "uMVPMatrix" );
 
 
 
@@ -142,6 +142,7 @@ namespace M3D_ISICG
 			perspecNeedsUpdating = false;
 		}
 
+		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 		glProgramUniformMatrix4fv(
 			aProgram, transformationMatrix, 1, GL_FALSE, glm::value_ptr( _transformationMatrix ) );
 
