@@ -52,7 +52,7 @@ namespace M3D_ISICG
 	void TriangleMesh::_setupGL()
 	{		
 		
-		/*
+		
 
 		glCreateBuffers( 1, &_vbo );
 		glCreateBuffers( 1, &_ebo );
@@ -89,10 +89,15 @@ namespace M3D_ISICG
 		glVertexArrayAttribBinding( _vao, 4, 4 );
 
 		glVertexArrayVertexBuffer( _vao, 0, _vbo, 0, sizeof( Vertex ) );
+		glVertexArrayVertexBuffer( _vao, 1, _vbo, 0, sizeof( Vertex ) );
+		glVertexArrayVertexBuffer( _vao, 2, _vbo, 0, sizeof( Vertex ) );
+		glVertexArrayVertexBuffer( _vao, 3, _vbo, 0, sizeof( Vertex ) );
+		glVertexArrayVertexBuffer( _vao, 4, _vbo, 0, sizeof( Vertex ) );
 
 		glVertexArrayElementBuffer( _vao,_ebo );
 
-		*/
+		
+		/*
 		glCreateBuffers( 1, &_vbo );
 		glNamedBufferData( _vbo, _vertices.size() * sizeof( Vertex ), _vertices.data(), GL_STATIC_DRAW );
 		glCreateVertexArrays( 1, &_vao );
@@ -124,6 +129,6 @@ namespace M3D_ISICG
 
 		glCreateBuffers( 1, &_ebo );
 		glNamedBufferData( _ebo, _indices.size() * sizeof( unsigned int ), _indices.data(), GL_STATIC_DRAW );
-		glVertexArrayElementBuffer( _vao, _ebo );
+		glVertexArrayElementBuffer( _vao, _ebo );*/
 	}
 } // namespace M3D_ISICG
