@@ -36,6 +36,7 @@
     <ClCompile Include="src\lab_works\lab_work_2\lab_work_2.cpp" />
     <ClCompile Include="src\lab_works\lab_work_3\lab_work_3.cpp" />
     <ClCompile Include="src\lab_works\lab_work_4\lab_work_4.cpp" />
+    <ClCompile Include="src\lab_works\lab_work_5\lab_work_5.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\utils\image.cpp" />
   </ItemGroup>
@@ -60,6 +61,7 @@
     <ClInclude Include="src\lab_works\lab_work_2\lab_work_2.hpp" />
     <ClInclude Include="src\lab_works\lab_work_3\lab_work_3.hpp" />
     <ClInclude Include="src\lab_works\lab_work_4\lab_work_4.hpp" />
+    <ClInclude Include="src\lab_works\lab_work_5\lab_work_5.hpp" />
     <ClInclude Include="src\utils\file_path.hpp" />
     <ClInclude Include="src\utils\gl_utils.hpp" />
     <ClInclude Include="src\utils\image.hpp" />

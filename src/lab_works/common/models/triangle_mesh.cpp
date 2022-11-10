@@ -37,6 +37,12 @@ namespace M3D_ISICG
 		glProgramUniform1f( p_glProgram, glGetUniformLocation( p_glProgram, "shininess" ), _material._shininess );
 
 
+		glProgramUniform1f( p_glProgram, glGetUniformLocation( p_glProgram, "uHasDiffuseMap" ), _material._hasDiffuseMap );
+
+		
+
+
+
 		
 
 		glBindVertexArray( _vao );
@@ -58,6 +64,11 @@ namespace M3D_ISICG
 
 	void TriangleMesh::_setupGL()
 	{		
+
+		// TODO =====> COURS SUR LES TEXTURES
+		glCreateTextures( GL_TEXTURE_2D, 1, &textureId );
+
+
 		
 		glCreateBuffers( 1, &_vbo );
 		glCreateBuffers( 1, &_ebo );
@@ -88,16 +99,16 @@ namespace M3D_ISICG
 
 
 		glVertexArrayAttribBinding( _vao, 0, 0 );
-		glVertexArrayAttribBinding( _vao, 1, 1 );
-		glVertexArrayAttribBinding( _vao, 2, 2 );
-		glVertexArrayAttribBinding( _vao, 3, 3 );
-		glVertexArrayAttribBinding( _vao, 4, 4 );
+		glVertexArrayAttribBinding( _vao, 1, 0 );
+		glVertexArrayAttribBinding( _vao, 2, 0 );
+		glVertexArrayAttribBinding( _vao, 3, 0 );
+		glVertexArrayAttribBinding( _vao, 4, 0 );
 
 		glVertexArrayVertexBuffer( _vao, 0, _vbo, 0, sizeof( Vertex ) );
-		glVertexArrayVertexBuffer( _vao, 1, _vbo, 0, sizeof( Vertex ) );
+		/*glVertexArrayVertexBuffer( _vao, 1, _vbo, 0, sizeof( Vertex ) );
 		glVertexArrayVertexBuffer( _vao, 2, _vbo, 0, sizeof( Vertex ) );
 		glVertexArrayVertexBuffer( _vao, 3, _vbo, 0, sizeof( Vertex ) );
-		glVertexArrayVertexBuffer( _vao, 4, _vbo, 0, sizeof( Vertex ) );
+		glVertexArrayVertexBuffer( _vao, 4, _vbo, 0, sizeof( Vertex ) );*/
 
 		glVertexArrayElementBuffer( _vao,_ebo );
 

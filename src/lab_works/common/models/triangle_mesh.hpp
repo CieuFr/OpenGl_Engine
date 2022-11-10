@@ -57,6 +57,7 @@ namespace M3D_ISICG
 
 		void cleanGL();
 
+		GLuint textureId;
 		
 
 	  private:

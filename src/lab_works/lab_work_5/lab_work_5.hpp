@@ -1,5 +1,5 @@
-#ifndef __LAB_WORK_4_HPP__
-#define __LAB_WORK_4_HPP__
+#ifndef __LAB_WORK_5_HPP__
+#define __LAB_WORK_5_HPP__
 
 #include "GL/gl3w.h"
 #include "common/base_lab_work.hpp"
@@ -15,12 +15,12 @@
 
 namespace M3D_ISICG
 {
-	class LabWork4 : public BaseLabWork
+	class LabWork5 : public BaseLabWork
 	{
 
 	  public:
-		LabWork4() : BaseLabWork() {}
-		~LabWork4();
+		LabWork5() : BaseLabWork() {}
+		~LabWork5();
 		
 
 		bool init() override;
@@ -38,7 +38,8 @@ namespace M3D_ISICG
 		void _updateViewMatrix();
 		void _updateProjectionMatrix();
 		void _initCamera();
-
+		// ================ Scene data.
+		// ================
 
 	// =================TP 4 ==================
 

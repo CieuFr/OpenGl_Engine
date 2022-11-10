@@ -1,4 +1,4 @@
-#include "lab_work_4.hpp"
+#include "lab_work_5.hpp"
 #include "imgui.h"
 #include "utils/read_file.hpp"
 #include <iostream>
@@ -9,16 +9,16 @@
 namespace M3D_ISICG
 {
 
-	const std::string LabWork4::_shaderFolder = "src/lab_works/lab_work_4/shaders/";
+	const std::string LabWork5::_shaderFolder = "src/lab_works/lab_work_4/shaders/";
 
-	LabWork4::~LabWork4() {
+	LabWork5::~LabWork5() {
 		glDeleteProgram( aProgram );
 
 	}
 
 	
 
-	bool LabWork4::init()
+	bool LabWork5::init()
 	{
 		std::cout << "Initializing lab work 1..." << std::endl;
 		// Set the color used by glClear to clear the color buffer (in render()).
@@ -96,13 +96,12 @@ namespace M3D_ISICG
 
 
 
-		//=============TP 4 ==============/
+		//=============TP 5 ==============/
 
-		_tmm.load("conference", FilePath("./data/models/conference.obj" ));
+		_tmm.load("bunny_2", FilePath("./data/models/bunny_2.obj" ));
 
 		
-		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f(0.003, 0.003, 0.003) );
-		//=============FIN ==============/
+		
 
 
 		
@@ -115,12 +114,12 @@ namespace M3D_ISICG
 	}
 
 
-	void LabWork4::animate( const float p_deltaTime ) {
+	void LabWork5::animate( const float p_deltaTime ) {
 
 			
 	}
 
-	void LabWork4::render() { 
+	void LabWork5::render() { 
 		//glClearColor
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -145,9 +144,8 @@ namespace M3D_ISICG
 		}
 
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
-		
+				
 		Mat3f normalMatrix = glm::transpose( glm::inverse( _tmm._transformation ) );
-
 
 		glProgramUniformMatrix4fv(
 			aProgram, transformationMatrix, 1, GL_FALSE, glm::value_ptr( _transformationMatrix ) );
@@ -170,20 +168,17 @@ namespace M3D_ISICG
 		glProgramUniform3fv( aProgram,
 								   glGetUniformLocation( aProgram, "lightPos" ),
 								   1,
-							 glm::value_ptr(  Vec4f( 1.42, 1.72, -0.5, 1.0f ) ) );
+								   glm::value_ptr( _camera._position ) );
 
-			glProgramUniform3fv(
+		glProgramUniform3fv(
 			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera._position ) );
 
 
 		_tmm.render( aProgram );
 
-
-
-
 	}
 
-	void LabWork4::handleEvents( const SDL_Event & p_event )
+	void LabWork5::handleEvents( const SDL_Event & p_event )
 	{
 		if ( p_event.type == SDL_KEYDOWN )
 		{
@@ -226,7 +221,7 @@ namespace M3D_ISICG
 		}
 	}
 
-	void LabWork4::displayUI()
+	void LabWork5::displayUI()
 	{
 		luminosityNeedsUpdating = ImGui::SliderFloat( "Luminosity", &_luminosity, 0, 1 );
 		if (ImGui::ColorEdit3("BackGround Color", glm::value_ptr(_bgColor))) {
@@ -243,22 +238,22 @@ namespace M3D_ISICG
 		ImGui::End();
 	}
 
-	void LabWork4::_updateViewMatrix() {
+	void LabWork5::_updateViewMatrix() {
 
 		_matrixWtoV = _camera.getViewMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 	}
 
-	void LabWork4::_updateProjectionMatrix()
+	void LabWork5::_updateProjectionMatrix()
 	{
 		_matrixVtoC = _camera.getProjectionMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 		
 	}
 
-	void LabWork4::_initCamera() { 
+	void LabWork5::_initCamera() { 
 		_camera.setScreenSize( 1280, 720 );
-		_camera.setPosition( Vec3f( 0.f, 0.f, 3.f ) );
+		_camera.setPosition( Vec3f( 0.f, 0.f, 0.2f ) );
 		_camera.setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
 		_updateViewMatrix();
 		_updateProjectionMatrix();

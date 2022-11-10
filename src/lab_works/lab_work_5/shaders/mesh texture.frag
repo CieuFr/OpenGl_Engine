@@ -1,6 +1,7 @@
 #version 450
 
 layout( location = 0 ) out vec4 fragColor;
+layout (location = 1) uniform sampler2D uDiffuseMap;
 
 in vec3 normal;
 in vec4 position;
@@ -12,6 +13,7 @@ uniform vec3 lightPos;
 uniform vec3 cameraPos;
 uniform vec3 specular;
 uniform float shininess;
+uniform bool uHasDiffuseMap;
 
 
 
