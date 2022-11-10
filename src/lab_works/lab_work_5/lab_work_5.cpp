@@ -9,7 +9,7 @@
 namespace M3D_ISICG
 {
 
-	const std::string LabWork5::_shaderFolder = "src/lab_works/lab_work_4/shaders/";
+	const std::string LabWork5::_shaderFolder = "src/lab_works/lab_work_5/shaders/";
 
 	LabWork5::~LabWork5() {
 		glDeleteProgram( aProgram );
@@ -28,8 +28,8 @@ namespace M3D_ISICG
 		glEnable(GL_DEPTH_TEST);  
 
 		//Chemin des shaders 
-		const std::string vertexShaderStr = readFile( _shaderFolder + "mesh.vert" );
-		const std::string fragShaderStr = readFile( _shaderFolder + "mesh.frag" );
+		const std::string vertexShaderStr = readFile( _shaderFolder + "mesh_texture.vert" );
+		const std::string fragShaderStr = readFile( _shaderFolder + "mesh_texture.frag" );
 
 		//Création des shaders
 		const GLuint aVertexShader = glCreateShader( GL_VERTEX_SHADER );
