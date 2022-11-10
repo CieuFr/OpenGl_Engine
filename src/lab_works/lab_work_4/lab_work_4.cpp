@@ -98,10 +98,10 @@ namespace M3D_ISICG
 
 		//=============TP 4 ==============/
 
-		_tmm.load("bunny", FilePath("./data/models/bunny.obj" ));
+		_tmm.load("conference", FilePath("./data/models/conference.obj" ));
 
 		
-
+		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f(0.003, 0.003, 0.003) );
 		//=============FIN ==============/
 
 
@@ -172,13 +172,19 @@ namespace M3D_ISICG
 		glProgramUniform3fv( aProgram,
 								   glGetUniformLocation( aProgram, "lightPos" ),
 								   1,
-								   glm::value_ptr( _camera._position ) );
+								   glm::value_ptr( Vec3f(1.42,1.72,-0.5) ) );
 
 			glProgramUniform3fv(
 			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera._position ) );
 
 
 		_tmm.render( aProgram );
+
+
+		std::cout << " x : " << _camera._position.x << "\n";
+		std::cout << " y : " << _camera._position.y << "\n";
+		std::cout << " z : " << _camera._position.z << "\n";
+
 
 	}
 

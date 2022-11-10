@@ -20,12 +20,25 @@ void main()
 	vec3 viewDir = normalize(cameraPos - position.xyz);
 	vec3 lightDir = normalize(position.xyz - lightPos);
 
+	float normalDirection = dot(normal,viewDir);
+
+	vec3 normalAfterCheck;
+
+	if(normalDirection < 0) {
+		normalAfterCheck = -normal;
+	} else {
+		normalAfterCheck = normal;
+	}
+
+	
+
+
 	vec3 H = normalize(viewDir - lightDir);
 
 	//vec3 reflectDir = reflect(lightDir,normal);
-	vec3 spec =  pow(max(dot(normal,H),0.0),shininess) * specular;
+	vec3 spec =  pow(max(dot(normalAfterCheck,H),0.0),shininess) * specular;
 
-	float diff = max(dot(normal,normalize(lightPos-position.xyz)),0.f);
+	float diff = max(dot(normalAfterCheck,normalize(lightPos-position.xyz)),0.f);
 	vec3 diffuseLight = diffuse * diff ;
 
 

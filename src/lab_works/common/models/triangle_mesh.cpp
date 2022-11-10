@@ -59,8 +59,6 @@ namespace M3D_ISICG
 	void TriangleMesh::_setupGL()
 	{		
 		
-		
-
 		glCreateBuffers( 1, &_vbo );
 		glCreateBuffers( 1, &_ebo );
 		glNamedBufferData( _vbo,
