@@ -31,6 +31,13 @@ namespace M3D_ISICG
 			p_glProgram, glGetUniformLocation( p_glProgram, "diffuse" ), 1, glm::value_ptr( _material._diffuse ) );
 
 
+		glProgramUniform3fv(
+			p_glProgram, glGetUniformLocation( p_glProgram, "specular" ), 1, glm::value_ptr( _material._specular ) );
+
+		glProgramUniform1f( p_glProgram, glGetUniformLocation( p_glProgram, "shininess" ), _material._shininess );
+
+
+		
 
 		glBindVertexArray( _vao );
 		glDrawElements( GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0 );

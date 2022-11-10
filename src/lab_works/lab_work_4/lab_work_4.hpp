@@ -33,7 +33,7 @@ namespace M3D_ISICG
 
 	  private:
 
-		TrackBallCamera _camera;
+		BaseCamera _camera;
 		
 		void _updateViewMatrix();
 		void _updateProjectionMatrix();

@@ -174,6 +174,9 @@ namespace M3D_ISICG
 								   1,
 								   glm::value_ptr( _camera._position ) );
 
+			glProgramUniform3fv(
+			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera._position ) );
+
 
 		_tmm.render( aProgram );
 
@@ -254,7 +257,7 @@ namespace M3D_ISICG
 
 	void LabWork4::_initCamera() { 
 		_camera.setScreenSize( 1280, 720 );
-		_camera.setPosition( Vec3f( 0.f, 1.f, 3.f ) );
+		_camera.setPosition( Vec3f( 0.f, 0.f, 3.f ) );
 		_camera.setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
 		_updateViewMatrix();
 		_updateProjectionMatrix();
