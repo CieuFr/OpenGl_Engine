@@ -9,17 +9,18 @@ layout( location = 4 ) in vec3 aVertexBitagent;
 uniform mat4 uMVPMatrix; // Projection * View * Model
 uniform mat3 normalMatrix;
 uniform mat4 MVMatrix;
-out vec3 normal;
-out vec4 position;
+out vec3 Normal;
+out vec4 FragPos;
+
 
 void main()
 {
 	gl_Position = uMVPMatrix * vec4( aVertexPosition, 1.f );
-	position = MVMatrix *  vec4( aVertexPosition, 1.f );
-	normal =  normalMatrix * aVertexNormal;
+	FragPos = MVMatrix *  vec4( aVertexPosition,1.0 );
+	Normal =  normalMatrix * aVertexNormal;
 	
 	//normal = mat3(transpose(inverse(MVMatrix))) * aVertexNormal;
 
-	normal = normalize(normal);
+	Normal = normalize(Normal);
 
 }
