@@ -1,4 +1,4 @@
-#include "lab_work_4.hpp"
+#include "lab_work_42.hpp"
 #include "imgui.h"
 #include "utils/read_file.hpp"
 #include <iostream>
@@ -9,16 +9,16 @@
 namespace M3D_ISICG
 {
 
-	const std::string LabWork4::_shaderFolder = "src/lab_works/lab_work_4/shaders/";
+	const std::string LabWork42::_shaderFolder = "src/lab_works/lab_work_42/shaders/";
 
-	LabWork4::~LabWork4() {
+	LabWork42::~LabWork42() {
 		glDeleteProgram( aProgram );
 
 	}
 
 	
 
-	bool LabWork4::init()
+	bool LabWork42::init()
 	{
 		std::cout << "Initializing lab work 1..." << std::endl;
 		// Set the color used by glClear to clear the color buffer (in render()).
@@ -28,8 +28,8 @@ namespace M3D_ISICG
 		glEnable(GL_DEPTH_TEST);  
 
 		//Chemin des shaders 
-		const std::string vertexShaderStr = readFile( _shaderFolder + "ao.vert" );
-		const std::string fragShaderStr = readFile( _shaderFolder + "ao.frag" );
+		const std::string vertexShaderStr = readFile( _shaderFolder + "aomesh.vert" );
+		const std::string fragShaderStr = readFile( _shaderFolder + "aomesh.frag" );
 
 		//Création des shaders
 		const GLuint aVertexShader = glCreateShader( GL_VERTEX_SHADER );
@@ -94,30 +94,6 @@ namespace M3D_ISICG
 
 		
 
-		////=============AO ==============/
-
-		glGenTextures( 1, &gPosition );
-		glBindTexture( GL_TEXTURE_2D, gPosition );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );  
-
-
-
-		unsigned int noiseTexture;
-		glGenTextures( 1, &noiseTexture );
-		glBindTexture( GL_TEXTURE_2D, noiseTexture );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[ 0 ] );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-
-
-
-		//=============FIN AO ==============/
 
 
 		//=============TP 4 ==============/
@@ -139,42 +115,12 @@ namespace M3D_ISICG
 	}
 
 
-	void LabWork4::animate( const float p_deltaTime ) {
+	void LabWork42::animate( const float p_deltaTime ) {
 
 			
 	}
 
-	float lerp( float a, float b, float f ) { return a + f * ( b - a ); }  
-
-
-	void LabWork4::render() { 
-
-		//===================AO ==========================
-		std::uniform_real_distribution<float> randomFloats( 0.0, 1.0 ); // random floats between [0.0, 1.0]
-		std::default_random_engine			  generator;
-		std::vector<glm::vec3>				  ssaoKernel;
-		for ( unsigned int i = 0; i < 64; ++i )
-		{
-			glm::vec3 sample( randomFloats( generator ) * 2.0 - 1.0,
-							  randomFloats( generator ) * 2.0 - 1.0,
-							  randomFloats( generator ) );
-			sample = glm::normalize( sample );
-			sample *= randomFloats( generator );
-
-			float scale = (float)i / 64.0;
-			scale		= lerp( 0.1f, 1.0f, scale * scale );
-			sample *= scale;
-			ssaoKernel.push_back( sample );
-		}
-
-		//=================== FIN AO  ==========================
-
-
-
-
-
-
-
+	void LabWork42::render() { 
 		//glClearColor
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -239,7 +185,7 @@ namespace M3D_ISICG
 
 	}
 
-	void LabWork4::handleEvents( const SDL_Event & p_event )
+	void LabWork42::handleEvents( const SDL_Event & p_event )
 	{
 		if ( p_event.type == SDL_KEYDOWN )
 		{
@@ -282,7 +228,7 @@ namespace M3D_ISICG
 		}
 	}
 
-	void LabWork4::displayUI()
+	void LabWork42::displayUI()
 	{
 		luminosityNeedsUpdating = ImGui::SliderFloat( "Luminosity", &_luminosity, 0, 1 );
 		if (ImGui::ColorEdit3("BackGround Color", glm::value_ptr(_bgColor))) {
@@ -299,20 +245,20 @@ namespace M3D_ISICG
 		ImGui::End();
 	}
 
-	void LabWork4::_updateViewMatrix() {
+	void LabWork42::_updateViewMatrix() {
 
 		_matrixWtoV = _camera.getViewMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 	}
 
-	void LabWork4::_updateProjectionMatrix()
+	void LabWork42::_updateProjectionMatrix()
 	{
 		_matrixVtoC = _camera.getProjectionMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 		
 	}
 
-	void LabWork4::_initCamera() { 
+	void LabWork42::_initCamera() { 
 		_camera.setScreenSize( 1280, 720 );
 		_camera.setPosition( Vec3f( 0.f, 0.f, 3.f ) );
 		_camera.setLookAt( Vec3f( 0.f, 0.f, 0.f ) );

@@ -4,14 +4,19 @@
 #include "lab_work_2/lab_work_2.hpp"
 #include "lab_work_3/lab_work_3.hpp"
 #include "lab_work_4/lab_work_4.hpp"
+#include "lab_work_42/lab_work_42.hpp"
+
 #include "lab_work_5/lab_work_5.hpp"
+
+
+
 
 namespace M3D_ISICG
 {
 	LabWorkManager::LabWorkManager()
 	{
-		_current = new LabWork5();
-		_type	 = TYPE::LAB_WORK_1;
+		_current = new LabWork4();
+		_type	 = TYPE::LAB_WORK_4;
 	}
 
 	void LabWorkManager::drawMenu()
@@ -75,6 +80,10 @@ namespace M3D_ISICG
 				_current->init();			  // Don ’t forget to call init ().
 			}
 		}
+
+	
+
+		
 
 
 	}

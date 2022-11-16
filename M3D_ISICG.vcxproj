@@ -69,8 +69,6 @@
     <ClInclude Include="src\utils\read_file.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="C:\Users\leiglat1\Downloads\mesh.frag" />
-    <None Include="C:\Users\leiglat1\Downloads\mesh.vert" />
     <None Include="src\lab_works\lab_work_1\shaders\lw1.frag" />
     <None Include="src\lab_works\lab_work_1\shaders\lw1.vert" />
     <None Include="src\lab_works\lab_work_2\shaders\lw1.frag" />

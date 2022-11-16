@@ -67,7 +67,10 @@ namespace M3D_ISICG
 
 		// TODO =====> COURS SUR LES TEXTURES
 		glCreateTextures( GL_TEXTURE_2D, 1, &textureId );
+		glGenerateTextureMipmap( textureId );
+		//glTextureStorage2D( textureId, , GL_RGBA32F, );
 
+			glBindTextureUnit( 1, textureId );
 
 		
 		glCreateBuffers( 1, &_vbo );
