@@ -98,9 +98,9 @@ namespace M3D_ISICG
 
 		//=============TP 5 ==============/
 
-		_tmm.load("bunny_2", FilePath("./data/models/bunny_2.obj" ));
+		_tmm.load("sponza", FilePath("./data/models/sponza.obj" ));
 
-		
+		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
 		
 
 
@@ -145,7 +145,7 @@ namespace M3D_ISICG
 
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 				
-		Mat3f normalMatrix = glm::transpose( glm::inverse( _tmm._transformation ) );
+		Mat3f normalMatrix = glm::transpose( glm::inverse( _matrixWtoV * _tmm._transformation ) );
 
 		glProgramUniformMatrix4fv(
 			aProgram, transformationMatrix, 1, GL_FALSE, glm::value_ptr( _transformationMatrix ) );
@@ -162,13 +162,13 @@ namespace M3D_ISICG
 								   glGetUniformLocation( aProgram, "MVMatrix" ),
 								   1,
 								   GL_FALSE,
-								   glm::value_ptr( _tmm._transformation ) );
+								   glm::value_ptr( _matrixWtoV * _tmm._transformation ) );
 
 
 		glProgramUniform3fv( aProgram,
 								   glGetUniformLocation( aProgram, "lightPos" ),
 								   1,
-								   glm::value_ptr( _camera._position ) );
+							 glm::value_ptr( _matrixWtoV * Vec4f( _camera._position,1) ) );
 
 		glProgramUniform3fv(
 			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera._position ) );

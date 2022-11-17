@@ -80,6 +80,17 @@ namespace M3D_ISICG
 			}
 		}
 
+		if ( ImGui ::MenuItem( " Lab work 7 " ) )
+		{
+			if ( _type != TYPE ::LAB_WORK_7 ) // Change only if needed .
+			{
+				delete _current;			  // Delete old lab work .
+				_current = new LabWork7();	  // Create new lab work .
+				_type	 = TYPE ::LAB_WORK_7; // Update type .
+				_current->init();			  // Don ’t forget to call init ().
+			}
+		}
+
 		
 
 	

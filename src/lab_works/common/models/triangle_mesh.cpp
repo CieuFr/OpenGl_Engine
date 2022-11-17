@@ -38,14 +38,51 @@ namespace M3D_ISICG
 		glProgramUniform1f( p_glProgram, glGetUniformLocation( p_glProgram, "shininess" ), _material._shininess );
 
 
-		glProgramUniform1f( p_glProgram, glGetUniformLocation( p_glProgram, "uHasDiffuseMap" ), _material._hasDiffuseMap );
-		
+		// TEXTURE DECLARATION BOOL POUR LE FRAGMENT SHADER 
 
+		glProgramUniform1f( p_glProgram, glGetUniformLocation( p_glProgram, "uHasDiffuseMap" ), _material._hasDiffuseMap );
+
+		glProgramUniform1f(
+			p_glProgram, glGetUniformLocation( p_glProgram, "uHasAmbientMap" ), _material._hasAmbientMap );
+
+		glProgramUniform1f(
+			p_glProgram, glGetUniformLocation( p_glProgram, "uHasSpecularMap" ), _material._hasSpecularMap );
+
+		glProgramUniform1f(
+			p_glProgram, glGetUniformLocation( p_glProgram, "uHasShininessMap" ), _material._hasShininessMap );
+
+		
+		
 		glBindVertexArray( _vao );
-		glBindTextureUnit( 1, _material._diffuseMap._id );
+
+		// BIND DES TEXTURES POUR ENVOYER LES DONNEES
+		if (_material._hasDiffuseMap) {
+			glBindTextureUnit( 1, _material._diffuseMap._id );
+		}
+		if ( _material._hasAmbientMap )
+		{
+			glBindTextureUnit( 2, _material._ambientMap._id );
+		}
+		if ( _material._hasSpecularMap )
+		{
+			glBindTextureUnit( 3, _material._specularMap._id );
+		}
+		if ( _material._hasShininessMap )
+		{
+			glBindTextureUnit( 4, _material._shininessMap._id );
+		}
+
 		glDrawElements( GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0 );
+
 		glBindVertexArray( 0 );
+
+
+		// TEXTURE RESET DES BIND TEXTURES 
+
 		glBindTextureUnit( 1, 0 );
+		glBindTextureUnit( 2, 0 );
+		glBindTextureUnit( 3, 0 );
+		glBindTextureUnit( 4, 0 );
 	}
 
 	void TriangleMesh::cleanGL()

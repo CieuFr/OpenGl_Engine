@@ -2,6 +2,10 @@
 
 layout( location = 0 ) out vec4 fragColor;
 layout (binding = 1) uniform sampler2D uDiffuseMap;
+layout (binding = 2) uniform sampler2D uAmbientMap;
+layout (binding = 3) uniform sampler2D uSpecularMap;
+layout (binding = 4) uniform sampler2D uShininessMap;
+
 
 in vec3 normal;
 in vec4 position;
@@ -14,7 +18,12 @@ uniform vec3 lightPos;
 uniform vec3 cameraPos;
 uniform vec3 specular;
 uniform float shininess;
+
 uniform bool uHasDiffuseMap;
+uniform bool uHasShininessMap;
+uniform bool uHasSpecularMap;
+uniform bool uHasAmbientMap;
+
 
 
 
@@ -23,7 +32,7 @@ void main()
      // TEXTURES
 
 	//BLIN PHONG
-	vec3 viewDir = normalize(cameraPos - position.xyz);
+	vec3 viewDir = normalize( - position.xyz);
 	vec3 lightDir = normalize(position.xyz - lightPos);
 
 	float normalDirection = dot(normal,viewDir);
@@ -41,21 +50,45 @@ void main()
 
 	vec3 H = normalize(viewDir - lightDir);
 
-	vec3 spec =  pow(max(dot(normalAfterCheck,H),0.0),shininess) * specular;
+
+
+	float cosThetaPowShininess = 0;
+
+	if(uHasShininessMap){
+		 cosThetaPowShininess = pow(max(dot(normalAfterCheck,H),0.0),vec3(texture(uShininessMap,texCoords)).x) ;
+	} else {
+		 cosThetaPowShininess = pow(max(dot(normalAfterCheck,H),0.0),shininess) ;
+	}
+
+
+
+	vec3 specularLighting = vec3(0,0,0); 
+	if(uHasSpecularMap){
+		 specularLighting = vec3(texture(uSpecularMap,texCoords)).xxx * cosThetaPowShininess ;
+	} else {
+		 specularLighting = specular * cosThetaPowShininess ;
+	}
+
+
 
 	float cosTheta = max(dot(normalize(normalAfterCheck),normalize(lightPos-position.xyz)),0.f);
 
 	vec3 diffuseLight = vec3(0.0,0.0,0.0);
 
+	
 	if(uHasDiffuseMap){
 		 diffuseLight = vec3(texture(uDiffuseMap,texCoords)) * cosTheta ;
 	} else {
 		 diffuseLight = diffuse * cosTheta ;
 	}
 	
-
-
-	vec3 result = (ambient + diffuseLight + spec);
+	vec3 result = vec3(0.0,0.0,0.0);
+	if(uHasAmbientMap){
+		result =  (vec3(texture(uAmbientMap,texCoords)) + diffuseLight + specularLighting);
+	} else {
+		result =  (ambient + diffuseLight + specularLighting);
+	}
+	
 
 
 

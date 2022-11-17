@@ -294,7 +294,7 @@ namespace M3D_ISICG
 			glTextureParameteri( texture._id, GL_TEXTURE_WRAP_S, GL_REPEAT );
 			glTextureParameteri( texture._id, GL_TEXTURE_WRAP_T, GL_REPEAT );
 			glTextureParameteri( texture._id, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-			glTextureParameteri( texture._id, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+			glTextureParameteri( texture._id, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
 			// Fill the texture.
 			glTextureSubImage2D(
