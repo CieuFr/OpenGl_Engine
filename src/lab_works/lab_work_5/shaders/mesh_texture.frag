@@ -1,7 +1,7 @@
 #version 450
 
 layout( location = 0 ) out vec4 fragColor;
-layout (location = 1) uniform sampler2D uDiffuseMap;
+layout (binding = 1) uniform sampler2D uDiffuseMap;
 
 in vec3 normal;
 in vec4 position;
@@ -21,7 +21,6 @@ uniform bool uHasDiffuseMap;
 void main()
 {
      // TEXTURES
-	vec4 diffuseMapTexture = texture(uDiffuseMap,texCoords);
 
 	//BLIN PHONG
 	vec3 viewDir = normalize(cameraPos - position.xyz);
@@ -44,8 +43,16 @@ void main()
 
 	vec3 spec =  pow(max(dot(normalAfterCheck,H),0.0),shininess) * specular;
 
-	float diff = max(dot(normalize(normalAfterCheck),normalize(lightPos-position.xyz)),0.f);
-	vec3 diffuseLight = diffuse * diff ;
+	float cosTheta = max(dot(normalize(normalAfterCheck),normalize(lightPos-position.xyz)),0.f);
+
+	vec3 diffuseLight = vec3(0.0,0.0,0.0);
+
+	if(uHasDiffuseMap){
+		 diffuseLight = vec3(texture(uDiffuseMap,texCoords)) * cosTheta ;
+	} else {
+		 diffuseLight = diffuse * cosTheta ;
+	}
+	
 
 
 	vec3 result = (ambient + diffuseLight + spec);

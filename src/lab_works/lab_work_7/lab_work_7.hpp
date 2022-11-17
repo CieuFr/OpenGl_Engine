@@ -1,5 +1,5 @@
-#ifndef __LAB_WORK_42_HPP__
-#define __LAB_WORK_42_HPP__
+#ifndef __LAB_WORK_7_HPP__
+#define __LAB_WORK_7_HPP__
 
 #include "GL/gl3w.h"
 #include "common/base_lab_work.hpp"
@@ -15,12 +15,12 @@
 
 namespace M3D_ISICG
 {
-	class LabWork42 : public BaseLabWork
+	class LabWork7 : public BaseLabWork
 	{
 
 	  public:
-		LabWork42() : BaseLabWork() {}
-		~LabWork42();
+		LabWork7() : BaseLabWork() {}
+		~LabWork7();
 		
 
 		bool init() override;
@@ -46,6 +46,14 @@ namespace M3D_ISICG
 
 
 		// =================FIN TP 4 =============
+
+
+		// =================AO  ==================
+
+		GLuint gPosition;
+
+		// =================FIN AO =============
+
 
 		GLuint transformationMatrix;
 		Mat4f  _transformationMatrix = MAT4F_ID;
@@ -84,4 +92,4 @@ namespace M3D_ISICG
 	};
 } // namespace M3D_ISICG
 
-#endif // __LAB_WORK_1_HPP__
+#endif // __LAB_WORK_7_HPP__

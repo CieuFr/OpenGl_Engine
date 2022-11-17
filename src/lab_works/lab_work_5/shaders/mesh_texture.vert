@@ -11,12 +11,14 @@ uniform mat3 normalMatrix;
 uniform mat4 MVMatrix;
 out vec3 normal;
 out vec4 position;
+out vec2 texCoords;
 
 void main()
 {
 	gl_Position = uMVPMatrix * vec4( aVertexPosition, 1.f );
 	position = MVMatrix *  vec4( aVertexPosition, 1.f );
 	normal =  normalMatrix * aVertexNormal;
+	texCoords = aVertexTexCoords;
 	
 	//normal = mat3(transpose(inverse(MVMatrix))) * aVertexNormal;
 
