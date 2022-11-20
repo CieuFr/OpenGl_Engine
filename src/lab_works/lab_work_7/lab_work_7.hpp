@@ -41,7 +41,14 @@ namespace M3D_ISICG
 
 		// =================AO  ==================
 
-		GLuint gPosition;
+		Vec3f  lightPos;
+		Vec3f lightColor;
+		unsigned int ssaoFBO, ssaoBlurFBO;
+		unsigned int		   gPosition, gNormal, gAlbedo;
+		 unsigned int gBuffer;
+		std::vector<glm::vec3> ssaoKernel;
+		 unsigned int			noiseTexture;
+		unsigned int		   ssaoColorBuffer, ssaoColorBufferBlur;
 
 		// =================FIN AO =============
 
@@ -68,6 +75,10 @@ namespace M3D_ISICG
 
 		// ================ GL data.
 		GLuint aProgram = GL_INVALID_VALUE;
+		GLuint aProgram2 = GL_INVALID_VALUE;
+		GLuint aProgram3 = GL_INVALID_VALUE;
+		GLuint aProgram4 = GL_INVALID_VALUE;
+
 
 		// ================
 
