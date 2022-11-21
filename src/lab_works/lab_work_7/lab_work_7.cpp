@@ -1,7 +1,6 @@
+#include "lab_work_7.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui.h"
-#include "lab_work_7.hpp"
-
 #include "utils/random.hpp"
 #include "utils/read_file.hpp"
 #include <iostream>
@@ -14,9 +13,8 @@ namespace M3D_ISICG
 
 	LabWork7::~LabWork7() { glDeleteProgram( aProgram ); }
 
-	float ourLerp( float a, float b, float f ) { return a + f * ( b - a ); }  
+	float ourLerp( float a, float b, float f ) { return a + f * ( b - a ); }
 
-	
 	// renderQuad() renders a 1x1 XY quad in NDC
 	// -----------------------------------------
 	unsigned int quadVAO = 0;
@@ -45,7 +43,6 @@ namespace M3D_ISICG
 		glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
 		glBindVertexArray( 0 );
 	}
-
 
 	bool LabWork7::init()
 	{
@@ -89,7 +86,7 @@ namespace M3D_ISICG
 		}
 
 		// Initialisation du Program
-		aProgram = glCreateProgram();
+		aProgram  = glCreateProgram();
 		aProgram2 = glCreateProgram();
 		aProgram3 = glCreateProgram();
 		aProgram4 = glCreateProgram();
@@ -126,10 +123,10 @@ namespace M3D_ISICG
 		////=============AO2 ==============/
 
 		const std::string vertexShaderStr2 = readFile( _shaderFolder + "ao2.vert" );
-		const std::string fragShaderStr2	  = readFile( _shaderFolder + "ao2.frag" );
+		const std::string fragShaderStr2   = readFile( _shaderFolder + "ao2.frag" );
 
 		// Création des shaders
-		const GLuint aVertexShader2	 = glCreateShader( GL_VERTEX_SHADER );
+		const GLuint aVertexShader2	  = glCreateShader( GL_VERTEX_SHADER );
 		const GLuint aFragmentShader2 = glCreateShader( GL_FRAGMENT_SHADER );
 
 		// Récupération des locations des shaders
@@ -156,8 +153,6 @@ namespace M3D_ISICG
 			return false;
 		}
 
-
-
 		glAttachShader( aProgram2, aVertexShader2 );
 		glAttachShader( aProgram2, aFragmentShader2 );
 		glLinkProgram( aProgram2 );
@@ -177,10 +172,10 @@ namespace M3D_ISICG
 
 		//==================3======================
 		const std::string vertexShaderStr3 = readFile( _shaderFolder + "ao3.vert" );
-		const std::string fragShaderStr3	  = readFile( _shaderFolder + "ao3.frag" );
+		const std::string fragShaderStr3   = readFile( _shaderFolder + "ao3.frag" );
 
 		// Création des shaders
-		const GLuint aVertexShader3	 = glCreateShader( GL_VERTEX_SHADER );
+		const GLuint aVertexShader3	  = glCreateShader( GL_VERTEX_SHADER );
 		const GLuint aFragmentShader3 = glCreateShader( GL_FRAGMENT_SHADER );
 
 		// Récupération des locations des shaders
@@ -220,18 +215,15 @@ namespace M3D_ISICG
 			return false;
 		}
 
-
-
 		glDeleteShader( aVertexShader3 );
 		glDeleteShader( aFragmentShader3 );
-
 
 		//==================4======================
 
 		const std::string vertexShaderStr4 = readFile( _shaderFolder + "ao4.vert" );
-		const std::string fragShaderStr4	  = readFile( _shaderFolder + "ao4.frag" );
+		const std::string fragShaderStr4   = readFile( _shaderFolder + "ao4.frag" );
 		// Création des shaders
-		const GLuint aVertexShader4	 = glCreateShader( GL_VERTEX_SHADER );
+		const GLuint aVertexShader4	  = glCreateShader( GL_VERTEX_SHADER );
 		const GLuint aFragmentShader4 = glCreateShader( GL_FRAGMENT_SHADER );
 		// Récupération des locations des shaders
 		const GLchar * vSrc4 = vertexShaderStr4.c_str();
@@ -272,8 +264,6 @@ namespace M3D_ISICG
 		glDeleteShader( aVertexShader4 );
 		glDeleteShader( aFragmentShader );
 
-
-		
 		//===================AO ==========================
 
 		/* Shader shaderGeometryPass( "ao1.vert", "ao1.frag" );
@@ -281,14 +271,18 @@ namespace M3D_ISICG
 		Shader shaderSSAO( "ao3.vert", "ao3.frag" );
 		Shader shaderSSAOBlur( "ao4.vert", "ao4.frag" );*/
 
-
 		const unsigned int SCR_WIDTH  = 800;
 		const unsigned int SCR_HEIGHT = 600;
 
-	
 		glGenFramebuffers( 1, &gBuffer );
 		glBindFramebuffer( GL_FRAMEBUFFER, gBuffer );
-		
+
+		/*	glTextureStorage2D( texture._id, 1, internalFormat, image._width, image._height );
+			glTextureParameteri( texture._id, GL_TEXTURE_WRAP_S, GL_REPEAT );
+			glTextureParameteri( texture._id, GL_TEXTURE_WRAP_T, GL_REPEAT );
+			glTextureParameteri( texture._id, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+			glTextureParameteri( texture._id, GL_TEXTURE_MAG_FILTER, GL_LINEAR );*/
+
 		// position color buffer
 		glGenTextures( 1, &gPosition );
 		glBindTexture( GL_TEXTURE_2D, gPosition );
@@ -301,6 +295,7 @@ namespace M3D_ISICG
 		// normal color buffer
 		glGenTextures( 1, &gNormal );
 		glBindTexture( GL_TEXTURE_2D, gNormal );
+
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
@@ -325,12 +320,11 @@ namespace M3D_ISICG
 		if ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
 			std::cout << "Framebuffer not complete!" << std::endl;
 		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-		
-		
+
 		glGenFramebuffers( 1, &ssaoFBO );
 		glGenFramebuffers( 1, &ssaoBlurFBO );
 		glBindFramebuffer( GL_FRAMEBUFFER, ssaoFBO );
-		
+
 		// SSAO color buffer
 		glGenTextures( 1, &ssaoColorBuffer );
 		glBindTexture( GL_TEXTURE_2D, ssaoColorBuffer );
@@ -356,7 +350,7 @@ namespace M3D_ISICG
 		// ----------------------
 		std::uniform_real_distribution<GLfloat> randomFloats( 0.0, 1.0 ); // generates random floats between 0.0 and 1.0
 		std::default_random_engine				generator;
-		
+
 		for ( unsigned int i = 0; i < 64; ++i )
 		{
 			glm::vec3 sample( randomFloats( generator ) * 2.0 - 1.0,
@@ -382,7 +376,7 @@ namespace M3D_ISICG
 							 0.0f ); // rotate around z-axis (in tangent space)
 			ssaoNoise.push_back( noise );
 		}
-		
+
 		glGenTextures( 1, &noiseTexture );
 		glBindTexture( GL_TEXTURE_2D, noiseTexture );
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[ 0 ] );
@@ -393,27 +387,26 @@ namespace M3D_ISICG
 
 		// lighting info
 		// -------------
-		
+
 		lightColor = glm::vec3( 0.2, 0.2, 0.7 );
 
-
+		/*
 		glUseProgram( aProgram2 );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "gPosition" ), 0 );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "gNormal" ), 1 );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "gAlbedo" ), 2 );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "ssao" ), 3 );
+		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "gPosition" ), 0.f );
+		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "gNormal" ), 1.f );
+		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "gAlbedo" ), 2.f );
+		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "ssao" ), 3.f );
 
 		glUseProgram( aProgram3 );
 		glProgramUniform1f( aProgram3, glGetUniformLocation( aProgram3, "gPosition" ), 0 );
 		glProgramUniform1f( aProgram3, glGetUniformLocation( aProgram3, "gNormal" ), 1 );
 		glProgramUniform1f( aProgram3, glGetUniformLocation( aProgram3, "texNoise" ), 2 );
-	
+
 		glUseProgram( aProgram4 );
 		glProgramUniform1f( aProgram4, glGetUniformLocation( aProgram4, "ssaoInput" ), 0 );
-
+		*/
 
 		//=================== FIN AO  ==========================
-
 
 		//=============TP 4 ==============/
 
@@ -433,7 +426,6 @@ namespace M3D_ISICG
 
 	void LabWork7::render()
 	{
-		
 		// glClearColor
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -476,19 +468,14 @@ namespace M3D_ISICG
 		glProgramUniform3fv( aProgram,
 							 glGetUniformLocation( aProgram, "lightPos" ),
 							 1,
-							 glm::value_ptr( _matrixWtoV * Vec4f(lightPos,1.0) ) );
+							 glm::value_ptr( _matrixWtoV * Vec4f( lightPos, 1.0 ) ) );
 
 		glProgramUniform3fv(
 			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera._position ) );
 
-		
-
-
-
-
 		////////////////////////AOOO/////////////////////////////////
 
-		  glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+		glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		// 1. geometry pass: render scene's geometry/color data into gbuffer
@@ -499,31 +486,27 @@ namespace M3D_ISICG
 		_tmm.render( aProgram );
 
 		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
 		// 2. generate SSAO texture
 		// ------------------------
 		glBindFramebuffer( GL_FRAMEBUFFER, ssaoFBO );
 		glClear( GL_COLOR_BUFFER_BIT );
-		glUseProgram( aProgram3 ); 
+		glUseProgram( aProgram3 );
 		// Send kernel + rotation
-		for (unsigned int i = 0; i < 64; ++i) {
-			std::string			iChain = "samples[" + std::to_string( i ) + "]";
-			glProgramUniform3fv( aProgram3, glGetUniformLocation( aProgram3, iChain.c_str() ),
-								 1,
-								 glm::value_ptr( ssaoKernel[ i ] ) );
-		}
-	
+
+		glProgramUniform3fv( aProgram3,
+							 glGetUniformLocation( aProgram3, "samples" ),
+							 64,
+							 reinterpret_cast<float *>( ssaoKernel.data() ) );
 
 		glProgramUniformMatrix4fv( aProgram3,
 								   glGetUniformLocation( aProgram3, "projection" ),
 								   1,
 								   GL_FALSE,
 								   glm::value_ptr( _camera.getProjectionMatrix() ) );
-		glActiveTexture( GL_TEXTURE0 );
-		glBindTexture( GL_TEXTURE_2D, gPosition );
-		glActiveTexture( GL_TEXTURE1 );
-		glBindTexture( GL_TEXTURE_2D, gNormal );
-		glActiveTexture( GL_TEXTURE2 );
-		glBindTexture( GL_TEXTURE_2D, noiseTexture );
+		glBindTextureUnit( 0, gPosition );
+		glBindTextureUnit( 1, gNormal );
+		glBindTextureUnit( 2, noiseTexture );
 		renderQuad();
 		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
@@ -532,20 +515,18 @@ namespace M3D_ISICG
 		glBindFramebuffer( GL_FRAMEBUFFER, ssaoBlurFBO );
 		glClear( GL_COLOR_BUFFER_BIT );
 		glUseProgram( aProgram4 );
-		glActiveTexture( GL_TEXTURE0 );
-		glBindTexture( GL_TEXTURE_2D, ssaoColorBuffer );
+		glBindTextureUnit( 0, ssaoColorBuffer );
 		renderQuad();
 		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 		// 4. lighting pass: traditional deferred Blinn-Phong lighting with added screen-space ambient occlusion
 		// -----------------------------------------------------------------------------------------------------
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		glUseProgram( aProgram2 ); 
+		glUseProgram( aProgram2 );
 		// send light relevant uniforms
 		glm::vec3 lightPosView = glm::vec3( _camera.getViewMatrix() * glm::vec4( lightPos, 1.0 ) );
-		glProgramUniform3fv( aProgram2,
-							 glGetUniformLocation( aProgram2, "light.Position" ),
-							 1, glm::value_ptr( lightPosView ) );
+		glProgramUniform3fv(
+			aProgram2, glGetUniformLocation( aProgram2, "light.Position" ), 1, glm::value_ptr( lightPosView ) );
 		glProgramUniform3fv(
 			aProgram2, glGetUniformLocation( aProgram2, "light.Color" ), 1, glm::value_ptr( lightColor ) );
 
@@ -556,21 +537,15 @@ namespace M3D_ISICG
 		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "light.Linear" ), linear );
 		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "light.Quadratic" ), quadratic );
 
-		glActiveTexture( GL_TEXTURE0 );
-		glBindTexture( GL_TEXTURE_2D, gPosition );
-		glActiveTexture( GL_TEXTURE1 );
-		glBindTexture( GL_TEXTURE_2D, gNormal );
-		glActiveTexture( GL_TEXTURE2 );
-		glBindTexture( GL_TEXTURE_2D, gAlbedo );
-		glActiveTexture( GL_TEXTURE3 ); // add extra SSAO texture to lighting pass
-		glBindTexture( GL_TEXTURE_2D, ssaoColorBufferBlur );
+		glBindTextureUnit( 0, gPosition );
+		glBindTextureUnit( 1, gNormal );
+		glBindTextureUnit( 2, gAlbedo );
+		glBindTextureUnit( 3, ssaoColorBufferBlur );
+
 		renderQuad();
 
 		//============================FIN AO ==============================
-
 	}
-
-
 
 	void LabWork7::handleEvents( const SDL_Event & p_event )
 	{

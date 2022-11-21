@@ -1,11 +1,10 @@
-
-
 #version 450
+
 out float FragColor;
 
 in vec2 TexCoords;
 
-uniform sampler2D ssaoInput;
+layout(binding = 0) uniform sampler2D ssaoInput;
 
 void main() 
 {

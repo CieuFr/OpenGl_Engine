@@ -41,13 +41,13 @@ namespace M3D_ISICG
 
 		// =================AO  ==================
 
-		Vec3f  lightPos;
-		Vec3f lightColor;
-		unsigned int ssaoFBO, ssaoBlurFBO;
+		Vec3f				   lightPos;
+		Vec3f				   lightColor;
+		unsigned int		   ssaoFBO, ssaoBlurFBO;
 		unsigned int		   gPosition, gNormal, gAlbedo;
-		 unsigned int gBuffer;
+		unsigned int		   gBuffer;
 		std::vector<glm::vec3> ssaoKernel;
-		 unsigned int			noiseTexture;
+		unsigned int		   noiseTexture;
 		unsigned int		   ssaoColorBuffer, ssaoColorBufferBlur;
 
 		// =================FIN AO =============
@@ -74,11 +74,10 @@ namespace M3D_ISICG
 		float _cameraSensitivity   = 0.1f;
 
 		// ================ GL data.
-		GLuint aProgram = GL_INVALID_VALUE;
+		GLuint aProgram	 = GL_INVALID_VALUE;
 		GLuint aProgram2 = GL_INVALID_VALUE;
 		GLuint aProgram3 = GL_INVALID_VALUE;
 		GLuint aProgram4 = GL_INVALID_VALUE;
-
 
 		// ================
 
