@@ -143,6 +143,21 @@ namespace M3D_ISICG
 		// Compilation des shaders
 		glCompileShader( aVertexShader2 );
 		glCompileShader( aFragmentShader2 );
+
+		GLint compiled2;
+		glGetShaderiv( aVertexShader2, GL_COMPILE_STATUS, &compiled2 );
+		if ( !compiled2 )
+		{
+			GLchar log[ 1024 ];
+			glGetShaderInfoLog( aVertexShader2, sizeof( log ), NULL, log );
+			glDeleteShader( aVertexShader2 );
+			glDeleteShader( aFragmentShader2 );
+			std ::cerr << " Error compiling vertex shader : " << log << std ::endl;
+			return false;
+		}
+
+
+
 		glAttachShader( aProgram2, aVertexShader2 );
 		glAttachShader( aProgram2, aFragmentShader2 );
 		glLinkProgram( aProgram2 );
@@ -180,6 +195,18 @@ namespace M3D_ISICG
 		glCompileShader( aVertexShader3 );
 		glCompileShader( aFragmentShader3 );
 
+		GLint compiled3;
+		glGetShaderiv( aVertexShader3, GL_COMPILE_STATUS, &compiled3 );
+		if ( !compiled3 )
+		{
+			GLchar log[ 1024 ];
+			glGetShaderInfoLog( aVertexShader3, sizeof( log ), NULL, log );
+			glDeleteShader( aVertexShader3 );
+			glDeleteShader( aFragmentShader3 );
+			std ::cerr << " Error compiling vertex shader : " << log << std ::endl;
+			return false;
+		}
+
 		glAttachShader( aProgram3, aVertexShader3 );
 		glAttachShader( aProgram3, aFragmentShader3 );
 		glLinkProgram( aProgram3 );
@@ -216,7 +243,19 @@ namespace M3D_ISICG
 		glCompileShader( aVertexShader4 );
 		glCompileShader( aFragmentShader4 );
 
-				glAttachShader( aProgram4, aVertexShader4 );
+		GLint compiled4;
+		glGetShaderiv( aVertexShader4, GL_COMPILE_STATUS, &compiled4 );
+		if ( !compiled4 )
+		{
+			GLchar log[ 1024 ];
+			glGetShaderInfoLog( aVertexShader4, sizeof( log ), NULL, log );
+			glDeleteShader( aVertexShader4 );
+			glDeleteShader( aFragmentShader4 );
+			std ::cerr << " Error compiling vertex shader : " << log << std ::endl;
+			return false;
+		}
+
+		glAttachShader( aProgram4, aVertexShader4 );
 		glAttachShader( aProgram4, aFragmentShader4 );
 		glLinkProgram( aProgram4 );
 
@@ -359,18 +398,18 @@ namespace M3D_ISICG
 
 
 		glUseProgram( aProgram2 );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram, "gPosition" ), 0 );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram, "gNormal" ), 1 );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram, "gAlbedo" ), 2 );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram, "ssao" ), 3 );
+		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "gPosition" ), 0 );
+		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "gNormal" ), 1 );
+		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "gAlbedo" ), 2 );
+		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "ssao" ), 3 );
 
 		glUseProgram( aProgram3 );
-		glProgramUniform1f( aProgram3, glGetUniformLocation( aProgram, "gPosition" ), 0 );
-		glProgramUniform1f( aProgram3, glGetUniformLocation( aProgram, "gNormal" ), 1 );
-		glProgramUniform1f( aProgram3, glGetUniformLocation( aProgram, "texNoise" ), 2 );
+		glProgramUniform1f( aProgram3, glGetUniformLocation( aProgram3, "gPosition" ), 0 );
+		glProgramUniform1f( aProgram3, glGetUniformLocation( aProgram3, "gNormal" ), 1 );
+		glProgramUniform1f( aProgram3, glGetUniformLocation( aProgram3, "texNoise" ), 2 );
 	
 		glUseProgram( aProgram4 );
-		glProgramUniform1f( aProgram4, glGetUniformLocation( aProgram, "ssaoInput" ), 0 );
+		glProgramUniform1f( aProgram4, glGetUniformLocation( aProgram4, "ssaoInput" ), 0 );
 
 
 		//=================== FIN AO  ==========================
