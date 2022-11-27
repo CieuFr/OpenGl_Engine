@@ -51,6 +51,9 @@ namespace M3D_ISICG
 		glProgramUniform1f(
 			p_glProgram, glGetUniformLocation( p_glProgram, "uHasShininessMap" ), _material._hasShininessMap );
 
+		glProgramUniform1f(
+			p_glProgram, glGetUniformLocation( p_glProgram, "uHasNormalMap" ), _material._hasNormalMap );
+
 		
 		
 		glBindVertexArray( _vao );
@@ -71,6 +74,11 @@ namespace M3D_ISICG
 		{
 			glBindTextureUnit( 4, _material._shininessMap._id );
 		}
+		if ( _material._hasNormalMap )
+		{
+			glBindTextureUnit( 5, _material._normalMap._id );
+		}
+
 
 		glDrawElements( GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0 );
 

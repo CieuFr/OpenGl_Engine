@@ -5,16 +5,22 @@ layout (binding = 1) uniform sampler2D uDiffuseMap;
 layout (binding = 2) uniform sampler2D uAmbientMap;
 layout (binding = 3) uniform sampler2D uSpecularMap;
 layout (binding = 4) uniform sampler2D uShininessMap;
+layout (binding = 5) uniform sampler2D uNormalMap;
+
 
 
 in vec3 normal;
 in vec4 position;
 in vec2 texCoords;
+in vec3 TlightPos;
+in vec3 Tposition;
+
+
 
 uniform vec3 ambient;
 uniform float luminosity;
 uniform vec3 diffuse;
-uniform vec3 lightPos;
+
 uniform vec3 cameraPos;
 uniform vec3 specular;
 uniform float shininess;
@@ -23,6 +29,8 @@ uniform bool uHasDiffuseMap;
 uniform bool uHasShininessMap;
 uniform bool uHasSpecularMap;
 uniform bool uHasAmbientMap;
+uniform bool uHasNormalMap;
+
 
 
 
@@ -30,19 +38,40 @@ uniform bool uHasAmbientMap;
 void main()
 {
      // TEXTURES
+	 if(texture(uDiffuseMap,texCoords).w <0.5) discard;
+
+
+
+
 
 	//BLIN PHONG
 	vec3 viewDir = normalize( - position.xyz);
-	vec3 lightDir = normalize(position.xyz - lightPos);
+	vec3 lightDir = normalize(position.xyz - TlightPos);
 
-	float normalDirection = dot(normal,viewDir);
+
+
+
+
+	vec3 textureNormalOrProgramNormal;
+
+
+
+	if(uHasNormalMap){
+		textureNormalOrProgramNormal = texture(uNormalMap,texCoords).xyz;
+		textureNormalOrProgramNormal = normalize(textureNormalOrProgramNormal * 2.0 - 1.0);   
+	} else {
+		textureNormalOrProgramNormal = normal;
+	}
+
+	float normalDirection;
+	normalDirection = dot(textureNormalOrProgramNormal,viewDir);
 
 	vec3 normalAfterCheck;
 
 	if(normalDirection < 0) {
-		normalAfterCheck = -normal;
+		normalAfterCheck = -textureNormalOrProgramNormal;
 	} else {
-		normalAfterCheck = normal;
+		normalAfterCheck = textureNormalOrProgramNormal;
 	}
 
 	
@@ -71,7 +100,7 @@ void main()
 
 
 
-	float cosTheta = max(dot(normalize(normalAfterCheck),normalize(lightPos-position.xyz)),0.f);
+	float cosTheta = max(dot(normalize(normalAfterCheck),normalize(TlightPos-position.xyz)),0.f);
 
 	vec3 diffuseLight = vec3(0.0,0.0,0.0);
 
@@ -92,5 +121,8 @@ void main()
 
 
 
-	fragColor =  vec4(result,1.0)  ;
+	fragColor =  vec4(result,1)  ;
+
+	//Transparence
+	//texture(uDiffuseMap,texCoords).w
 }

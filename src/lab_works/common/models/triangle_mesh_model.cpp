@@ -34,6 +34,11 @@ namespace M3D_ISICG
 		}
 		_meshes.shrink_to_fit();
 
+		std ::partition( _meshes.begin(),
+						 _meshes.end(),
+						 []( const TriangleMesh & p_mesh ) -> bool { return p_mesh._material._isOpaque; } );
+
+
 		std::cout << "Done! "						//
 				  << _meshes.size() << " meshes, "	//
 				  << _nbTriangles << " triangles, " //
@@ -217,6 +222,29 @@ namespace M3D_ISICG
 		}
 
 		// =====================================================
+		// ===================================================== NORMAL MAP
+
+		if ( p_mtl->GetTextureCount( aiTextureType_NORMALS ) > 0 ) // 
+		{
+			p_mtl->GetTexture( aiTextureType_NORMALS, 0, &texturePath );
+			texture = _loadTexture( texturePath, "normals" );
+			if ( texture._id != GL_INVALID_INDEX )
+			{
+				material._normalMap	 = texture;
+				material._hasNormalMap = true;
+			}
+		}
+		// =====================================================
+		// ===================================================== OPACITY
+		if ( p_mtl->GetTextureCount( aiTextureType_OPACITY ) > 0 ) //
+		{
+			p_mtl->GetTexture( aiTextureType_OPACITY, 0, &texturePath );
+			texture = _loadTexture( texturePath, "opacity" );
+			if ( texture._id != GL_INVALID_INDEX )
+			{
+				material._isOpaque = false;
+			}
+		}
 
 		return material;
 	}

@@ -26,7 +26,8 @@ namespace M3D_ISICG
 
 	
 		glEnable(GL_DEPTH_TEST);  
-
+		//glEnable( GL_BLEND );
+		//glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 		//Chemin des shaders 
 		const std::string vertexShaderStr = readFile( _shaderFolder + "mesh_texture.vert" );
 		const std::string fragShaderStr = readFile( _shaderFolder + "mesh_texture.frag" );
@@ -163,6 +164,12 @@ namespace M3D_ISICG
 								   1,
 								   GL_FALSE,
 								   glm::value_ptr( _matrixWtoV * _tmm._transformation ) );
+
+				glProgramUniformMatrix4fv( aProgram,
+								   glGetUniformLocation( aProgram, "modelMatrix" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( _tmm._transformation ) );
 
 
 		glProgramUniform3fv( aProgram,
