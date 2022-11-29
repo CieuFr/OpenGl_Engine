@@ -115,7 +115,8 @@ void main()
 	float d = 0.59f;
 	float e = 0.14f;
 
-	float facteurAtenuation = 1/dot(TlightPos,Tposition)*dot(TlightPos,Tposition);
+	float distance = length(TlightPos -Tposition);
+	float facteurAtenuation = 1/(pow(distance,1.5));
 
 	 result = vec3(pow(result.x,1.5),pow(result.y,1.5),pow(result.z,1.5));
 	// result *= facteurAtenuation;

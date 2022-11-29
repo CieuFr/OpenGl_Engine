@@ -318,7 +318,8 @@ namespace M3D_ISICG
 			}
 
 			// Setup the texture format.
-			glTextureStorage2D( texture._id, 8, internalFormat, image._width, image._height );
+			int mipmaplevel = log2( std::max( image._width, image._height ) );
+			glTextureStorage2D( texture._id, mipmaplevel, internalFormat, image._width, image._height );
 			glTextureParameteri( texture._id, GL_TEXTURE_WRAP_S, GL_REPEAT );
 			glTextureParameteri( texture._id, GL_TEXTURE_WRAP_T, GL_REPEAT );
 			glTextureParameteri( texture._id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );

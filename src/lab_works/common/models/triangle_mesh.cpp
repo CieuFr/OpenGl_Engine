@@ -91,6 +91,8 @@ namespace M3D_ISICG
 		glBindTextureUnit( 2, 0 );
 		glBindTextureUnit( 3, 0 );
 		glBindTextureUnit( 4, 0 );
+		glBindTextureUnit( 5, 0 );
+
 	}
 
 	void TriangleMesh::cleanGL()
