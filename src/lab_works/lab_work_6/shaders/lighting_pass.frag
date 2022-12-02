@@ -1,27 +1,36 @@
 #version 450
 layout( location = 0 ) out vec4 fragColor;
 
-in vec2 texCoords;
-
 //Position en tangent space
 
- uniform sampler2D gPosition;
- uniform sampler2D gNormal;
- uniform sampler2D gAmbiant;
- uniform sampler2D gDiffuse;
- uniform sampler2D gSpecular;
+layout (binding = 0) uniform sampler2D gPosition;
+layout (binding = 1) uniform sampler2D gNormal;
+layout (binding = 2) uniform sampler2D gAmbiant;
+layout (binding = 3) uniform sampler2D gDiffuse;
+layout (binding = 4) uniform sampler2D gSpecular;
 
- uniform vec3 TlightPos;
+ in vec3 TlightPos;
+ in vec2 TexCoords;
+
 
 void main()
 {
-
-	vec3 normal = texture(gNormal,texCoords).xyz;
-	vec3 position = texture(gPosition,texCoords).xyz;
-	vec3 ambient = texture(gAmbiant,texCoords).xyz;
-	vec3 diffuse = texture(gDiffuse,texCoords).xyz;
-	vec3 specular = texture(gSpecular,texCoords).xyz;
-	float shininess = texture(gSpecular,texCoords).w;
+	ivec2 texCoords = ivec2(gl_FragCoord.xy);
+	vec3 normal = texelFetch(gNormal,texCoords,0).xyz;
+	vec3 position = texelFetch(gPosition,texCoords,0).xyz;
+	vec3 ambient = texelFetch(gAmbiant,texCoords,0).xyz;
+	vec3 diffuse = texelFetch(gDiffuse,texCoords,0).xyz;
+	vec3 specular = texelFetch(gSpecular,texCoords,0).xyz;
+	float shininess = texelFetch(gSpecular,texCoords,0).w;
+	
+//
+//
+//	vec3 normal = texture(gNormal,TexCoords).xyz;
+//	vec3 position = texture(gPosition,TexCoords).xyz;
+//	vec3 ambient = texture(gAmbiant,TexCoords).xyz;
+//	vec3 diffuse = texture(gDiffuse,TexCoords).xyz;
+//	vec3 specular = texture(gSpecular,TexCoords).xyz;
+//	float shininess = texture(gSpecular,TexCoords).w;
      // TEXTURES
 
 	//BLIN PHONG
@@ -62,11 +71,11 @@ void main()
 
 	float facteurAtenuation = 1/dot(TlightPos,position)*dot(TlightPos,position);
 
-	 result = vec3(pow(result.x,1.5),pow(result.y,1.5),pow(result.z,1.5));
+	// result = vec3(pow(result.x,1.5),pow(result.y,1.5),pow(result.z,1.5));
 	// result *= facteurAtenuation;
 
-	result = ((result*(a*result+b))/(result*(c*result+d)+e));
-	fragColor =  vec4(result,1)  ;
+	//result = ((result*(a*result+b))/(result*(c*result+d)+e));
+	fragColor =  vec4(texCoords,1,1)  ;
 
 	//Transparence
 	//texture(uDiffuseMap,texCoords).w

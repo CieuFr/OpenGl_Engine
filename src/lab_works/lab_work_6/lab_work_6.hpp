@@ -29,6 +29,9 @@ namespace M3D_ISICG
 		//TP6
 		void initGBuffer() ;
 		bool initLightingPassProgram();
+		void renderLightingPass();
+		void drawQuad();
+
 
 		
 	  private:
@@ -57,6 +60,13 @@ namespace M3D_ISICG
 
 		const char * _listBox[ 5 ] = { "Attachment0", "Attachment1", "Attachment2", "Attachment3", "Attachment4" };
 		int	 _listBoxSelectedValue = 0;
+
+		GLuint quadVAO = 0;
+		GLuint quadVBO;
+		GLuint quadVBO2;
+		GLuint quadEBO;
+
+		bool lightPassEnabled = true;
 
 	
 

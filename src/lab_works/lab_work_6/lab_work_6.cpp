@@ -10,7 +10,18 @@ namespace M3D_ISICG
 
 	const std::string LabWork6::_shaderFolder = "src/lab_works/lab_work_6/shaders/";
 
-	LabWork6::~LabWork6() { glDeleteProgram( aProgram ); }
+	LabWork6::~LabWork6() { 
+		glDeleteProgram( aProgram );
+		glDisableVertexArrayAttrib( quadVAO, 0 );
+		glDeleteVertexArrays( 1, &quadVAO );
+		// Delete VBO
+		glDeleteBuffers( 1, &quadVBO );
+
+
+		// Delete VBO
+		glDeleteBuffers( 1, &quadEBO );
+	
+	}
 
 	bool LabWork6::init()
 	{
@@ -99,7 +110,7 @@ namespace M3D_ISICG
 
 		//=============TP 6 ==============/
 
-		//initLightingPassProgram();
+		initLightingPassProgram();
 		initGBuffer();
 
 		// INIT du program
@@ -114,15 +125,24 @@ namespace M3D_ISICG
 
 	bool LabWork6::initLightingPassProgram()
 	{
-		
+	
+		//const std::string vertexShaderStr = readFile( _shaderFolder + "lighting_pass.vert" );
 		const std::string fragShaderStr	  = readFile( _shaderFolder + "lighting_pass.frag" );
 
+		// Création des shaders
+		//const GLuint aVertexShader	 = glCreateShader( GL_VERTEX_SHADER );
 		const GLuint aFragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
-		
+
+		// Récupération des locations des shaders
+		//const GLchar * vSrc = vertexShaderStr.c_str();
 		const GLchar * fSrc = fragShaderStr.c_str();
-		
+
+		// Création des shaders
+		//glShaderSource( aVertexShader, 1, &vSrc, NULL );
 		glShaderSource( aFragmentShader, 1, &fSrc, NULL );
-		
+
+		// Compilation des shaders
+	//	glCompileShader( aVertexShader );
 		glCompileShader( aFragmentShader );
 
 		// Code Cf. Tp 1 pour vérifier si les shaders compilent
@@ -140,6 +160,8 @@ namespace M3D_ISICG
 		// Initialisation du Program
 		_lightingPassProgram = glCreateProgram();
 
+		// Attache des shaders
+		//glAttachShader( _lightingPassProgram, aVertexShader );
 		glAttachShader( _lightingPassProgram, aFragmentShader );
 
 		// Link du programme
@@ -155,7 +177,10 @@ namespace M3D_ISICG
 		}
 
 		// Deletion des shaders
+		//glDeleteShader( aVertexShader );
 		glDeleteShader( aFragmentShader );
+
+		drawQuad();
 
 		return true;
 
@@ -186,6 +211,7 @@ namespace M3D_ISICG
 
 	void LabWork6::render()
 	{
+		glUseProgram( aProgram );
 		glEnable( GL_DEPTH_TEST );
 		// glClearColor
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -244,28 +270,98 @@ namespace M3D_ISICG
 
 		_tmm.render( aProgram );
 
-		glNamedFramebufferReadBuffer( _fboId,GL_COLOR_ATTACHMENT0  );
+		if (lightPassEnabled) {
+			renderLightingPass();
+		}
+		else
+		{
+			glNamedFramebufferReadBuffer( _fboId, _drawBuffers[ _listBoxSelectedValue ] );
 
-		glBlitNamedFramebuffer( _fboId,
-								0,
-								0,
-								0,
-								_windowWidth,
-								_windowHeight,
-								0,
-								0,
-								_windowWidth,
-								_windowHeight,
-								GL_COLOR_BUFFER_BIT,
-								GL_NEAREST );
+			glBlitNamedFramebuffer( _fboId,
+									0,
+									0,
+									0,
+									_windowWidth,
+									_windowHeight,
+									0,
+									0,
+									_windowWidth,
+									_windowHeight,
+									GL_COLOR_BUFFER_BIT,
+									GL_NEAREST );
+		}
+	
 		
 
+		
+		
+		//TODO CLEAN , UNIFORM, TEXTURE, DRAW
+
+	}
+
+	void LabWork6::renderLightingPass() {
+		glUseProgram( _lightingPassProgram );
 		glDisable( GL_DEPTH_TEST );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 
-		//TODO CLEAN , UNIFORM, TEXTURE, DRAW
+		for ( size_t i = 0; i < 5; i++ ) {
+			glBindTextureUnit( i, _gBufferTextures[ i ] );
+		}
+		
+		//ATTENTION A PASSER EN TANGENT SPACE
+		glProgramUniform3fv( _lightingPassProgram,
+							 glGetUniformLocation( aProgram, "TlightPos" ),
+							 1,
+							 glm::value_ptr( _matrixWtoV * Vec4f( _camera._position, 1 ) ) );
 
+		glBindVertexArray( quadVAO );
+
+		
+		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+
+		glBindVertexArray( 0 );
+
+		for ( size_t i = 0; i < 5; i++ )
+		{
+			glBindTextureUnit( i, 0 );
+		}
+		
+
+	}
+
+	void LabWork6::drawQuad() {
+		
+		Vec2f triangleVertices[ 4 ] = { Vec2f( -1.f, -1.f ), Vec2f( -1.f, 1.f ), Vec2f( 1.f, -1.f ), Vec2f( 1.f, 1.f ) };
+		static float texCoords[] = { 0, 0, 0, 1,1, 0, 1, 1 };
+
+
+		int eboPositions[6] = { 0, 1, 2, 1, 2, 3 };
+		glCreateVertexArrays( 1, &quadVAO );
+	
+		glEnableVertexArrayAttrib( quadVAO, 0 );
+		glEnableVertexArrayAttrib( quadVAO, 1 );
+
+		// Init VBO  Vertex Buffer Object Sommet
+		glCreateBuffers( 1, &quadVBO );
+		glCreateBuffers( 1, &quadVBO2 );
+		// Creation EBO Sommet
+		glCreateBuffers( 1, &quadEBO );
+
+		glVertexArrayAttribFormat( quadVAO, 0, 2, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayVertexBuffer( quadVAO, 0, quadVBO, 0, sizeof( Vec2f ) );
+		glVertexArrayAttribBinding( quadVAO, 0, 0 );
+		glVertexArrayElementBuffer( quadVAO, quadEBO );
+
+		glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_TRUE, 0 );
+		glVertexArrayVertexBuffer( quadVAO, 1, quadVBO2, 0, 2* sizeof( float ) );
+		glVertexArrayAttribBinding( quadVAO, 1, 1 );
+
+		glNamedBufferData( quadVBO, 4 * sizeof( Vec2f ), &triangleVertices, GL_STATIC_DRAW );
+		glNamedBufferData( quadVBO2, 8 * sizeof( float ), &texCoords, GL_STATIC_DRAW );
+		glNamedBufferData( quadEBO, 6 * sizeof( int ), &eboPositions, GL_STATIC_DRAW );
+	
 	}
 
 	void LabWork6::handleEvents( const SDL_Event & p_event )
@@ -321,6 +417,8 @@ namespace M3D_ISICG
 
 		ImGui::Checkbox( "Trackball", &trackballSwitch );
 		perspecNeedsUpdating = ImGui::Checkbox( "Ortho", &perspecOrtho );
+
+		ImGui::Checkbox( "LightingPass", &lightPassEnabled );
 		
 		//source imgui
 		
