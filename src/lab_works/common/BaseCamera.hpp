@@ -115,11 +115,13 @@ namespace M3D_ISICG
 			if ( !_orthoPerspec )
 			{
 				_projectionMatrix = glm::perspective( glm::radians( _fovy ), _aspectRatio, _zNear, _zFar );
+			
 			}
 			else
 			{
-				_projectionMatrix = glm::ortho( 0.0f, (float)_screenWidth, 0.0f, (float)_screenHeight, _zNear, _zFar );
+				_projectionMatrix = glm::ortho( -2.f, 2.f, -1.111f, 1.111f, _zNear, _zFar );
 			}
+
 		}
 
 		void _updateVectors()

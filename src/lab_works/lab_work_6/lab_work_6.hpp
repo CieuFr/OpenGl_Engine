@@ -22,13 +22,15 @@ namespace M3D_ISICG
 		bool init() override;
 		void animate( const float p_deltaTime ) override;
 		void render() override;
-
-		void initGBuffer() ;
-
-
 		void handleEvents( const SDL_Event & p_event ) override;
 		void displayUI() override;
 
+
+		//TP6
+		void initGBuffer() ;
+		bool initLightingPassProgram();
+
+		
 	  private:
 		BaseCamera _camera;
 
@@ -51,7 +53,12 @@ namespace M3D_ISICG
 		GLuint _gBufferTextures[ 6 ];
 
 		GLenum _drawBuffers[6] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,
-								 GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5 };
+									 GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5 };
+
+		const char * _listBox[ 5 ] = { "Attachment0", "Attachment1", "Attachment2", "Attachment3", "Attachment4" };
+		int	 _listBoxSelectedValue = 0;
+
+	
 
 		// =================FIN TP 6 =============
 
@@ -78,6 +85,7 @@ namespace M3D_ISICG
 
 		// ================ GL data.
 		GLuint aProgram = GL_INVALID_VALUE;
+		GLuint _lightingPassProgram = GL_INVALID_VALUE;
 
 		// ================
 

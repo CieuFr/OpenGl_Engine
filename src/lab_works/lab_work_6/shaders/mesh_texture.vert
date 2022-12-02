@@ -27,11 +27,8 @@ void main()
 	texCoords = aVertexTexCoords;
 	normal = normalize(normal);
 	vec3 T = normalize(vec3(MVMatrix * vec4(aVertexTangent,0.0)));
-	
-    //vec3 B = normalize(vec3(MVMatrix * vec4(aVertexBitagent,0.0)));
+    vec3 B = normalize(vec3(MVMatrix * vec4(aVertexBitagent,0.0)));
     vec3 N = normalize(vec3(MVMatrix * vec4(aVertexNormal,0.0)));
-	T = normalize ( T - dot (T , N ) * N );
-	vec3 B = cross (N , T );
     mat3 inv_TBN = transpose(mat3(T, B, N));
 	TlightPos =  inv_TBN * lightPos;
 	Tposition = inv_TBN * position.xyz ;

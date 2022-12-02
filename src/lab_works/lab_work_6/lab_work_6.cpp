@@ -18,6 +18,8 @@ namespace M3D_ISICG
 		// Set the color used by glClear to clear the color buffer (in render()).
 		glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );
 
+		
+	
 		glEnable( GL_DEPTH_TEST );
 		// glEnable( GL_BLEND );
 		// glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -77,6 +79,7 @@ namespace M3D_ISICG
 		glDeleteShader( aVertexShader );
 		glDeleteShader( aFragmentShader );
 
+
 		_initCamera();
 
 		// Get Uniform luminosity
@@ -88,13 +91,15 @@ namespace M3D_ISICG
 
 		//=============TP 5 ==============/
 
-		_tmm.load( "sponza", FilePath( "./data/models/sponza.obj" ) );
+		_tmm.load( "bunny", FilePath( "./data/models/bunny.obj" ) );
 
-		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
+		//REMOVE COMMENT FOR SPONZA
+		//_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
 
 
 		//=============TP 6 ==============/
 
+		//initLightingPassProgram();
 		initGBuffer();
 
 		// INIT du program
@@ -106,25 +111,71 @@ namespace M3D_ISICG
 
 	void LabWork6::animate( const float p_deltaTime ) {}
 
-	void LabWork6::initGBuffer() {
 
+	bool LabWork6::initLightingPassProgram()
+	{
+		
+		const std::string fragShaderStr	  = readFile( _shaderFolder + "lighting_pass.frag" );
+
+		const GLuint aFragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
+		
+		const GLchar * fSrc = fragShaderStr.c_str();
+		
+		glShaderSource( aFragmentShader, 1, &fSrc, NULL );
+		
+		glCompileShader( aFragmentShader );
+
+		// Code Cf. Tp 1 pour vérifier si les shaders compilent
+		GLint compiled;
+		glGetShaderiv( aFragmentShader, GL_COMPILE_STATUS, &compiled );
+		if ( !compiled )
+		{
+			GLchar log[ 1024 ];
+			glGetShaderInfoLog( aFragmentShader, sizeof( log ), NULL, log );
+			glDeleteShader( aFragmentShader );
+			std ::cerr << " Error compiling vertex shader : " << log << std ::endl;
+			return false;
+		}
+
+		// Initialisation du Program
+		_lightingPassProgram = glCreateProgram();
+
+		glAttachShader( _lightingPassProgram, aFragmentShader );
+
+		// Link du programme
+		glLinkProgram( _lightingPassProgram );
+		GLint linked;
+		glGetProgramiv( _lightingPassProgram, GL_LINK_STATUS, &linked );
+		if ( !linked )
+		{
+			GLchar log[ 1024 ];
+			glGetProgramInfoLog( _lightingPassProgram, sizeof( log ), NULL, log );
+			std ::cerr << " Error linking program : " << log << std ::endl;
+			return false;
+		}
+
+		// Deletion des shaders
+		glDeleteShader( aFragmentShader );
+
+		return true;
+
+	}
+
+	void LabWork6::initGBuffer() {
 
 		// INIT FBO
 		glCreateFramebuffers( 1, &_fboId );
 
 		glCreateTextures( GL_TEXTURE_2D, 6, _gBufferTextures );
-
-		int mipmaplevel = log2( std::max( _windowWidth, _windowHeight ) );
-
 		
-		for ( size_t i = 0; i < 6; i++ ) {
-			glTextureStorage2D( _gBufferTextures[ i ], mipmaplevel, GL_RGBA32F, _windowWidth, _windowHeight );
-			std::cout << _drawBuffers[i]
-					  << " \n";	
-			glNamedFramebufferTexture( _fboId, _drawBuffers[ i ], _gBufferTextures[ i ], mipmaplevel );
-			std::cout  <<i << "  fini \n";	
+		for ( size_t i = 0; i < 5; i++ ) {
+			glTextureStorage2D( _gBufferTextures[ i ], 1, GL_RGBA32F, _windowWidth, _windowHeight );
+			glNamedFramebufferTexture( _fboId, _drawBuffers[ i ], _gBufferTextures[ i ], 0 );
 		}
-		
+
+		glTextureStorage2D( _gBufferTextures[ 5 ], 1, GL_DEPTH_COMPONENT32, _windowWidth, _windowHeight );
+		glNamedFramebufferTexture( _fboId, GL_DEPTH_ATTACHMENT, _gBufferTextures[ 5 ], 0 );
+
 		glNamedFramebufferDrawBuffers( _fboId, 6, _drawBuffers );
 		
 		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _fboId, GL_DRAW_FRAMEBUFFER) )
@@ -135,6 +186,7 @@ namespace M3D_ISICG
 
 	void LabWork6::render()
 	{
+		glEnable( GL_DEPTH_TEST );
 		// glClearColor
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -187,9 +239,32 @@ namespace M3D_ISICG
 		glProgramUniform3fv(
 			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera._position ) );
 
+
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, _fboId );
+
 		_tmm.render( aProgram );
 
+		glNamedFramebufferReadBuffer( _fboId,GL_COLOR_ATTACHMENT0  );
 
+		glBlitNamedFramebuffer( _fboId,
+								0,
+								0,
+								0,
+								_windowWidth,
+								_windowHeight,
+								0,
+								0,
+								_windowWidth,
+								_windowHeight,
+								GL_COLOR_BUFFER_BIT,
+								GL_NEAREST );
+		
+
+		glDisable( GL_DEPTH_TEST );
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+
+		//TODO CLEAN , UNIFORM, TEXTURE, DRAW
 
 	}
 
@@ -246,7 +321,23 @@ namespace M3D_ISICG
 
 		ImGui::Checkbox( "Trackball", &trackballSwitch );
 		perspecNeedsUpdating = ImGui::Checkbox( "Ortho", &perspecOrtho );
+		
+		//source imgui
+		
+		if ( ImGui::BeginListBox( "ATTACHMENT TO DISPLAY" ) )
+		{
+			for ( int n = 0; n < 5; n++ )
+			{
+				const bool is_selected = ( _listBoxSelectedValue == n );
+				if ( ImGui::Selectable( _listBox[ n ], is_selected ) )
+					_listBoxSelectedValue = n;
 
+				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+				if ( is_selected )
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndListBox();
+		}
 		fovyNeedsUpdating = ImGui::SliderFloat( "Fovy", &_fovy, 0, 180 );
 		ImGui::Begin( "Settings lab work 1" );
 		ImGui::Text( "No setting available!" );
