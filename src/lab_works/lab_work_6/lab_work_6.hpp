@@ -9,7 +9,10 @@
 #include "GL/gl3w.h"
 #include "common/base_lab_work.hpp"
 #include "define.hpp"
+#include "my_classes/program_wrapper.hpp"
+
 #include <vector>
+
 
 namespace M3D_ISICG
 {
@@ -31,6 +34,8 @@ namespace M3D_ISICG
 		bool initLightingPassProgram();
 		void renderLightingPass();
 		void drawQuad();
+		void drawQuad2();
+		
 
 
 		
@@ -73,8 +78,6 @@ namespace M3D_ISICG
 
 		bool lightPassEnabled = true;
 
-	
-
 		// =================FIN TP 6 =============
 
 		GLuint transformationMatrix;
@@ -101,6 +104,7 @@ namespace M3D_ISICG
 		// ================ GL data.
 		GLuint aProgram = GL_INVALID_VALUE;
 		GLuint _lightingPassProgram = GL_INVALID_VALUE;
+		ProgramWrapper program2;
 
 		// ================
 

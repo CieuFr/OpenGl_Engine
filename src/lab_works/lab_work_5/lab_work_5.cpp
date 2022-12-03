@@ -6,6 +6,7 @@
 #include "utils/random.hpp"
 
 
+
 namespace M3D_ISICG
 {
 
@@ -29,71 +30,23 @@ namespace M3D_ISICG
 		//glEnable( GL_BLEND );
 		//glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 		//Chemin des shaders 
-		const std::string vertexShaderStr = readFile( _shaderFolder + "mesh_texture.vert" );
-		const std::string fragShaderStr = readFile( _shaderFolder + "mesh_texture.frag" );
+		const std::string vertexShaderStr =  _shaderFolder + "mesh_texture.vert" ;
+		const std::string fragShaderStr = _shaderFolder + "mesh_texture.frag" ;
 
-		//Création des shaders
-		const GLuint aVertexShader = glCreateShader( GL_VERTEX_SHADER );
-		const GLuint aFragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
-
-		//Récupération des locations des shaders 
-		const GLchar * vSrc = vertexShaderStr.c_str();
-		const GLchar * fSrc = fragShaderStr.c_str();
-
-		// Création des shaders 
-		glShaderSource( aVertexShader, 1, &vSrc, NULL );
-		glShaderSource( aFragmentShader, 1, &fSrc, NULL );
-
-		// Compilation des shaders
-		glCompileShader( aVertexShader );
-		glCompileShader( aFragmentShader );
-
-		//Code Cf. Tp 1 pour vérifier si les shaders compilent
-		GLint compiled;
-		glGetShaderiv( aVertexShader, GL_COMPILE_STATUS, &compiled );
-		if ( !compiled )
-		{
-			GLchar log[ 1024 ];
-			glGetShaderInfoLog( aVertexShader, sizeof( log ), NULL, log );
-			glDeleteShader( aVertexShader );
-			glDeleteShader( aFragmentShader );
-			std ::cerr << " Error compiling vertex shader : " << log << std ::endl;
-			return false;
-		}
-
-		//Initialisation du Program
-		aProgram = glCreateProgram();
-
-		//Attache des shaders
-		glAttachShader( aProgram, aVertexShader );
-		glAttachShader( aProgram, aFragmentShader );
-
-		//Link du programme
-		glLinkProgram( aProgram );
-		GLint linked;
-		glGetProgramiv( aProgram, GL_LINK_STATUS, &linked );
-		if ( !linked )
-		{
-			GLchar log[ 1024 ];
-			glGetProgramInfoLog( aProgram, sizeof( log ), NULL, log );
-			std ::cerr << " Error linking program : " << log << std ::endl;
-			return false;
-		}
-
-		//Deletion des shaders 
-		glDeleteShader( aVertexShader );
-		glDeleteShader( aFragmentShader );
-
+		std::string paths[ 2 ] = { vertexShaderStr, fragShaderStr };
+		
+		program1.createProgram(paths);
+	
+		aProgram = program1.getProgramId();
 		_initCamera();
 
 		// Get Uniform luminosity
-		luminosityUint = glGetUniformLocation( aProgram, "luminosity" );
-		glProgramUniform1f( aProgram, luminosityUint, _luminosity );
+
+
+		program1.setUniform( "luminosity", _luminosity );
 
 		// Get Uniform transformationMatrix
 		transformationMatrix = glGetUniformLocation( aProgram, "uMVPMatrix" );
-
-		
 
 
 
@@ -127,8 +80,10 @@ namespace M3D_ISICG
 		
 	
 		if (luminosityNeedsUpdating) {
-			glProgramUniform1f( aProgram, luminosityUint, _luminosity );
+			program1.setUniform( "luminosity", _luminosity );
 		}
+
+
 		if ( fovyNeedsUpdating )
 		{
 			_updateViewMatrix();

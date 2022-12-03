@@ -118,6 +118,9 @@
     <ClCompile Include="src\lab_works\lab_work_6\lab_work_6.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\lab_works\my_classes\program_wrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\application.hpp">
@@ -188,6 +191,8 @@
     <ClInclude Include="src\lab_works\lab_work_5\lab_work_5.hpp" />
     <ClInclude Include="src\lab_works\lab_work_7\lab_work_7.hpp" />
     <ClInclude Include="src\lab_works\lab_work_6\lab_work_6.hpp" />
+    <ClInclude Include="src\lab_works\my_classes\program_wrapper.hpp" />
+    <ClInclude Include="src\lab_works\my_classes\utils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\lab_works\lab_work_1\shaders\lw1.frag">

@@ -125,71 +125,27 @@ namespace M3D_ISICG
 
 	bool LabWork6::initLightingPassProgram()
 	{
-	
-		//const std::string vertexShaderStr = readFile( _shaderFolder + "lighting_pass.vert" );
-		const std::string fragShaderStr	  = readFile( _shaderFolder + "lighting_pass.frag" );
-
-		// Création des shaders
-		//const GLuint aVertexShader	 = glCreateShader( GL_VERTEX_SHADER );
-		const GLuint aFragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
-
-		// Récupération des locations des shaders
-		//const GLchar * vSrc = vertexShaderStr.c_str();
-		const GLchar * fSrc = fragShaderStr.c_str();
-
-		// Création des shaders
-		//glShaderSource( aVertexShader, 1, &vSrc, NULL );
-		glShaderSource( aFragmentShader, 1, &fSrc, NULL );
-
-		// Compilation des shaders
-		//glCompileShader( aVertexShader );
-		glCompileShader( aFragmentShader );
-
-		// Code Cf. Tp 1 pour vérifier si les shaders compilent
-		GLint compiled;
-	//	glGetShaderiv( aVertexShader, GL_COMPILE_STATUS, &compiled );
-		glGetShaderiv( aFragmentShader, GL_COMPILE_STATUS, &compiled );
-		if ( !compiled )
-		{
-			GLchar log[ 1024 ];
-			glGetShaderInfoLog( aFragmentShader, sizeof( log ), NULL, log );
-		//glGetShaderInfoLog( aVertexShader, sizeof( log ), NULL, log );
-			//glDeleteShader( aVertexShader );
-			glDeleteShader( aFragmentShader );
-			std ::cerr << " Error compiling vertex shader : " << log << std ::endl;
-			return false;
-		}
-
-		// Initialisation du Program
-		_lightingPassProgram = glCreateProgram();
-
-		// Attache des shaders
-		//glAttachShader( _lightingPassProgram, aVertexShader );
-		glAttachShader( _lightingPassProgram, aFragmentShader );
-
-		// Link du programme
-		glLinkProgram( _lightingPassProgram );
-		GLint linked;
-		glGetProgramiv( _lightingPassProgram, GL_LINK_STATUS, &linked );
-		if ( !linked )
-		{
-			GLchar log[ 1024 ];
-			glGetProgramInfoLog( _lightingPassProgram, sizeof( log ), NULL, log );
-			std ::cerr << " Error linking program : " << log << std ::endl;
-			return false;
-		}
-
-		// Deletion des shaders
-	//	glDeleteShader( aVertexShader );
-		glDeleteShader( aFragmentShader );
-
-		drawQuad();
+		const std::string vertexShaderStr =  _shaderFolder + "lighting_pass.vert" ;
+		const std::string fragShaderStr	  =  _shaderFolder + "lighting_pass.frag" ;
+		std::string		  paths[ 2 ]	  = { vertexShaderStr, fragShaderStr };
+		
+		program2.createProgram( paths );
+		_lightingPassProgram = program2.getProgramId();
+		std::cout << "programid : " << _lightingPassProgram << "\n";
+		drawQuad2();
 
 		return true;
 
 	}
 
 	void LabWork6::initGBuffer() {
+
+		/*glGenRenderbuffers( 1, &rboDepth );
+		glBindRenderbuffer( GL_RENDERBUFFER, rboDepth );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT );
+		glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth );*/
+
+
 
 		// INIT FBO
 		glCreateFramebuffers( 1, &_fboId );
@@ -303,6 +259,7 @@ namespace M3D_ISICG
 	}
 
 	void LabWork6::renderLightingPass() {
+
 		glUseProgram( _lightingPassProgram );
 		glDisable( GL_DEPTH_TEST );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -320,7 +277,6 @@ namespace M3D_ISICG
 							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position, 1 ) ) );
 
 		glBindVertexArray( quadVAO );
-
 		
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 
@@ -334,63 +290,102 @@ namespace M3D_ISICG
 
 	}
 
+	
+		void LabWork6::drawQuad2()
+		{
+			int _indices[ 6 ] = { 0, 1, 2, 2, 1, 3 };
+			// Les sommets du rectangle
+			float _vertices[] = { 
+					-1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+				1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+			};
+
+			unsigned int _vbo, _ebo;
+
+			glCreateBuffers( 1, &_vbo );
+			glCreateBuffers( 1, &_ebo );
+			glNamedBufferData( _vbo, sizeof( _vertices ), _vertices, GL_STATIC_DRAW );
+
+			glNamedBufferData( _ebo,  sizeof( _indices ), _indices, GL_STATIC_DRAW );
+
+			glCreateVertexArrays( 1, &quadVAO );
+
+			glEnableVertexArrayAttrib( quadVAO, 0 );
+			glEnableVertexArrayAttrib( quadVAO, 1 );
+
+			glVertexArrayAttribFormat( quadVAO, 0, 3, GL_FLOAT, GL_FALSE, 0 );
+			glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_FALSE, 3*sizeof(float) );
+
+			glVertexArrayAttribBinding( quadVAO, 0, 0 );
+			glVertexArrayAttribBinding( quadVAO, 1, 0 );
+
+			glVertexArrayVertexBuffer( quadVAO, 0, _vbo, 0, 5 * sizeof( float ) );
+
+			glVertexArrayElementBuffer( quadVAO, _ebo );
+
+
+		}
+	
+
 	void LabWork6::drawQuad() {
+		if (quadVAO == 0) {
+			Vec2f triangleVertices[ 4 ]
+				= { Vec2f( -1.f, -1.f ), Vec2f( -1.f, 1.f ), Vec2f( 1.f, -1.f ), Vec2f( 1.f, 1.f ) };
+			static float texCoords[] = { 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0 };
+
+			int eboPositions[ 6 ] = { 0, 1, 2, 1, 2, 3 };
+
+			/* glCreateVertexArrays( 1, &quadVAO );
+
+			glEnableVertexArrayAttrib( quadVAO, 0 );
+			glEnableVertexArrayAttrib( quadVAO, 1 );
+
+			// Init VBO  Vertex Buffer Object Sommet
+			glCreateBuffers( 1, &quadVBO );
+			glCreateBuffers( 1, &quadVBO2 );
+			// Creation EBO Sommet
+			glCreateBuffers( 1, &quadEBO );
+
+			glVertexArrayAttribFormat( quadVAO, 0, 2, GL_FLOAT, GL_FALSE, 0 );
+			glVertexArrayVertexBuffer( quadVAO, 0, quadVBO, 0, sizeof( Vec2f ) );
+			glVertexArrayAttribBinding( quadVAO, 0, 0 );
+			glVertexArrayElementBuffer( quadVAO, quadEBO );
+
+			glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_TRUE, 0 );
+			glVertexArrayVertexBuffer( quadVAO, 1, quadVBO2, 0, 2* sizeof( float ) );
+			glVertexArrayAttribBinding( quadVAO, 1, 1 );
+
+			glNamedBufferData( quadVBO, 4 * sizeof( Vec2f ), &triangleVertices, GL_STATIC_DRAW );
+			glNamedBufferData( quadVBO2, 8 * sizeof( float ), &texCoords, GL_STATIC_DRAW );
+			glNamedBufferData( quadEBO, 6 * sizeof( int ), &eboPositions, GL_STATIC_DRAW );
+		*/
+
+			glCreateBuffers( 1, &quadVBO );
+			glCreateBuffers( 1, &quadVBO2 );
+			glCreateBuffers( 1, &quadEBO );
+
+			glNamedBufferData( quadVBO, 4 * sizeof( Vec2f ), &triangleVertices, GL_STATIC_DRAW );
+			glNamedBufferData( quadVBO2, 8 * sizeof( float ), &texCoords, GL_STATIC_DRAW );
+			glNamedBufferData( quadEBO, 6 * sizeof( int ), &eboPositions, GL_STATIC_DRAW );
+
+			glCreateVertexArrays( 1, &quadVAO );
+
+			glEnableVertexArrayAttrib( quadVAO, 0 );
+			glEnableVertexArrayAttrib( quadVAO, 1 );
+
+			glVertexArrayAttribFormat( quadVAO, 0, 1, GL_FLOAT, GL_FALSE, 0 );
+			glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_FALSE, 0 );
+
+			glVertexArrayAttribBinding( quadVAO, 0, 0 );
+			glVertexArrayAttribBinding( quadVAO, 1, 1 );
+
+			glVertexArrayVertexBuffer( quadVAO, 0, quadVBO, 0, 0 );
+			glVertexArrayVertexBuffer( quadVAO, 1, quadVBO2, 0, 0 );
+
+			glVertexArrayElementBuffer( quadVAO, quadEBO );
+
+		}
 		
-		Vec2f triangleVertices[ 4 ] = { Vec2f( -1.f, -1.f ), Vec2f( -1.f, 1.f ), Vec2f( 1.f, -1.f ), Vec2f( 1.f, 1.f ) };
-		static float texCoords[] = { 0, 0, 0, 1,1, 0, 1, 1 };
-
-
-		int eboPositions[6] = { 0, 1, 2, 1, 2, 3 };
-	
-		/* glCreateVertexArrays( 1, &quadVAO );
-	
-		glEnableVertexArrayAttrib( quadVAO, 0 );
-		glEnableVertexArrayAttrib( quadVAO, 1 );
-
-		// Init VBO  Vertex Buffer Object Sommet
-		glCreateBuffers( 1, &quadVBO );
-		glCreateBuffers( 1, &quadVBO2 );
-		// Creation EBO Sommet
-		glCreateBuffers( 1, &quadEBO );
-
-		glVertexArrayAttribFormat( quadVAO, 0, 2, GL_FLOAT, GL_FALSE, 0 );
-		glVertexArrayVertexBuffer( quadVAO, 0, quadVBO, 0, sizeof( Vec2f ) );
-		glVertexArrayAttribBinding( quadVAO, 0, 0 );
-		glVertexArrayElementBuffer( quadVAO, quadEBO );
-
-		glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_TRUE, 0 );
-		glVertexArrayVertexBuffer( quadVAO, 1, quadVBO2, 0, 2* sizeof( float ) );
-		glVertexArrayAttribBinding( quadVAO, 1, 1 );
-
-		glNamedBufferData( quadVBO, 4 * sizeof( Vec2f ), &triangleVertices, GL_STATIC_DRAW );
-		glNamedBufferData( quadVBO2, 8 * sizeof( float ), &texCoords, GL_STATIC_DRAW );
-		glNamedBufferData( quadEBO, 6 * sizeof( int ), &eboPositions, GL_STATIC_DRAW );
-	*/
-
-		glCreateBuffers( 1, &quadVBO );
-		glCreateBuffers( 1, &quadVBO2 );
-		glCreateBuffers( 1, &quadEBO );
-
-		glNamedBufferData( quadVBO, 4 * sizeof( Vec2f ), &triangleVertices, GL_STATIC_DRAW );
-		glNamedBufferData( quadVBO2, 8 * sizeof( float ), &texCoords, GL_STATIC_DRAW );
-		glNamedBufferData( quadEBO, 6 * sizeof( int ), &eboPositions, GL_STATIC_DRAW );
-		
-		glCreateVertexArrays( 1, &quadVAO );
-
-		glEnableVertexArrayAttrib( quadVAO, 0 );
-		glEnableVertexArrayAttrib( quadVAO, 1 );
-
-		glVertexArrayAttribFormat( quadVAO, 0, 1, GL_FLOAT, GL_FALSE,0 );
-		glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_FALSE, 0 );
-		
-		glVertexArrayAttribBinding( quadVAO, 0, 0 );
-		glVertexArrayAttribBinding( quadVAO, 1, 1 );
-		
-		glVertexArrayVertexBuffer( quadVAO, 0, quadVBO, 0,0);
-		glVertexArrayVertexBuffer( quadVAO, 1, quadVBO2, 0, 0);
-
-		
-		glVertexArrayElementBuffer( quadVAO, quadEBO );
 
 	}
 

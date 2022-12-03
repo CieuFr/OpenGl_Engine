@@ -11,6 +11,7 @@
 #include "../common/models/triangle_mesh.hpp"
 #include "../common/models/triangle_mesh_model.hpp"
 #include "../common/models/base_model.hpp"
+#include "my_classes/program_wrapper.hpp"
 
 
 namespace M3D_ISICG
@@ -32,6 +33,8 @@ namespace M3D_ISICG
 		
 
 	  private:
+
+		ProgramWrapper program1;
 
 		BaseCamera * _camera = &_baseCamera;
 		TrackBallCamera _trackBallCamera;
