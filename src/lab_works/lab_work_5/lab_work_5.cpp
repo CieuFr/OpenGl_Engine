@@ -133,16 +133,32 @@ namespace M3D_ISICG
 		{
 			_updateViewMatrix();
 			_updateProjectionMatrix();
-			_camera.setFovy(_fovy);
+			_camera->setFovy(_fovy);
 			//fovyNeedsUpdating = false;
 		}
 
 		if ( perspecNeedsUpdating )
 		{
-			_camera.switchPerspect();
+			_camera->switchPerspect();
 			_updateProjectionMatrix();
 			perspecNeedsUpdating = false;
 		}
+
+		if ( trackBallNeedsUpdating )
+		{
+			if (trackBallEnabled) {
+				_trackBallCamera.switchCamera( _camera->_position );
+				_camera = &_trackBallCamera;
+			}
+			else
+			{
+				_baseCamera.switchCamera( _camera->_position );
+				_camera = &_baseCamera;
+			}
+		}
+
+
+		
 
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 				
@@ -175,10 +191,10 @@ namespace M3D_ISICG
 		glProgramUniform3fv( aProgram,
 								   glGetUniformLocation( aProgram, "lightPos" ),
 								   1,
-							 glm::value_ptr( _matrixWtoV * Vec4f( _camera._position,1) ) );
+							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position,1) ) );
 
 		glProgramUniform3fv(
-			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera._position ) );
+			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera->_position ) );
 
 
 		_tmm.render( aProgram );
@@ -192,27 +208,27 @@ namespace M3D_ISICG
 			switch ( p_event.key.keysym.scancode )
 			{
 			case SDL_SCANCODE_W: // Front
-				_camera.moveFront( _cameraSpeed );
+				_camera->moveFront( _cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_S: // Back
-				_camera.moveFront( -_cameraSpeed );
+				_camera->moveFront( -_cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_A: // Left
-				_camera.moveRight( -_cameraSpeed );
+				_camera->moveRight( -_cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_D: // Right
-				_camera.moveRight( _cameraSpeed );
+				_camera->moveRight( _cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_R: // Up
-				_camera.moveUp( _cameraSpeed );
+				_camera->moveUp( _cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_F: // Bottom
-				_camera.moveUp( -_cameraSpeed );
+				_camera->moveUp( -_cameraSpeed );
 				_updateViewMatrix();
 				break;
 			default: break;
@@ -223,7 +239,7 @@ namespace M3D_ISICG
 		if ( p_event.type == SDL_MOUSEMOTION && p_event.motion.state & SDL_BUTTON_LMASK
 			 && !ImGui::GetIO().WantCaptureMouse )
 		{
-			_camera.rotate( p_event.motion.xrel * _cameraSensitivity, p_event.motion.yrel * _cameraSensitivity );
+			_camera->rotate( p_event.motion.xrel * _cameraSensitivity, p_event.motion.yrel * _cameraSensitivity );
 			_updateViewMatrix();
 		}
 	}
@@ -235,8 +251,8 @@ namespace M3D_ISICG
 			glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );
 		};
 
-		ImGui::Checkbox( "Trackball", &trackballSwitch );
-		perspecNeedsUpdating = ImGui::Checkbox( "Ortho", &perspecOrtho );
+		trackBallNeedsUpdating = ImGui::Checkbox( "Trackball", &trackBallEnabled );
+		perspecNeedsUpdating = ImGui::Checkbox( "Ortho", &perspecOrthoEnabled );
 
 
 		fovyNeedsUpdating = ImGui::SliderFloat( "Fovy", &_fovy, 0, 180 );
@@ -247,21 +263,20 @@ namespace M3D_ISICG
 
 	void LabWork5::_updateViewMatrix() {
 
-		_matrixWtoV = _camera.getViewMatrix();
+		_matrixWtoV = _camera->getViewMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 	}
 
 	void LabWork5::_updateProjectionMatrix()
 	{
-		_matrixVtoC = _camera.getProjectionMatrix();
+		_matrixVtoC = _camera->getProjectionMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
-		
 	}
 
 	void LabWork5::_initCamera() { 
-		_camera.setScreenSize( 1280, 720 );
-		_camera.setPosition( Vec3f( 0.f, 0.f, 0.2f ) );
-		_camera.setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
+		_camera->setScreenSize( 1280, 720 );
+		_camera->setPosition( Vec3f( 0.f, 0.f, 0.2f ) );
+		_camera->setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
 		_updateViewMatrix();
 		_updateProjectionMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;

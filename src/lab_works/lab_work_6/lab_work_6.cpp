@@ -142,16 +142,19 @@ namespace M3D_ISICG
 		glShaderSource( aFragmentShader, 1, &fSrc, NULL );
 
 		// Compilation des shaders
-	//	glCompileShader( aVertexShader );
+		//glCompileShader( aVertexShader );
 		glCompileShader( aFragmentShader );
 
 		// Code Cf. Tp 1 pour vérifier si les shaders compilent
 		GLint compiled;
+	//	glGetShaderiv( aVertexShader, GL_COMPILE_STATUS, &compiled );
 		glGetShaderiv( aFragmentShader, GL_COMPILE_STATUS, &compiled );
 		if ( !compiled )
 		{
 			GLchar log[ 1024 ];
 			glGetShaderInfoLog( aFragmentShader, sizeof( log ), NULL, log );
+		//glGetShaderInfoLog( aVertexShader, sizeof( log ), NULL, log );
+			//glDeleteShader( aVertexShader );
 			glDeleteShader( aFragmentShader );
 			std ::cerr << " Error compiling vertex shader : " << log << std ::endl;
 			return false;
@@ -177,7 +180,7 @@ namespace M3D_ISICG
 		}
 
 		// Deletion des shaders
-		//glDeleteShader( aVertexShader );
+	//	glDeleteShader( aVertexShader );
 		glDeleteShader( aFragmentShader );
 
 		drawQuad();
@@ -224,13 +227,13 @@ namespace M3D_ISICG
 		{
 			_updateViewMatrix();
 			_updateProjectionMatrix();
-			_camera.setFovy( _fovy );
+			_camera->setFovy( _fovy );
 			// fovyNeedsUpdating = false;
 		}
 
 		if ( perspecNeedsUpdating )
 		{
-			_camera.switchPerspect();
+			_camera->switchPerspect();
 			_updateProjectionMatrix();
 			perspecNeedsUpdating = false;
 		}
@@ -260,10 +263,10 @@ namespace M3D_ISICG
 		glProgramUniform3fv( aProgram,
 							 glGetUniformLocation( aProgram, "lightPos" ),
 							 1,
-							 glm::value_ptr( _matrixWtoV * Vec4f( _camera._position, 1 ) ) );
+							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position, 1 ) ) );
 
 		glProgramUniform3fv(
-			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera._position ) );
+			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera->_position ) );
 
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, _fboId );
@@ -314,7 +317,7 @@ namespace M3D_ISICG
 		glProgramUniform3fv( _lightingPassProgram,
 							 glGetUniformLocation( aProgram, "TlightPos" ),
 							 1,
-							 glm::value_ptr( _matrixWtoV * Vec4f( _camera._position, 1 ) ) );
+							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position, 1 ) ) );
 
 		glBindVertexArray( quadVAO );
 
@@ -338,7 +341,8 @@ namespace M3D_ISICG
 
 
 		int eboPositions[6] = { 0, 1, 2, 1, 2, 3 };
-		glCreateVertexArrays( 1, &quadVAO );
+	
+		/* glCreateVertexArrays( 1, &quadVAO );
 	
 		glEnableVertexArrayAttrib( quadVAO, 0 );
 		glEnableVertexArrayAttrib( quadVAO, 1 );
@@ -361,7 +365,33 @@ namespace M3D_ISICG
 		glNamedBufferData( quadVBO, 4 * sizeof( Vec2f ), &triangleVertices, GL_STATIC_DRAW );
 		glNamedBufferData( quadVBO2, 8 * sizeof( float ), &texCoords, GL_STATIC_DRAW );
 		glNamedBufferData( quadEBO, 6 * sizeof( int ), &eboPositions, GL_STATIC_DRAW );
-	
+	*/
+
+		glCreateBuffers( 1, &quadVBO );
+		glCreateBuffers( 1, &quadVBO2 );
+		glCreateBuffers( 1, &quadEBO );
+
+		glNamedBufferData( quadVBO, 4 * sizeof( Vec2f ), &triangleVertices, GL_STATIC_DRAW );
+		glNamedBufferData( quadVBO2, 8 * sizeof( float ), &texCoords, GL_STATIC_DRAW );
+		glNamedBufferData( quadEBO, 6 * sizeof( int ), &eboPositions, GL_STATIC_DRAW );
+		
+		glCreateVertexArrays( 1, &quadVAO );
+
+		glEnableVertexArrayAttrib( quadVAO, 0 );
+		glEnableVertexArrayAttrib( quadVAO, 1 );
+
+		glVertexArrayAttribFormat( quadVAO, 0, 1, GL_FLOAT, GL_FALSE,0 );
+		glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_FALSE, 0 );
+		
+		glVertexArrayAttribBinding( quadVAO, 0, 0 );
+		glVertexArrayAttribBinding( quadVAO, 1, 1 );
+		
+		glVertexArrayVertexBuffer( quadVAO, 0, quadVBO, 0,0);
+		glVertexArrayVertexBuffer( quadVAO, 1, quadVBO2, 0, 0);
+
+		
+		glVertexArrayElementBuffer( quadVAO, quadEBO );
+
 	}
 
 	void LabWork6::handleEvents( const SDL_Event & p_event )
@@ -371,27 +401,27 @@ namespace M3D_ISICG
 			switch ( p_event.key.keysym.scancode )
 			{
 			case SDL_SCANCODE_W: // Front
-				_camera.moveFront( _cameraSpeed );
+				_camera->moveFront( _cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_S: // Back
-				_camera.moveFront( -_cameraSpeed );
+				_camera->moveFront( -_cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_A: // Left
-				_camera.moveRight( -_cameraSpeed );
+				_camera->moveRight( -_cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_D: // Right
-				_camera.moveRight( _cameraSpeed );
+				_camera->moveRight( _cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_R: // Up
-				_camera.moveUp( _cameraSpeed );
+				_camera->moveUp( _cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_F: // Bottom
-				_camera.moveUp( -_cameraSpeed );
+				_camera->moveUp( -_cameraSpeed );
 				_updateViewMatrix();
 				break;
 			default: break;
@@ -402,7 +432,7 @@ namespace M3D_ISICG
 		if ( p_event.type == SDL_MOUSEMOTION && p_event.motion.state & SDL_BUTTON_LMASK
 			 && !ImGui::GetIO().WantCaptureMouse )
 		{
-			_camera.rotate( p_event.motion.xrel * _cameraSensitivity, p_event.motion.yrel * _cameraSensitivity );
+			_camera->rotate( p_event.motion.xrel * _cameraSensitivity, p_event.motion.yrel * _cameraSensitivity );
 			_updateViewMatrix();
 		}
 	}
@@ -444,21 +474,21 @@ namespace M3D_ISICG
 
 	void LabWork6::_updateViewMatrix()
 	{
-		_matrixWtoV			  = _camera.getViewMatrix();
+		_matrixWtoV			  = _camera->getViewMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 	}
 
 	void LabWork6::_updateProjectionMatrix()
 	{
-		_matrixVtoC			  = _camera.getProjectionMatrix();
+		_matrixVtoC			  = _camera->getProjectionMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 	}
 
 	void LabWork6::_initCamera()
 	{
-		_camera.setScreenSize( 1280, 720 );
-		_camera.setPosition( Vec3f( 0.f, 0.f, 0.2f ) );
-		_camera.setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
+		_camera->setScreenSize( 1280, 720 );
+		_camera->setPosition( Vec3f( 0.f, 0.f, 0.2f ) );
+		_camera->setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
 		_updateViewMatrix();
 		_updateProjectionMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;

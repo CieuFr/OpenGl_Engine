@@ -33,7 +33,11 @@ namespace M3D_ISICG
 
 	  private:
 
-		BaseCamera _camera;
+		BaseCamera * _camera = &_baseCamera;
+		TrackBallCamera _trackBallCamera;
+		BaseCamera _baseCamera;
+
+
 		
 		void _updateViewMatrix();
 		void _updateProjectionMatrix();
@@ -63,9 +67,10 @@ namespace M3D_ISICG
 		float			   _fovy;
 		bool			   fovyNeedsUpdating = false;
 
-		bool trackballSwitch = false;
+		bool trackBallEnabled = false;
+		bool  trackBallNeedsUpdating = false;
 
-		bool perspecOrtho;
+		bool perspecOrthoEnabled= false;
 		bool perspecNeedsUpdating = false;
 		float _cameraSpeed		   = 0.1f;
 		float _cameraSensitivity   = 0.1f;

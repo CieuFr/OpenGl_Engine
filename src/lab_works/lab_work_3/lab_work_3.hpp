@@ -41,7 +41,12 @@ namespace M3D_ISICG
 
 	  private:
 
-		TrackBallCamera _camera;
+		BaseCamera *	_camera = &_baseCamera;
+		TrackBallCamera _trackBallCamera;
+		BaseCamera		_baseCamera;
+
+		bool trackBallEnabled		= false;
+		bool trackBallNeedsUpdating = false;
 
 		Mesh _createCube();
 		void _updateViewMatrix();

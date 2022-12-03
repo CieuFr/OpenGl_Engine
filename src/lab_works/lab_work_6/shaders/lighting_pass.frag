@@ -15,31 +15,26 @@ layout (binding = 4) uniform sampler2D gSpecular;
 
 void main()
 {
-	ivec2 texCoords = ivec2(gl_FragCoord.xy);
-	vec3 normal = texelFetch(gNormal,texCoords,0).xyz;
-	vec3 position = texelFetch(gPosition,texCoords,0).xyz;
-	vec3 ambient = texelFetch(gAmbiant,texCoords,0).xyz;
-	vec3 diffuse = texelFetch(gDiffuse,texCoords,0).xyz;
-	vec3 specular = texelFetch(gSpecular,texCoords,0).xyz;
-	float shininess = texelFetch(gSpecular,texCoords,0).w;
+//	ivec2 texCoords = ivec2(gl_FragCoord.xy);
+//	vec3 normal = texelFetch(gNormal,texCoords,0).xyz;
+//	vec3 position = texelFetch(gPosition,texCoords,0).xyz;
+//	vec3 ambient = texelFetch(gAmbiant,texCoords,0).xyz;
+//	vec3 diffuse = texelFetch(gDiffuse,texCoords,0).xyz;
+//	vec3 specular = texelFetch(gSpecular,texCoords,0).xyz;
+//	float shininess = texelFetch(gSpecular,texCoords,0).w;
 	
-//
-//
-//	vec3 normal = texture(gNormal,TexCoords).xyz;
-//	vec3 position = texture(gPosition,TexCoords).xyz;
-//	vec3 ambient = texture(gAmbiant,TexCoords).xyz;
-//	vec3 diffuse = texture(gDiffuse,TexCoords).xyz;
-//	vec3 specular = texture(gSpecular,TexCoords).xyz;
-//	float shininess = texture(gSpecular,TexCoords).w;
-     // TEXTURES
 
-	//BLIN PHONG
+	ivec2 texCoords = ivec2(gl_FragCoord.xy);
+	vec3 normal = texelFetch(gNormal,ivec2(TexCoords),0).xyz;     // TEXTURES
+	vec3 position = texelFetch(gPosition,ivec2(TexCoords),0).xyz;
+	vec3 ambient = texelFetch(gAmbiant,ivec2(TexCoords),0).xyz;	//BLIN PHONG
+	vec3 diffuse = texelFetch(gDiffuse,ivec2(TexCoords),0).xyz;	
+	vec3 specular = texelFetch(gSpecular,ivec2(TexCoords),0).xyz;	
+	float shininess = texelFetch(gSpecular,ivec2(TexCoords),0).w;
+	
+
 	vec3 viewDir = normalize( - position.xyz);
 	vec3 lightDir = normalize(position.xyz - TlightPos);
-
-	
-
-
 
 	vec3 H = normalize(viewDir - lightDir);
 
@@ -75,7 +70,7 @@ void main()
 	// result *= facteurAtenuation;
 
 	//result = ((result*(a*result+b))/(result*(c*result+d)+e));
-	fragColor =  vec4(texCoords,1,1)  ;
+	fragColor =  vec4(result,1)  ;
 
 	//Transparence
 	//texture(uDiffuseMap,texCoords).w

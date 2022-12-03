@@ -15,6 +15,8 @@ namespace M3D_ISICG
 
 		 public:
 		BaseCamera() {};
+		BaseCamera(Vec3f position) { _position = position;
+		};
 
 		inline const Mat4f & getViewMatrix() const { return _viewMatrix; }
 		inline const Mat4f & getProjectionMatrix() const { return _projectionMatrix; }
@@ -78,6 +80,9 @@ namespace M3D_ISICG
 			_updateVectors();
 		}
 
+		virtual void switchCamera( Vec3f position ) { setPosition(position); }
+
+
 		void print() const
 		{
 			std::cout << "======== Camera ========" << std::endl;
@@ -90,7 +95,7 @@ namespace M3D_ISICG
 			std::cout << "========================" << std::endl;
 		}
 
-		void setPosition( const Vec3f & p_position )
+		 void setPosition( const Vec3f & p_position )
 		{
 			_position = p_position;
 			_computeViewMatrix();
@@ -141,6 +146,8 @@ namespace M3D_ISICG
 			_orthoPerspec = !_orthoPerspec;
 			_computeProjectionMatrix();
 		}
+
+	
 
 	}; // namespace M3D_ISICG
 } // namespace M3D_ISICG

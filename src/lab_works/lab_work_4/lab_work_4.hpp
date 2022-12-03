@@ -33,8 +33,13 @@ namespace M3D_ISICG
 
 	  private:
 
-		BaseCamera _camera;
-		
+		BaseCamera *	_camera = &_baseCamera;
+		TrackBallCamera _trackBallCamera;
+		BaseCamera		_baseCamera;
+
+		bool trackBallEnabled		= false;
+		bool trackBallNeedsUpdating = false;
+
 		void _updateViewMatrix();
 		void _updateProjectionMatrix();
 		void _initCamera();

@@ -8,12 +8,13 @@ layout( location = 1 ) in vec2 aVertexTexCoords;
 uniform mat4 MVMatrix;
 uniform vec3 lightPos;
 
-out vec2 texCoords;
+out vec2 TexCoords;
 out vec3 TlightPos;
+out vec3 Color;
 
 void main()
 {
-	texCoords = aVertexTexCoords;
+	TexCoords = aVertexTexCoords;
 	
 //	vec3 T = normalize(vec3(MVMatrix * vec4(aVertexTangent,0.0)));
 //    vec3 N = normalize(vec3(MVMatrix * vec4(aVertexNormal,0.0)));
