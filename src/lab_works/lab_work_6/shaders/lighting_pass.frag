@@ -67,7 +67,7 @@ void main()
 	// result *= facteurAtenuation;
 
 	//result = ((result*(a*result+b))/(result*(c*result+d)+e));
-	fragColor =  vec4(normal,1)  ;
+	fragColor =  vec4(TexCoords,1,1)  ;
 
 	//Transparence
 	//texture(uDiffuseMap,texCoords).w

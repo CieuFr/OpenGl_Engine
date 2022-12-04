@@ -138,36 +138,115 @@ namespace M3D_ISICG
 
 	}
 
-	void LabWork6::initGBuffer() {
+	
+// TP6
 
+	
+	void LabWork6::initGBuffer()
+	{
 		/*glGenRenderbuffers( 1, &rboDepth );
 		glBindRenderbuffer( GL_RENDERBUFFER, rboDepth );
 		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT );
 		glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth );*/
 
-
-
 		// INIT FBO
 		glCreateFramebuffers( 1, &_fboId );
 
 		glCreateTextures( GL_TEXTURE_2D, 6, _gBufferTextures );
-		
-		for ( size_t i = 0; i < 5; i++ ) {
+
+		for ( size_t i = 0; i < 5; i++ )
+		{
 			glTextureStorage2D( _gBufferTextures[ i ], 1, GL_RGBA32F, _windowWidth, _windowHeight );
+			glTextureParameteri( _gBufferTextures[ i ], GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+			glTextureParameteri( _gBufferTextures[ i ], GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 			glNamedFramebufferTexture( _fboId, _drawBuffers[ i ], _gBufferTextures[ i ], 0 );
 		}
 
 		glTextureStorage2D( _gBufferTextures[ 5 ], 1, GL_DEPTH_COMPONENT32, _windowWidth, _windowHeight );
+		glTextureParameteri( _gBufferTextures[ 5 ], GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( _gBufferTextures[ 5 ], GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		glNamedFramebufferTexture( _fboId, GL_DEPTH_ATTACHMENT, _gBufferTextures[ 5 ], 0 );
 
-		glNamedFramebufferDrawBuffers( _fboId, 6, _drawBuffers );
-		
-		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _fboId, GL_DRAW_FRAMEBUFFER) )
+		glNamedFramebufferDrawBuffers( _fboId, 5, _drawBuffers );
+
+		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _fboId, GL_DRAW_FRAMEBUFFER ) )
 		{
-			std::cout << "FRAMEBUFFER ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR \n";		 
+			std::cout << "FRAMEBUFFER ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR \n";
 		}
 	}
 
+	void LabWork6::initGBuffer2()
+	{
+		glCreateFramebuffers( 1, &_fboId );
+		glBindFramebuffer( GL_FRAMEBUFFER, _fboId );
+		// Créer un texture attachment pour stocker les positions des fragments
+
+		glCreateTextures( GL_TEXTURE_2D, 1, &positionTexture );
+		glTextureStorage2D( positionTexture, 1, GL_RGB16F, _windowWidth, _windowHeight );
+		glTextureParameteri( positionTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( positionTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( _fboId, GL_COLOR_ATTACHMENT0, positionTexture, 0 );
+
+		// Créer un texture attachment pour stocker les normales des fragments
+
+		glCreateTextures( GL_TEXTURE_2D, 1, &normalTexture );
+		glTextureStorage2D( normalTexture, 1, GL_RGB16F, _windowWidth, _windowHeight );
+		glTextureParameteri( normalTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( normalTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( _fboId, GL_COLOR_ATTACHMENT1, normalTexture, 0 );
+
+		// Créer un texture attachment pour stocker les ambient des fragments
+
+		glCreateTextures( GL_TEXTURE_2D, 1, &ambientTexture );
+		glTextureStorage2D( ambientTexture, 1, GL_RGBA16F, _windowWidth, _windowHeight );
+		glTextureParameteri( ambientTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( ambientTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( _fboId, GL_COLOR_ATTACHMENT2, ambientTexture, 0 );
+
+		// Créer un texture attachment pour stocker les diffuse des fragments
+
+		glCreateTextures( GL_TEXTURE_2D, 1, &diffuseTexture );
+		glTextureStorage2D( diffuseTexture, 1, GL_RGBA16F, _windowWidth, _windowHeight );
+		glTextureParameteri( diffuseTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( diffuseTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( _fboId, GL_COLOR_ATTACHMENT3, diffuseTexture, 0 );
+
+		// Créer un texture attachment pour stocker les specular des fragments
+
+		glCreateTextures( GL_TEXTURE_2D, 1, &specularTexture );
+		glTextureStorage2D( specularTexture, 1, GL_RGBA16F, _windowWidth, _windowHeight );
+		glTextureParameteri( specularTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( specularTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( _fboId, GL_COLOR_ATTACHMENT4, specularTexture, 0 );
+
+		// Créer un texture attachment pour stocker les profondeurs des fragments
+		glCreateTextures( GL_TEXTURE_2D, 1, &depthTexture );
+		glTextureStorage2D( depthTexture, 1, GL_DEPTH_COMPONENT32F, _windowWidth, _windowHeight );
+		glTextureParameteri( depthTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( depthTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( _fboId, GL_DEPTH_ATTACHMENT, depthTexture, 0 );
+
+		// Créer un tableau des attachments pour le framebuffer
+		GLuint attachments[ 5 ] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,
+									GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4
+		};
+		glNamedFramebufferDrawBuffers( _fboId, 5, attachments );
+
+		_gBufferTextures[ 0 ] = positionTexture;
+		_gBufferTextures[ 1 ] = normalTexture;
+		_gBufferTextures[ 2 ] = ambientTexture;
+		_gBufferTextures[ 3 ] = diffuseTexture;
+		_gBufferTextures[ 4 ] = specularTexture;
+		_gBufferTextures[ 5 ] = depthTexture;
+		
+		// Vérifier que le framebuffer
+		if ( glCheckNamedFramebufferStatus( _fboId, GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
+		{
+			std::cout << "Error: GBuffer framebuffer is incomplete!" << std::endl;
+		}
+		
+	}
+	
 	void LabWork6::render()
 	{
 		glUseProgram( aProgram );
@@ -291,7 +370,7 @@ namespace M3D_ISICG
 	}
 
 	
-		void LabWork6::drawQuad2()
+	void LabWork6::drawQuad2()
 		{
 			int _indices[ 6 ] = { 0, 1, 2, 2, 1, 3 };
 			// Les sommets du rectangle
@@ -335,7 +414,7 @@ namespace M3D_ISICG
 
 			int eboPositions[ 6 ] = { 0, 1, 2, 1, 2, 3 };
 
-			/* glCreateVertexArrays( 1, &quadVAO );
+			 glCreateVertexArrays( 1, &quadVAO );
 
 			glEnableVertexArrayAttrib( quadVAO, 0 );
 			glEnableVertexArrayAttrib( quadVAO, 1 );
@@ -358,32 +437,7 @@ namespace M3D_ISICG
 			glNamedBufferData( quadVBO, 4 * sizeof( Vec2f ), &triangleVertices, GL_STATIC_DRAW );
 			glNamedBufferData( quadVBO2, 8 * sizeof( float ), &texCoords, GL_STATIC_DRAW );
 			glNamedBufferData( quadEBO, 6 * sizeof( int ), &eboPositions, GL_STATIC_DRAW );
-		*/
-
-			glCreateBuffers( 1, &quadVBO );
-			glCreateBuffers( 1, &quadVBO2 );
-			glCreateBuffers( 1, &quadEBO );
-
-			glNamedBufferData( quadVBO, 4 * sizeof( Vec2f ), &triangleVertices, GL_STATIC_DRAW );
-			glNamedBufferData( quadVBO2, 8 * sizeof( float ), &texCoords, GL_STATIC_DRAW );
-			glNamedBufferData( quadEBO, 6 * sizeof( int ), &eboPositions, GL_STATIC_DRAW );
-
-			glCreateVertexArrays( 1, &quadVAO );
-
-			glEnableVertexArrayAttrib( quadVAO, 0 );
-			glEnableVertexArrayAttrib( quadVAO, 1 );
-
-			glVertexArrayAttribFormat( quadVAO, 0, 1, GL_FLOAT, GL_FALSE, 0 );
-			glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_FALSE, 0 );
-
-			glVertexArrayAttribBinding( quadVAO, 0, 0 );
-			glVertexArrayAttribBinding( quadVAO, 1, 1 );
-
-			glVertexArrayVertexBuffer( quadVAO, 0, quadVBO, 0, 0 );
-			glVertexArrayVertexBuffer( quadVAO, 1, quadVBO2, 0, 0 );
-
-			glVertexArrayElementBuffer( quadVAO, quadEBO );
-
+		
 		}
 		
 
