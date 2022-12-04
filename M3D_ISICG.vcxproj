@@ -39,7 +39,6 @@
     <ClCompile Include="src\lab_works\lab_work_5\lab_work_5.cpp" />
     <ClCompile Include="src\lab_works\lab_work_6\lab_work_6.cpp" />
     <ClCompile Include="src\lab_works\lab_work_7\lab_work_7.cpp" />
-    <ClCompile Include="src\lab_works\my_classes\program_wrapper.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\utils\image.cpp" />
   </ItemGroup>
@@ -67,8 +66,9 @@
     <ClInclude Include="src\lab_works\lab_work_5\lab_work_5.hpp" />
     <ClInclude Include="src\lab_works\lab_work_6\lab_work_6.hpp" />
     <ClInclude Include="src\lab_works\lab_work_7\lab_work_7.hpp" />
-    <ClInclude Include="src\lab_works\my_classes\program_wrapper.hpp" />
-    <ClInclude Include="src\lab_works\my_classes\utils.hpp" />
+    <ClInclude Include="src\lab_works\victor_toolkit\program_wrapper.hpp" />
+    <ClInclude Include="src\lab_works\lab_work_3\scene_graph.hpp" />
+    <ClInclude Include="src\lab_works\victor_toolkit\utils.hpp" />
     <ClInclude Include="src\utils\file_path.hpp" />
     <ClInclude Include="src\utils\gl_utils.hpp" />
     <ClInclude Include="src\utils\image.hpp" />

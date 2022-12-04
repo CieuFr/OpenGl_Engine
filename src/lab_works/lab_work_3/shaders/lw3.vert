@@ -8,6 +8,7 @@ uniform mat4 transformationMatrix;
 
 
 void main() {
+
 	gl_Position = transformationMatrix * aVertexPosition ;
 	aFragColor = aVertexColor;
 

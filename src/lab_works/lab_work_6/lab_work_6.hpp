@@ -9,7 +9,7 @@
 #include "GL/gl3w.h"
 #include "common/base_lab_work.hpp"
 #include "define.hpp"
-#include "my_classes/program_wrapper.hpp"
+#include "victor_toolkit/program_wrapper.hpp"
 
 #include <vector>
 

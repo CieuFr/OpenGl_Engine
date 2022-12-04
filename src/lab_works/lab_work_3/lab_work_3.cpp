@@ -20,104 +20,12 @@ namespace M3D_ISICG
 		glDeleteBuffers( 1, &_cube.EBO );
 		glDeleteVertexArrays( 1, &_cube.VAO );
 
-
 		glDeleteBuffers( 1, &_cube2.VBOVertices );
 		glDeleteBuffers( 1, &_cube2.VBOColors );
 		glDeleteBuffers( 1, &_cube2.EBO );
 		glDeleteVertexArrays( 1, &_cube2.VAO );
 	}
 
-	LabWork3::Mesh LabWork3::_createCube()
-	{ 
-		LabWork3::Mesh cube;
-		cube.vectorPositions.push_back( Vec3f( 0.5f, 0.5f, -0.5f ) );
-		cube.vectorPositions.push_back( Vec3f( 0.5f, -0.5f, -0.5f ) );
-		cube.vectorPositions.push_back( Vec3f( -0.5f, -0.5f, -0.5f ) );
-		cube.vectorPositions.push_back( Vec3f( -0.5f, 0.5f, -0.5f ) );
-		cube.vectorPositions.push_back( Vec3f( 0.5f, 0.5f, 0.5f ) );
-		cube.vectorPositions.push_back( Vec3f( 0.5f, -0.5f, 0.5f ) );
-		cube.vectorPositions.push_back( Vec3f( -0.5f, -0.5f, 0.5f ) );
-		cube.vectorPositions.push_back( Vec3f( -0.5f, 0.5f, 0.5f ) );
-		cube.vectorColors.push_back( getRandomVec3f() );
-		cube.vectorColors.push_back( getRandomVec3f() );
-		cube.vectorColors.push_back( getRandomVec3f() );
-		cube.vectorColors.push_back( getRandomVec3f() );
-		cube.vectorColors.push_back( getRandomVec3f() );
-		cube.vectorColors.push_back( getRandomVec3f() );
-		cube.vectorColors.push_back( getRandomVec3f() );
-		cube.vectorColors.push_back( getRandomVec3f() );
-
-		for (int i = 0; i < 4; i++) {		
-				cube.vectorIndices.push_back( i );
-				cube.vectorIndices.push_back( (i+1)%4 );
-				cube.vectorIndices.push_back( i + 4 );
-				cube.vectorIndices.push_back(( ( i + 1 ) % 4 ) +4 );
-				cube.vectorIndices.push_back( ( i + 1 ) % 4 );
-				cube.vectorIndices.push_back( i + 4 );
-		}
-
-		//BAS
-		cube.vectorIndices.push_back( 0 );
-		cube.vectorIndices.push_back( 1 );
-		cube.vectorIndices.push_back( 2 );
-		cube.vectorIndices.push_back( 0 );
-		cube.vectorIndices.push_back( 2 );
-		cube.vectorIndices.push_back( 3 );
-
-		//HAUT
-		cube.vectorIndices.push_back( 4 );
-		cube.vectorIndices.push_back( 5 );
-		cube.vectorIndices.push_back( 6 );
-		cube.vectorIndices.push_back( 4 );
-		cube.vectorIndices.push_back( 6 );
-		cube.vectorIndices.push_back( 7 );
-
-
-		glCreateBuffers( 1, &cube.VBOVertices );
-		glCreateBuffers( 1, &cube.EBO );
-		glCreateBuffers( 1, &cube.VBOColors );
-
-		
-		glNamedBufferData(
-			cube.VBOVertices,
-			cube.vectorPositions.size() * sizeof( Vec3f ),
-			cube.vectorPositions.data(),
-			GL_STATIC_DRAW );
-
-		glNamedBufferData(
-			cube.VBOColors, 
-			cube.vectorColors.size() * sizeof( Vec3f ),
-			cube.vectorColors.data(), 
-			GL_STATIC_DRAW );
-
-		glNamedBufferData(
-			cube.EBO,
-			cube.vectorIndices.size() * sizeof( int ),
-			cube.vectorIndices.data(),
-			GL_STATIC_DRAW );
-		
-
-		glCreateVertexArrays( 1, &cube.VAO );
-
-		glEnableVertexArrayAttrib( cube.VAO, 0 );
-		glVertexArrayAttribFormat( cube.VAO, 0, 3, GL_FLOAT, GL_FALSE, 0 );
-		glVertexArrayVertexBuffer( cube.VAO, 0, cube.VBOVertices, 0, sizeof( Vec3f ) );
-		glVertexArrayAttribBinding( cube.VAO, 0, 0 );
-
-		glEnableVertexArrayAttrib( cube.VAO, 1 );
-		glVertexArrayAttribFormat( cube.VAO, 1, 3, GL_FLOAT, GL_TRUE, 0 );
-		glVertexArrayVertexBuffer( cube.VAO, 1, cube.VBOColors, 0, sizeof( Vec3f ) );
-		glVertexArrayAttribBinding( cube.VAO, 1, 1 );
-
-		glVertexArrayElementBuffer( cube.VAO, cube.EBO );
-
-
-		//cube.transformationMatrice = Mat4f( 1.0f );
-		cube.transformationMatrice = glm::scale( cube.transformationMatrice, Vec3f( 0.8f, 0.8f, 0.8f ));
-
-		return cube;
-		
-	}
 
 	bool LabWork3::init()
 	{
@@ -125,71 +33,38 @@ namespace M3D_ISICG
 		// Set the color used by glClear to clear the color buffer (in render()).
 		glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );
 
-	
 		glEnable(GL_DEPTH_TEST);  
 
 		//Chemin des shaders 
-		const std::string vertexShaderStr = readFile( _shaderFolder + "lw3.vert" );
-		const std::string fragShaderStr = readFile( _shaderFolder + "lw3.frag" );
+		const std::string vertexShaderStr =  _shaderFolder + "lw3.vert" ;
+		const std::string fragShaderStr =  _shaderFolder + "lw3.frag" ;
 
-		//Création des shaders
-		const GLuint aVertexShader = glCreateShader( GL_VERTEX_SHADER );
-		const GLuint aFragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
+		std::string paths[ 2 ] = { vertexShaderStr, fragShaderStr };
 
-		//Récupération des locations des shaders 
-		const GLchar * vSrc = vertexShaderStr.c_str();
-		const GLchar * fSrc = fragShaderStr.c_str();
+		programWrapper.createProgram( paths );
 
-		// Création des shaders 
-		glShaderSource( aVertexShader, 1, &vSrc, NULL );
-		glShaderSource( aFragmentShader, 1, &fSrc, NULL );
-
-		// Compilation des shaders
-		glCompileShader( aVertexShader );
-		glCompileShader( aFragmentShader );
-
-		//Code Cf. Tp 1 pour vérifier si les shaders compilent
-		GLint compiled;
-		glGetShaderiv( aVertexShader, GL_COMPILE_STATUS, &compiled );
-		if ( !compiled )
-		{
-			GLchar log[ 1024 ];
-			glGetShaderInfoLog( aVertexShader, sizeof( log ), NULL, log );
-			glDeleteShader( aVertexShader );
-			glDeleteShader( aFragmentShader );
-			std ::cerr << " Error compiling vertex shader : " << log << std ::endl;
-			return false;
-		}
-
-		//Initialisation du Program
-		aProgram = glCreateProgram();
-
-		//Attache des shaders
-		glAttachShader( aProgram, aVertexShader );
-		glAttachShader( aProgram, aFragmentShader );
-
-		//Link du programme
-		glLinkProgram( aProgram );
-		GLint linked;
-		glGetProgramiv( aProgram, GL_LINK_STATUS, &linked );
-		if ( !linked )
-		{
-			GLchar log[ 1024 ];
-			glGetProgramInfoLog( aProgram, sizeof( log ), NULL, log );
-			std ::cerr << " Error linking program : " << log << std ::endl;
-			return false;
-		}
-
-		//Deletion des shaders 
-		glDeleteShader( aVertexShader );
-		glDeleteShader( aFragmentShader );
+		aProgram = programWrapper.getProgramId();
 
 
-		_cube = _createCube();
+		_cube = _graphCube1._createCube();
+		_graphCube1.SetMesh( _cube );
+		
+		_cube2 = _graphCube1._createCube();
+		_graphCube2.SetMesh( _cube2 );
 
-		_cube2 = _createCube();
+		_cube3 = _graphCube1._createCube();
+		_graphCube3.SetMesh( _cube3 );
+		
+		_graphCube1.AddChild( &_graphCube2 );
+		_graphCube2.AddChild( &_graphCube3 );
 
-		_cube2.transformationMatrice = glm::translate( _cube2.transformationMatrice, Vec3f( 3.0f, .0f, .0f ) );
+		_graphCube2.SetTransform( glm::translate( _graphCube2.GetTransform(), Vec3f( 3.0f, .0f, .0f ) ) );
+		
+		_graphCube3.SetTransform( glm::translate( _graphCube3.GetTransform(), Vec3f( 1.5f, .0f, .0f ) ) );
+
+		_graphCube1.Update();
+
+	//	std::cout << "cube 3 pos : " << _graphCube3.GetWorldTransform() << "\n";
 
 		_initCamera();
 
@@ -212,23 +87,29 @@ namespace M3D_ISICG
 
 	void LabWork3::animate( const float p_deltaTime ) {
 
-		_cube.transformationMatrice = glm::rotate( _cube.transformationMatrice, p_deltaTime, Vec3f( 1, 1, 0 ) );
+		//_graphCube1.SetWorldTransform( glm::rotate( _graphCube1.GetWorldTransform(), p_deltaTime, Vec3f( 1, 1, 0 ) ) );
+		
+		_graphCube2.SetTransform( glm::translate( _graphCube2.GetTransform(), Vec3f( -3.0f, .0f, .0f ) ) );
+		_graphCube2.SetTransform( glm::rotate( _graphCube2.GetTransform(), p_deltaTime, Vec3f( 0, 1, 0 ) ) );
+		_graphCube2.SetTransform( glm::translate( _graphCube2.GetTransform(), Vec3f( 3.0f, .0f, .0f ) ) );
+		
+		_graphCube3.SetTransform( glm::translate( _graphCube3.GetTransform(), Vec3f( -1.5f, .0f, .0f ) ) );
+		_graphCube3.SetTransform( glm::rotate( _graphCube3.GetTransform(), p_deltaTime, Vec3f( 0, 1, 0 ) ) );
+		_graphCube3.SetTransform( glm::translate( _graphCube3.GetTransform(), Vec3f( 1.5f, .0f, .0f ) ) );
 
-		_cube2.transformationMatrice = glm::translate( _cube2.transformationMatrice, Vec3f( -3.0f, .0f, .0f ) );
-		_cube2.transformationMatrice = glm::rotate( _cube2.transformationMatrice, p_deltaTime, Vec3f( 0, 1, 0 ) );
-		_cube2.transformationMatrice = glm::translate( _cube2.transformationMatrice, Vec3f( 3.0f, .0f, .0f ) );
+		_graphCube1.Update();
 
 		
+
+
 	}
-
-
 
 
 	void LabWork3::render() { 
 		//glClearColor
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-		_transformationMatrix = _matrixVtoC * _matrixWtoV * _cube.transformationMatrice;
+		_transformationMatrix = _matrixVtoC * _matrixWtoV * _graphCube1.GetWorldTransform();
 		glProgramUniformMatrix4fv(
 			aProgram, transformationMatrix, 1, GL_FALSE, glm::value_ptr( _transformationMatrix ) );
 
@@ -236,12 +117,20 @@ namespace M3D_ISICG
 		glDrawElements( GL_TRIANGLES, _cube.vectorIndices.size(), GL_UNSIGNED_INT, 0 );
 
 		
-		_transformationMatrix = _matrixVtoC * _matrixWtoV * _cube2.transformationMatrice;
+		_transformationMatrix = _matrixVtoC * _matrixWtoV * _graphCube2.GetWorldTransform();
 		glProgramUniformMatrix4fv(
 			aProgram, transformationMatrix, 1, GL_FALSE, glm::value_ptr( _transformationMatrix ) );
 
 		glBindVertexArray( _cube2.VAO );
 		glDrawElements( GL_TRIANGLES, _cube2.vectorIndices.size(), GL_UNSIGNED_INT, 0 );
+
+
+		_transformationMatrix = _matrixVtoC * _matrixWtoV * _graphCube3.GetWorldTransform();
+		glProgramUniformMatrix4fv(
+			aProgram, transformationMatrix, 1, GL_FALSE, glm::value_ptr( _transformationMatrix ) );
+
+		glBindVertexArray( _cube3.VAO );
+		glDrawElements( GL_TRIANGLES, _cube3.vectorIndices.size(), GL_UNSIGNED_INT, 0 );
 
 
 		//glDrawArrays(GL_TRIANGLES ,0,triangleVertexes.size());

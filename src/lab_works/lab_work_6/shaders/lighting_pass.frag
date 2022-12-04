@@ -30,6 +30,16 @@ void main()
     float shininess = texelFetch(gSpecular,ivec2(TexCoords),0).w;
 
 
+	
+//	vec3 position = texture(gPosition,TexCoords).xyz;
+//	vec3 normal = texture(gNormal,TexCoords).xyz;
+//	vec3 ambient = texture(gAmbiant,TexCoords).xyz;
+//	vec3 diffuse = texture(gDiffuse,TexCoords).xyz;
+//	vec3 specular = texture(gSpecular,TexCoords).xyz;
+//	float shininess = texture(gSpecular,TexCoords).w;
+
+	 
+
 	vec3 viewDir = normalize( - position.xyz);
 	vec3 lightDir = normalize(position.xyz - TlightPos);
 
@@ -62,12 +72,12 @@ void main()
 	float e = 0.14f;
 
 	float facteurAtenuation = 1/dot(TlightPos,position)*dot(TlightPos,position); 
-
+	
 	// result = vec3(pow(result.x,1.5),pow(result.y,1.5),pow(result.z,1.5));
 	// result *= facteurAtenuation;
 
 	//result = ((result*(a*result+b))/(result*(c*result+d)+e));
-	fragColor =  vec4(TexCoords,1,1)  ;
+	fragColor =  vec4(normal,1)  ;
 
 	//Transparence
 	//texture(uDiffuseMap,texCoords).w

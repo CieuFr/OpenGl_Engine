@@ -50,7 +50,7 @@ void main()
 		textureNormalOrProgramNormal = texture(uNormalMap,texCoords).xyz;
 		textureNormalOrProgramNormal = normalize(textureNormalOrProgramNormal * 2.0 - 1.0);   
 	} else {
-		textureNormalOrProgramNormal = normal;
+		textureNormalOrProgramNormal = normalize(normal * 2.0 - 1.0);
 	}
 
 	float normalDirection;
