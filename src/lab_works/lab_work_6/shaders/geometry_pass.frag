@@ -132,7 +132,7 @@ void main()
 	
 
 	
-    gPosition = Tposition;
+    gPosition = position.xyz;
  	gNormal = normalize(normalAfterCheck);
 	gAmbiant = afterCheckAmbient;
 	gDiffuse = afterCheckDiffuse;

@@ -29,8 +29,6 @@ namespace M3D_ISICG
 		// Set the color used by glClear to clear the color buffer (in render()).
 		glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );
 
-		
-	
 		glEnable( GL_DEPTH_TEST );
 		// glEnable( GL_BLEND );
 		// glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -102,10 +100,10 @@ namespace M3D_ISICG
 
 		//=============TP 5 ==============/
 
-		_tmm.load( "bunny", FilePath( "./data/models/bunny.obj" ) );
+		_tmm.load( "sponza", FilePath( "./data/models/sponza.obj" ) );
 
 		//REMOVE COMMENT FOR SPONZA
-		//_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
+		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
 
 
 		//=============TP 6 ==============/
@@ -129,7 +127,7 @@ namespace M3D_ISICG
 		const std::string fragShaderStr	  =  _shaderFolder + "lighting_pass.frag" ;
 		std::string		  paths[ 2 ]	  = { vertexShaderStr, fragShaderStr };
 		
-		program2.createProgram( paths );
+		program2.createProgramOnlyFS( fragShaderStr );
 		_lightingPassProgram = program2.getProgramId();
 		std::cout << "programid : " << _lightingPassProgram << "\n";
 		drawQuad2();
@@ -252,7 +250,6 @@ namespace M3D_ISICG
 		glUseProgram( aProgram );
 		glEnable( GL_DEPTH_TEST );
 		// glClearColor
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		if ( luminosityNeedsUpdating )
 		{
@@ -305,8 +302,11 @@ namespace M3D_ISICG
 
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, _fboId );
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		_tmm.render( aProgram );
+
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 
 		if (lightPassEnabled) {
 			renderLightingPass();
@@ -341,7 +341,7 @@ namespace M3D_ISICG
 
 		glUseProgram( _lightingPassProgram );
 		glDisable( GL_DEPTH_TEST );
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		glClear( GL_COLOR_BUFFER_BIT );
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 

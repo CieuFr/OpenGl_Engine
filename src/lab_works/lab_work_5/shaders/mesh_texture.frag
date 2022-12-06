@@ -50,7 +50,7 @@ void main()
 		textureNormalOrProgramNormal = texture(uNormalMap,texCoords).xyz;
 		textureNormalOrProgramNormal = normalize(textureNormalOrProgramNormal * 2.0 - 1.0);   
 	} else {
-		textureNormalOrProgramNormal = normalize(normal * 2.0 - 1.0);
+		textureNormalOrProgramNormal = normal;
 	}
 
 	float normalDirection;
@@ -64,12 +64,7 @@ void main()
 		normalAfterCheck = textureNormalOrProgramNormal;
 	}
 
-	
-
-
 	vec3 H = normalize(viewDir - lightDir);
-
-
 
 	float cosThetaPowShininess = 0;
 
