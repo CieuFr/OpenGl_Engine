@@ -11,8 +11,6 @@
 
 
 
-
-
 namespace M3D_ISICG
 {
 	LabWorkManager::LabWorkManager()
