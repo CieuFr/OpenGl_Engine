@@ -1,5 +1,5 @@
-#ifndef __LAB_WORK_6_HPP__
-#define __LAB_WORK_6_HPP__
+#ifndef __LAB_WORK_8_HPP__
+#define __LAB_WORK_8_HPP__
 
 #include "../common/TrackBallCamera.hpp"
 #include "../common/camera.hpp"
@@ -9,19 +9,17 @@
 #include "GL/gl3w.h"
 #include "common/base_lab_work.hpp"
 #include "define.hpp"
-#include "victor_toolkit/program_wrapper.hpp"
 #include "victor_toolkit/basic_object_drawer.hpp"
-
+#include "victor_toolkit/program_wrapper.hpp"
 #include <vector>
-
 
 namespace M3D_ISICG
 {
-	class LabWork6 : public BaseLabWork
+	class LabWork8 : public BaseLabWork
 	{
 	  public:
-		LabWork6() : BaseLabWork() {}
-		~LabWork6();
+		LabWork8() : BaseLabWork() {}
+		~LabWork8();
 
 		bool init() override;
 		void animate( const float p_deltaTime ) override;
@@ -29,8 +27,7 @@ namespace M3D_ISICG
 		void handleEvents( const SDL_Event & p_event ) override;
 		void displayUI() override;
 
-
-		//TP6
+		// TP6
 		void initGBuffer();
 		void initGBuffer2();
 		// PARAM GBUFFER2
@@ -40,16 +37,14 @@ namespace M3D_ISICG
 		GLuint diffuseTexture;
 		GLuint specularTexture;
 		GLuint depthTexture;
-		
+
 		bool initLightingPassProgram();
 		void renderLightingPass();
 		void drawQuad();
 		void drawQuad2();
-		
+
 		BasicObjectDrawer drawer;
 
-
-		
 	  private:
 		BaseCamera *	_camera = &_baseCamera;
 		TrackBallCamera _trackBallCamera;
@@ -70,17 +65,19 @@ namespace M3D_ISICG
 
 		// =================FIN TP 4 =============
 
-
 		// =================TP 6 ==================
 
-		GLuint		 _fboId;
+		GLuint _fboId;
 		GLuint _gBufferTextures[ 6 ];
 
-		GLenum _drawBuffers[5] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,
-									 GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
+		GLenum _drawBuffers[ 5 ] = { GL_COLOR_ATTACHMENT0,
+									 GL_COLOR_ATTACHMENT1,
+									 GL_COLOR_ATTACHMENT2,
+									 GL_COLOR_ATTACHMENT3,
+									 GL_COLOR_ATTACHMENT4 };
 
 		const char * _listBox[ 5 ] = { "Attachment0", "Attachment1", "Attachment2", "Attachment3", "Attachment4" };
-		int	 _listBoxSelectedValue = 0;
+		int			 _listBoxSelectedValue = 0;
 
 		GLuint quadVAO = 0;
 		GLuint quadVBO;
@@ -114,10 +111,9 @@ namespace M3D_ISICG
 
 		// ================ GL data.
 		GLuint		   aProgram				= GL_INVALID_VALUE;
-		GLuint _lightingPassProgram = GL_INVALID_VALUE;
+		GLuint		   _lightingPassProgram = GL_INVALID_VALUE;
 		ProgramWrapper programWrapper;
 		ProgramWrapper programWrapper2;
-
 
 		// ================
 

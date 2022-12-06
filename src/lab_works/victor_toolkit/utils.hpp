@@ -4,6 +4,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include "GL/gl3w.h"
+
 
 static inline std::string readFile( const std::string & p_filePath )
 {
@@ -16,6 +18,5 @@ static inline std::string readFile( const std::string & p_filePath )
 	ifs.close();
 	return s.str();
 }
-
 
 #endif

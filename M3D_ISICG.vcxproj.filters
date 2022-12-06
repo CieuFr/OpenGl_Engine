@@ -118,6 +118,9 @@
     <ClCompile Include="src\lab_works\lab_work_6\lab_work_6.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\lab_works\lab_work_8\lab_work_8.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\application.hpp">
@@ -191,6 +194,8 @@
     <ClInclude Include="src\lab_works\victor_toolkit\program_wrapper.hpp" />
     <ClInclude Include="src\lab_works\victor_toolkit\utils.hpp" />
     <ClInclude Include="src\lab_works\lab_work_3\scene_graph.hpp" />
+    <ClInclude Include="src\lab_works\victor_toolkit\basic_object_drawer.hpp" />
+    <ClInclude Include="src\lab_works\lab_work_8\lab_work_8.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\lab_works\lab_work_1\shaders\lw1.frag">

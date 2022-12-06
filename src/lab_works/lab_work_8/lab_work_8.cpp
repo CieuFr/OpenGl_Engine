@@ -1,6 +1,6 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui.h"
-#include "lab_work_6.hpp"
+#include "lab_work_8.hpp"
 #include "utils/random.hpp"
 #include "utils/read_file.hpp"
 #include <iostream>
@@ -8,22 +8,21 @@
 namespace M3D_ISICG
 {
 
-	const std::string LabWork6::_shaderFolder = "src/lab_works/lab_work_6/shaders/";
+	const std::string LabWork8::_shaderFolder = "src/lab_works/lab_work_8/shaders/";
 
-	LabWork6::~LabWork6() { 
+	LabWork8::~LabWork8()
+	{
 		glDeleteProgram( aProgram );
 		glDisableVertexArrayAttrib( quadVAO, 0 );
 		glDeleteVertexArrays( 1, &quadVAO );
 		// Delete VBO
 		glDeleteBuffers( 1, &quadVBO );
 
-
 		// Delete VBO
 		glDeleteBuffers( 1, &quadEBO );
-	
 	}
 
-	bool LabWork6::init()
+	bool LabWork8::init()
 	{
 		std::cout << "Initializing lab work 1..." << std::endl;
 		// Set the color used by glClear to clear the color buffer (in render()).
@@ -33,10 +32,10 @@ namespace M3D_ISICG
 		// glEnable( GL_BLEND );
 		// glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 		// Chemin des shaders
-		const std::string vertexShaderStr =  _shaderFolder + "geometry_pass.vert" ;
-		const std::string fragShaderStr	  =  _shaderFolder + "geometry_pass.frag" ;
-		std::string paths[ 2 ] = { vertexShaderStr, fragShaderStr };
-		programWrapper.createProgram(paths);
+		const std::string vertexShaderStr = _shaderFolder + "geometry_pass.vert";
+		const std::string fragShaderStr	  = _shaderFolder + "geometry_pass.frag";
+		std::string		  paths[ 2 ]	  = { vertexShaderStr, fragShaderStr };
+		programWrapper.createProgram( paths );
 		aProgram = programWrapper.getProgramId();
 
 		_initCamera();
@@ -52,9 +51,8 @@ namespace M3D_ISICG
 
 		_tmm.load( "sponza", FilePath( "./data/models/sponza.obj" ) );
 
-		//REMOVE COMMENT FOR SPONZA
+		// REMOVE COMMENT FOR SPONZA
 		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
-
 
 		//=============TP 6 ==============/
 
@@ -68,28 +66,25 @@ namespace M3D_ISICG
 		return true;
 	}
 
-	void LabWork6::animate( const float p_deltaTime ) {}
+	void LabWork8::animate( const float p_deltaTime ) {}
 
-
-	bool LabWork6::initLightingPassProgram()
+	bool LabWork8::initLightingPassProgram()
 	{
-		const std::string vertexShaderStr =  _shaderFolder + "lighting_pass.vert" ;
-		const std::string fragShaderStr	  =  _shaderFolder + "lighting_pass.frag" ;
+		const std::string vertexShaderStr = _shaderFolder + "lighting_pass.vert";
+		const std::string fragShaderStr	  = _shaderFolder + "lighting_pass.frag";
 		std::string		  paths[ 2 ]	  = { vertexShaderStr, fragShaderStr };
-		
+
 		programWrapper2.createProgramOnlyFS( fragShaderStr );
 		_lightingPassProgram = programWrapper2.getProgramId();
-		
+
 		quadVAO = drawer.drawQuad();
 
 		return true;
-
 	}
 
-	
-// TP6
-	
-	void LabWork6::initGBuffer()
+	// TP6
+
+	void LabWork8::initGBuffer()
 	{
 		/*glGenRenderbuffers( 1, &rboDepth );
 		glBindRenderbuffer( GL_RENDERBUFFER, rboDepth );
@@ -122,7 +117,7 @@ namespace M3D_ISICG
 		}
 	}
 
-	void LabWork6::initGBuffer2()
+	void LabWork8::initGBuffer2()
 	{
 		glCreateFramebuffers( 1, &_fboId );
 		glBindFramebuffer( GL_FRAMEBUFFER, _fboId );
@@ -174,8 +169,8 @@ namespace M3D_ISICG
 		glNamedFramebufferTexture( _fboId, GL_DEPTH_ATTACHMENT, depthTexture, 0 );
 
 		// Créer un tableau des attachments pour le framebuffer
-		GLuint attachments[ 5 ] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,
-									GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4
+		GLuint attachments[ 5 ] = {
+			GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4
 		};
 		glNamedFramebufferDrawBuffers( _fboId, 5, attachments );
 
@@ -185,16 +180,15 @@ namespace M3D_ISICG
 		_gBufferTextures[ 3 ] = diffuseTexture;
 		_gBufferTextures[ 4 ] = specularTexture;
 		_gBufferTextures[ 5 ] = depthTexture;
-		
+
 		// Vérifier que le framebuffer
 		if ( glCheckNamedFramebufferStatus( _fboId, GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
 		{
 			std::cout << "Error: GBuffer framebuffer is incomplete!" << std::endl;
 		}
-		
 	}
-	
-	void LabWork6::render()
+
+	void LabWork8::render()
 	{
 		glUseProgram( aProgram );
 		glEnable( GL_DEPTH_TEST );
@@ -249,7 +243,6 @@ namespace M3D_ISICG
 		glProgramUniform3fv(
 			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera->_position ) );
 
-
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, _fboId );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -257,7 +250,8 @@ namespace M3D_ISICG
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 
-		if (lightPassEnabled) {
+		if ( lightPassEnabled )
+		{
 			renderLightingPass();
 		}
 		else
@@ -277,35 +271,31 @@ namespace M3D_ISICG
 									GL_COLOR_BUFFER_BIT,
 									GL_NEAREST );
 		}
-	
-		
 
-		
-		
-		//TODO CLEAN , UNIFORM, TEXTURE, DRAW
-
+		// TODO CLEAN , UNIFORM, TEXTURE, DRAW
 	}
 
-	void LabWork6::renderLightingPass() {
-
+	void LabWork8::renderLightingPass()
+	{
 		glUseProgram( _lightingPassProgram );
 		glDisable( GL_DEPTH_TEST );
 		glClear( GL_COLOR_BUFFER_BIT );
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 
-		for ( size_t i = 0; i < 5; i++ ) {
+		for ( size_t i = 0; i < 5; i++ )
+		{
 			glBindTextureUnit( i, _gBufferTextures[ i ] );
 		}
-		
-		//ATTENTION A PASSER EN TANGENT SPACE
+
+		// ATTENTION A PASSER EN TANGENT SPACE
 		glProgramUniform3fv( _lightingPassProgram,
 							 glGetUniformLocation( aProgram, "TlightPos" ),
 							 1,
 							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position, 1 ) ) );
 
 		glBindVertexArray( quadVAO );
-		
+
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 
 		glBindVertexArray( 0 );
@@ -314,55 +304,52 @@ namespace M3D_ISICG
 		{
 			glBindTextureUnit( i, 0 );
 		}
-		
-
 	}
 
-	
-	void LabWork6::drawQuad2()
+	void LabWork8::drawQuad2()
+	{
+		int _indices[ 6 ] = { 0, 1, 2, 2, 1, 3 };
+		// Les sommets du rectangle
+		float _vertices[] = {
+			-1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+
+		unsigned int _vbo, _ebo;
+
+		glCreateBuffers( 1, &_vbo );
+		glCreateBuffers( 1, &_ebo );
+		glNamedBufferData( _vbo, sizeof( _vertices ), _vertices, GL_STATIC_DRAW );
+
+		glNamedBufferData( _ebo, sizeof( _indices ), _indices, GL_STATIC_DRAW );
+
+		glCreateVertexArrays( 1, &quadVAO );
+
+		glEnableVertexArrayAttrib( quadVAO, 0 );
+		glEnableVertexArrayAttrib( quadVAO, 1 );
+
+		glVertexArrayAttribFormat( quadVAO, 0, 3, GL_FLOAT, GL_FALSE, 0 );
+		glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_FALSE, 3 * sizeof( float ) );
+
+		glVertexArrayAttribBinding( quadVAO, 0, 0 );
+		glVertexArrayAttribBinding( quadVAO, 1, 0 );
+
+		glVertexArrayVertexBuffer( quadVAO, 0, _vbo, 0, 5 * sizeof( float ) );
+
+		glVertexArrayElementBuffer( quadVAO, _ebo );
+	}
+
+	void LabWork8::drawQuad()
+	{
+		if ( quadVAO == 0 )
 		{
-			int _indices[ 6 ] = { 0, 1, 2, 2, 1, 3 };
-			// Les sommets du rectangle
-			float _vertices[] = { 
-					-1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-				1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
-			};
-
-			unsigned int _vbo, _ebo;
-
-			glCreateBuffers( 1, &_vbo );
-			glCreateBuffers( 1, &_ebo );
-			glNamedBufferData( _vbo, sizeof( _vertices ), _vertices, GL_STATIC_DRAW );
-
-			glNamedBufferData( _ebo,  sizeof( _indices ), _indices, GL_STATIC_DRAW );
-
-			glCreateVertexArrays( 1, &quadVAO );
-
-			glEnableVertexArrayAttrib( quadVAO, 0 );
-			glEnableVertexArrayAttrib( quadVAO, 1 );
-
-			glVertexArrayAttribFormat( quadVAO, 0, 3, GL_FLOAT, GL_FALSE, 0 );
-			glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_FALSE, 3*sizeof(float) );
-
-			glVertexArrayAttribBinding( quadVAO, 0, 0 );
-			glVertexArrayAttribBinding( quadVAO, 1, 0 );
-
-			glVertexArrayVertexBuffer( quadVAO, 0, _vbo, 0, 5 * sizeof( float ) );
-
-			glVertexArrayElementBuffer( quadVAO, _ebo );
-
-		}
-	
-
-	void LabWork6::drawQuad() {
-		if (quadVAO == 0) {
 			Vec2f triangleVertices[ 4 ]
 				= { Vec2f( -1.f, -1.f ), Vec2f( -1.f, 1.f ), Vec2f( 1.f, -1.f ), Vec2f( 1.f, 1.f ) };
 			static float texCoords[] = { 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0 };
 
 			int eboPositions[ 6 ] = { 0, 1, 2, 1, 2, 3 };
 
-			 glCreateVertexArrays( 1, &quadVAO );
+			glCreateVertexArrays( 1, &quadVAO );
 
 			glEnableVertexArrayAttrib( quadVAO, 0 );
 			glEnableVertexArrayAttrib( quadVAO, 1 );
@@ -379,19 +366,16 @@ namespace M3D_ISICG
 			glVertexArrayElementBuffer( quadVAO, quadEBO );
 
 			glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_TRUE, 0 );
-			glVertexArrayVertexBuffer( quadVAO, 1, quadVBO2, 0, 2* sizeof( float ) );
+			glVertexArrayVertexBuffer( quadVAO, 1, quadVBO2, 0, 2 * sizeof( float ) );
 			glVertexArrayAttribBinding( quadVAO, 1, 1 );
 
 			glNamedBufferData( quadVBO, 4 * sizeof( Vec2f ), &triangleVertices, GL_STATIC_DRAW );
 			glNamedBufferData( quadVBO2, 8 * sizeof( float ), &texCoords, GL_STATIC_DRAW );
 			glNamedBufferData( quadEBO, 6 * sizeof( int ), &eboPositions, GL_STATIC_DRAW );
-		
 		}
-		
-
 	}
 
-	void LabWork6::handleEvents( const SDL_Event & p_event )
+	void LabWork8::handleEvents( const SDL_Event & p_event )
 	{
 		if ( p_event.type == SDL_KEYDOWN )
 		{
@@ -434,7 +418,7 @@ namespace M3D_ISICG
 		}
 	}
 
-	void LabWork6::displayUI()
+	void LabWork8::displayUI()
 	{
 		luminosityNeedsUpdating = ImGui::SliderFloat( "Luminosity", &_luminosity, 0, 1 );
 		if ( ImGui::ColorEdit3( "BackGround Color", glm::value_ptr( _bgColor ) ) )
@@ -446,9 +430,9 @@ namespace M3D_ISICG
 		perspecNeedsUpdating = ImGui::Checkbox( "Ortho", &perspecOrtho );
 
 		ImGui::Checkbox( "LightingPass", &lightPassEnabled );
-		
-		//source imgui
-		
+
+		// source imgui
+
 		if ( ImGui::BeginListBox( "ATTACHMENT TO DISPLAY" ) )
 		{
 			for ( int n = 0; n < 5; n++ )
@@ -469,19 +453,19 @@ namespace M3D_ISICG
 		ImGui::End();
 	}
 
-	void LabWork6::_updateViewMatrix()
+	void LabWork8::_updateViewMatrix()
 	{
 		_matrixWtoV			  = _camera->getViewMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 	}
 
-	void LabWork6::_updateProjectionMatrix()
+	void LabWork8::_updateProjectionMatrix()
 	{
 		_matrixVtoC			  = _camera->getProjectionMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 	}
 
-	void LabWork6::_initCamera()
+	void LabWork8::_initCamera()
 	{
 		_camera->setScreenSize( 1280, 720 );
 		_camera->setPosition( Vec3f( 0.f, 0.f, 0.2f ) );

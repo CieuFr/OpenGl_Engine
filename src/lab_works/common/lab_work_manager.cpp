@@ -7,6 +7,8 @@
 #include "lab_work_5/lab_work_5.hpp"
 #include "lab_work_6/lab_work_6.hpp"
 #include "lab_work_7/lab_work_7.hpp"
+#include "lab_work_8/lab_work_8.hpp"
+
 
 
 
@@ -15,8 +17,8 @@ namespace M3D_ISICG
 {
 	LabWorkManager::LabWorkManager()
 	{
-		_current = new LabWork6();
-		_type	 = TYPE::LAB_WORK_6;
+		_current = new LabWork8();
+		_type	 = TYPE::LAB_WORK_8;
 	}
 
 	void LabWorkManager::drawMenu()
@@ -105,6 +107,16 @@ namespace M3D_ISICG
 			}
 		}
 
+		if ( ImGui ::MenuItem( " Lab work 8 " ) )
+		{
+			if ( _type != TYPE ::LAB_WORK_8 ) // Change only if needed .
+			{
+				delete _current;			  // Delete old lab work .
+				_current = new LabWork8();	  // Create new lab work .
+				_type	 = TYPE ::LAB_WORK_8; // Update type .
+				_current->init();			  // Don ’t forget to call init ().
+			}
+		}
 		
 
 	

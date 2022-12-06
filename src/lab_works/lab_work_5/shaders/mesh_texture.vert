@@ -15,25 +15,26 @@ uniform vec3 lightPos;
 
 out vec3 normal;
 out vec4 position;
-out vec3 Tposition;
+out vec3 tangentPosition;
 out vec2 texCoords;
-out vec3 TlightPos;
+out vec3 tangentLightPos;
+out vec3 viewLightPos;
+
+
+
 
 void main()
 {
 	gl_Position = uMVPMatrix * vec4( aVertexPosition, 1.f );
 	position = MVMatrix *  vec4( aVertexPosition, 1.f );
-	normal =  normalMatrix * aVertexNormal;
 	texCoords = aVertexTexCoords;
-	normal = normalize(normal);
-	vec3 T = normalize(vec3(MVMatrix * vec4(aVertexTangent,0.0)));
-	
-    //vec3 B = normalize(vec3(MVMatrix * vec4(aVertexBitagent,0.0)));
-    vec3 N = normalize(vec3(MVMatrix * vec4(aVertexNormal,0.0)));
+	vec3 T = normalize(vec3(normalMatrix * aVertexTangent));
+    vec3 N = normalize(vec3(normalMatrix * aVertexNormal ));
 	T = normalize ( T - dot (T , N ) * N );
 	vec3 B = cross (N , T );
     mat3 inv_TBN = transpose(mat3(T, B, N));
-	TlightPos =  inv_TBN * lightPos;
-	Tposition = inv_TBN * position.xyz ;
-
+	tangentLightPos =  inv_TBN * lightPos;
+	tangentPosition = inv_TBN * position.xyz ;
+	normal = normalMatrix * aVertexNormal;
+	viewLightPos = lightPos;
 }

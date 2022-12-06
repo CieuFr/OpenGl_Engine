@@ -12,10 +12,9 @@ layout (binding = 5) uniform sampler2D uNormalMap;
 in vec3 normal;
 in vec4 position;
 in vec2 texCoords;
-in vec3 TlightPos;
-in vec3 Tposition;
-
-
+in vec3 tangentLightPos;
+in vec3 tangentPosition;
+in vec3 viewLightPos;
 
 uniform vec3 ambient;
 uniform float luminosity;
@@ -38,20 +37,28 @@ uniform bool uHasNormalMap;
 void main()
 {
      // TEXTURES
-	 if(texture(uDiffuseMap,texCoords).w <0.5) discard;
+	if(texture(uDiffuseMap,texCoords).w <0.5) discard;
 
 	//BLIN PHONG
-	vec3 viewDir = normalize( - position.xyz);
-	vec3 lightDir = normalize(position.xyz - TlightPos);
+	
+	vec3 afterCheckLightPos;
+	vec3 afterCheckPosition;
 
 	vec3 textureNormalOrProgramNormal;
 
 	if(uHasNormalMap){
 		textureNormalOrProgramNormal = texture(uNormalMap,texCoords).xyz;
 		textureNormalOrProgramNormal = normalize(textureNormalOrProgramNormal * 2.0 - 1.0);   
+		afterCheckLightPos = tangentLightPos;
+		afterCheckPosition = tangentPosition;
 	} else {
-		textureNormalOrProgramNormal = normal;
+		textureNormalOrProgramNormal =  normalize(normal) ;
+		afterCheckPosition = position.xyz;
+		afterCheckLightPos = viewLightPos;
 	}
+
+	vec3 viewDir = normalize( - afterCheckPosition.xyz);
+	vec3 lightDir = normalize(afterCheckPosition.xyz - afterCheckLightPos);
 
 	float normalDirection;
 	normalDirection = dot(textureNormalOrProgramNormal,viewDir);
@@ -75,7 +82,6 @@ void main()
 	}
 
 
-
 	vec3 specularLighting = vec3(0,0,0); 
 	if(uHasSpecularMap){
 		 specularLighting = vec3(texture(uSpecularMap,texCoords)).xxx * cosThetaPowShininess ;
@@ -84,8 +90,7 @@ void main()
 	}
 
 
-
-	float cosTheta = max(dot(normalize(normalAfterCheck),normalize(TlightPos-position.xyz)),0.f);
+	float cosTheta = max(dot(normalize(normalAfterCheck),normalize(afterCheckLightPos-afterCheckPosition.xyz)),0.f);
 
 	vec3 diffuseLight = vec3(0.0,0.0,0.0);
 
@@ -110,7 +115,7 @@ void main()
 	float d = 0.59f;
 	float e = 0.14f;
 
-	float facteurAtenuation = 1/dot(TlightPos,Tposition)*dot(TlightPos,Tposition);
+	float facteurAtenuation = 1/dot(afterCheckLightPos,afterCheckPosition)*dot(afterCheckLightPos,afterCheckPosition);
 
 	 result = vec3(pow(result.x,1.5),pow(result.y,1.5),pow(result.z,1.5));
 	// result *= facteurAtenuation;
