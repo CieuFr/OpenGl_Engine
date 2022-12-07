@@ -5,6 +5,8 @@
 #include "utils/read_file.hpp"
 #include <iostream>
 #include "victor_toolkit/utils.hpp"
+#include "glm/gtc/type_ptr.hpp"
+
 
 
 namespace M3D_ISICG
@@ -303,6 +305,20 @@ namespace M3D_ISICG
 		glBindTextureUnit( 0, _gBufferTextures[ 0 ] );
 		glBindTextureUnit( 1, _gBufferTextures[ 1 ] );
 		glBindTextureUnit( 2, noiseTexture );
+
+
+	
+		glProgramUniform3fv( programWrapper3.getProgramId(),
+							 glGetUniformLocation( programWrapper3.getProgramId(), "samples" ),
+								 64,
+								 reinterpret_cast<float *>( ssaoKernel.data() ) );
+
+		glProgramUniformMatrix4fv( programWrapper3.getProgramId(),
+								   glGetUniformLocation( programWrapper3.getProgramId(), "projection" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( _camera->getProjectionMatrix() ) );
+
 
 		glBindVertexArray( quadVAO );
 
