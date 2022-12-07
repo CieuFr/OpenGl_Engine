@@ -274,7 +274,7 @@ namespace M3D_ISICG
 									0,
 									_windowWidth,
 									_windowHeight,
-									GL_COLOR_BUFFER_BIT,
+									GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
 									GL_NEAREST );
 		}
 	

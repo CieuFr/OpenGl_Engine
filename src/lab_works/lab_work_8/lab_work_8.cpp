@@ -4,6 +4,8 @@
 #include "utils/random.hpp"
 #include "utils/read_file.hpp"
 #include <iostream>
+#include "victor_toolkit/utils.hpp"
+
 
 namespace M3D_ISICG
 {
@@ -58,6 +60,7 @@ namespace M3D_ISICG
 
 		initLightingPassProgram();
 		initGBuffer();
+		initAOPasses();
 
 		// INIT du program
 		glUseProgram( aProgram );
@@ -82,16 +85,67 @@ namespace M3D_ISICG
 		return true;
 	}
 
+
+	bool LabWork8::initAOPasses()
+	{
+		const std::string fragShaderStr	  = _shaderFolder + "ssao_blur.frag";
+		const std::string fragShaderStr2 = _shaderFolder + "ssao.frag";
+
+		programWrapper3.createProgramOnlyFS( fragShaderStr );
+		programWrapper4.createProgramOnlyFS( fragShaderStr2 );
+
+		glGenFramebuffers( 1, &ssaoFBO );
+		glGenFramebuffers( 1, &ssaoBlurFBO );
+
+		computeAO();
+
+		glCreateTextures( GL_TEXTURE_2D, 1, &noiseTexture );
+		glTextureStorage2D( noiseTexture, 1, GL_RGBA32F, _windowWidth, _windowHeight );
+		glTextureParameteri( noiseTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( noiseTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glTextureParameteri( noiseTexture, GL_TEXTURE_WRAP_S, GL_REPEAT );
+		glTextureParameteri( noiseTexture, GL_TEXTURE_WRAP_T, GL_REPEAT );
+		glTextureSubImage2D( ssaoColorBuffer, 0, 0, 0, _windowWidth, _windowHeight, GL_RED, GL_FLOAT, &ssaoNoise[ 0 ] );
+		
+		glCreateTextures( GL_TEXTURE_2D, 1, &ssaoColorBuffer );
+		glTextureStorage2D( ssaoColorBuffer, 1, GL_RGBA32F, _windowWidth, _windowHeight );
+		glTextureParameteri( ssaoColorBuffer, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( ssaoColorBuffer, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( ssaoFBO, GL_COLOR_ATTACHMENT0, ssaoColorBuffer, 0 );
+
+		glTextureSubImage2D( ssaoColorBuffer, 0, 0, 0, _windowWidth, _windowHeight, GL_RED, GL_FLOAT, NULL );
+
+		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _fboId, GL_DRAW_FRAMEBUFFER ) )
+		{
+			std::cout << "FRAMEBUFFER SSAOFBO ERROR \n";
+		}
+
+		glCreateTextures( GL_TEXTURE_2D, 1, &ssaoColorBufferBlur );
+		glTextureStorage2D( ssaoColorBufferBlur, 1, GL_RGBA32F, _windowWidth, _windowHeight );
+		glTextureParameteri( ssaoColorBufferBlur, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( ssaoColorBufferBlur, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( ssaoBlurFBO, GL_COLOR_ATTACHMENT0, ssaoColorBufferBlur, 0 );
+		glTextureSubImage2D( ssaoColorBufferBlur, 0, 0, 0, _windowWidth, _windowHeight, GL_RED, GL_FLOAT, NULL );
+
+
+		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( ssaoBlurFBO, GL_DRAW_FRAMEBUFFER ) )
+		{
+			std::cout << "FRAMEBUFFER SSAOFBO ERROR \n";
+		}
+
+
+		//glNamedFramebufferDrawBuffers( _fboId, 6, _drawBuffers );
+
+
+
+		return true;
+	}
+
+
 	// TP6
 
 	void LabWork8::initGBuffer()
 	{
-		/*glGenRenderbuffers( 1, &rboDepth );
-		glBindRenderbuffer( GL_RENDERBUFFER, rboDepth );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT );
-		glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth );*/
-
-		// INIT FBO
 		glCreateFramebuffers( 1, &_fboId );
 
 		glCreateTextures( GL_TEXTURE_2D, 6, _gBufferTextures );
@@ -117,76 +171,6 @@ namespace M3D_ISICG
 		}
 	}
 
-	void LabWork8::initGBuffer2()
-	{
-		glCreateFramebuffers( 1, &_fboId );
-		glBindFramebuffer( GL_FRAMEBUFFER, _fboId );
-		// Créer un texture attachment pour stocker les positions des fragments
-
-		glCreateTextures( GL_TEXTURE_2D, 1, &positionTexture );
-		glTextureStorage2D( positionTexture, 1, GL_RGB16F, _windowWidth, _windowHeight );
-		glTextureParameteri( positionTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTextureParameteri( positionTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glNamedFramebufferTexture( _fboId, GL_COLOR_ATTACHMENT0, positionTexture, 0 );
-
-		// Créer un texture attachment pour stocker les normales des fragments
-
-		glCreateTextures( GL_TEXTURE_2D, 1, &normalTexture );
-		glTextureStorage2D( normalTexture, 1, GL_RGB16F, _windowWidth, _windowHeight );
-		glTextureParameteri( normalTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTextureParameteri( normalTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glNamedFramebufferTexture( _fboId, GL_COLOR_ATTACHMENT1, normalTexture, 0 );
-
-		// Créer un texture attachment pour stocker les ambient des fragments
-
-		glCreateTextures( GL_TEXTURE_2D, 1, &ambientTexture );
-		glTextureStorage2D( ambientTexture, 1, GL_RGBA16F, _windowWidth, _windowHeight );
-		glTextureParameteri( ambientTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTextureParameteri( ambientTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glNamedFramebufferTexture( _fboId, GL_COLOR_ATTACHMENT2, ambientTexture, 0 );
-
-		// Créer un texture attachment pour stocker les diffuse des fragments
-
-		glCreateTextures( GL_TEXTURE_2D, 1, &diffuseTexture );
-		glTextureStorage2D( diffuseTexture, 1, GL_RGBA16F, _windowWidth, _windowHeight );
-		glTextureParameteri( diffuseTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTextureParameteri( diffuseTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glNamedFramebufferTexture( _fboId, GL_COLOR_ATTACHMENT3, diffuseTexture, 0 );
-
-		// Créer un texture attachment pour stocker les specular des fragments
-
-		glCreateTextures( GL_TEXTURE_2D, 1, &specularTexture );
-		glTextureStorage2D( specularTexture, 1, GL_RGBA16F, _windowWidth, _windowHeight );
-		glTextureParameteri( specularTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTextureParameteri( specularTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glNamedFramebufferTexture( _fboId, GL_COLOR_ATTACHMENT4, specularTexture, 0 );
-
-		// Créer un texture attachment pour stocker les profondeurs des fragments
-		glCreateTextures( GL_TEXTURE_2D, 1, &depthTexture );
-		glTextureStorage2D( depthTexture, 1, GL_DEPTH_COMPONENT32F, _windowWidth, _windowHeight );
-		glTextureParameteri( depthTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTextureParameteri( depthTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glNamedFramebufferTexture( _fboId, GL_DEPTH_ATTACHMENT, depthTexture, 0 );
-
-		// Créer un tableau des attachments pour le framebuffer
-		GLuint attachments[ 5 ] = {
-			GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4
-		};
-		glNamedFramebufferDrawBuffers( _fboId, 5, attachments );
-
-		_gBufferTextures[ 0 ] = positionTexture;
-		_gBufferTextures[ 1 ] = normalTexture;
-		_gBufferTextures[ 2 ] = ambientTexture;
-		_gBufferTextures[ 3 ] = diffuseTexture;
-		_gBufferTextures[ 4 ] = specularTexture;
-		_gBufferTextures[ 5 ] = depthTexture;
-
-		// Vérifier que le framebuffer
-		if ( glCheckNamedFramebufferStatus( _fboId, GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
-		{
-			std::cout << "Error: GBuffer framebuffer is incomplete!" << std::endl;
-		}
-	}
 
 	void LabWork8::render()
 	{
@@ -252,6 +236,7 @@ namespace M3D_ISICG
 
 		if ( lightPassEnabled )
 		{
+			renderAOPasses();
 			renderLightingPass();
 		}
 		else
@@ -283,10 +268,12 @@ namespace M3D_ISICG
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 
-		for ( size_t i = 0; i < 5; i++ )
+		for ( size_t i = 0; i < 6; i++ )
 		{
 			glBindTextureUnit( i, _gBufferTextures[ i ] );
 		}
+		glBindTextureUnit( 6,ssaoColorBufferBlur );
+
 
 		// ATTENTION A PASSER EN TANGENT SPACE
 		glProgramUniform3fv( _lightingPassProgram,
@@ -300,80 +287,81 @@ namespace M3D_ISICG
 
 		glBindVertexArray( 0 );
 
-		for ( size_t i = 0; i < 5; i++ )
+		for ( size_t i = 0; i < 6; i++ )
 		{
 			glBindTextureUnit( i, 0 );
 		}
 	}
 
-	void LabWork8::drawQuad2()
-	{
-		int _indices[ 6 ] = { 0, 1, 2, 2, 1, 3 };
-		// Les sommets du rectangle
-		float _vertices[] = {
-			-1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-			1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
-		};
 
-		unsigned int _vbo, _ebo;
+	void LabWork8::renderAOPasses() {
+		glBindFramebuffer( GL_FRAMEBUFFER, ssaoFBO );
+		programWrapper3.useProgram();
+		glDisable( GL_DEPTH_TEST );
+		glClear( GL_COLOR_BUFFER_BIT );
 
-		glCreateBuffers( 1, &_vbo );
-		glCreateBuffers( 1, &_ebo );
-		glNamedBufferData( _vbo, sizeof( _vertices ), _vertices, GL_STATIC_DRAW );
+		glBindTextureUnit( 0, _gBufferTextures[ 0 ] );
+		glBindTextureUnit( 1, _gBufferTextures[ 1 ] );
+		glBindTextureUnit( 2, noiseTexture );
 
-		glNamedBufferData( _ebo, sizeof( _indices ), _indices, GL_STATIC_DRAW );
+		glBindVertexArray( quadVAO );
 
-		glCreateVertexArrays( 1, &quadVAO );
+		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 
-		glEnableVertexArrayAttrib( quadVAO, 0 );
-		glEnableVertexArrayAttrib( quadVAO, 1 );
+		glBindVertexArray( 0 );
 
-		glVertexArrayAttribFormat( quadVAO, 0, 3, GL_FLOAT, GL_FALSE, 0 );
-		glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_FALSE, 3 * sizeof( float ) );
+		glBindTextureUnit( 1, 0 );
+		glBindTextureUnit( 2, 0 );
+		glBindTextureUnit( 0, 0 );
 
-		glVertexArrayAttribBinding( quadVAO, 0, 0 );
-		glVertexArrayAttribBinding( quadVAO, 1, 0 );
+		
+		glBindFramebuffer( GL_FRAMEBUFFER, ssaoBlurFBO );
+		programWrapper4.useProgram();
+		glDisable( GL_DEPTH_TEST );
+		glClear( GL_COLOR_BUFFER_BIT );
 
-		glVertexArrayVertexBuffer( quadVAO, 0, _vbo, 0, 5 * sizeof( float ) );
+		glBindTextureUnit( 0, ssaoColorBuffer );
+	
+		glBindVertexArray( quadVAO );
 
-		glVertexArrayElementBuffer( quadVAO, _ebo );
+		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+
+		glBindVertexArray( 0 );
+
+		glBindTextureUnit( 1, 0 );
+
 	}
 
-	void LabWork8::drawQuad()
-	{
-		if ( quadVAO == 0 )
+	void LabWork8::computeAO() {
+		std::uniform_real_distribution<float> randomFloats( 0.f, 1.f ); // generates random floats between 0.0 and 1.0
+		std::default_random_engine			  generator;
+		
+		for ( unsigned int i = 0; i < 64; ++i )
 		{
-			Vec2f triangleVertices[ 4 ]
-				= { Vec2f( -1.f, -1.f ), Vec2f( -1.f, 1.f ), Vec2f( 1.f, -1.f ), Vec2f( 1.f, 1.f ) };
-			static float texCoords[] = { 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0 };
+			glm::vec3 sample( randomFloats( generator ) * 2.0 - 1.0,
+							  randomFloats( generator ) * 2.0 - 1.0,
+							  randomFloats( generator ) );
+			sample = glm::normalize( sample );
+			sample *= randomFloats( generator );
+			float scale = float( i ) / 64.0f;
 
-			int eboPositions[ 6 ] = { 0, 1, 2, 1, 2, 3 };
-
-			glCreateVertexArrays( 1, &quadVAO );
-
-			glEnableVertexArrayAttrib( quadVAO, 0 );
-			glEnableVertexArrayAttrib( quadVAO, 1 );
-
-			// Init VBO  Vertex Buffer Object Sommet
-			glCreateBuffers( 1, &quadVBO );
-			glCreateBuffers( 1, &quadVBO2 );
-			// Creation EBO Sommet
-			glCreateBuffers( 1, &quadEBO );
-
-			glVertexArrayAttribFormat( quadVAO, 0, 2, GL_FLOAT, GL_FALSE, 0 );
-			glVertexArrayVertexBuffer( quadVAO, 0, quadVBO, 0, sizeof( Vec2f ) );
-			glVertexArrayAttribBinding( quadVAO, 0, 0 );
-			glVertexArrayElementBuffer( quadVAO, quadEBO );
-
-			glVertexArrayAttribFormat( quadVAO, 1, 2, GL_FLOAT, GL_TRUE, 0 );
-			glVertexArrayVertexBuffer( quadVAO, 1, quadVBO2, 0, 2 * sizeof( float ) );
-			glVertexArrayAttribBinding( quadVAO, 1, 1 );
-
-			glNamedBufferData( quadVBO, 4 * sizeof( Vec2f ), &triangleVertices, GL_STATIC_DRAW );
-			glNamedBufferData( quadVBO2, 8 * sizeof( float ), &texCoords, GL_STATIC_DRAW );
-			glNamedBufferData( quadEBO, 6 * sizeof( int ), &eboPositions, GL_STATIC_DRAW );
+			// scale samples s.t. they're more aligned to center of kernel
+			scale = myLerp( 0.1f, 1.0f, scale * scale );
+			sample *= scale;
+			ssaoKernel.push_back( sample );
 		}
+
+		for ( unsigned int i = 0; i < 16; i++ )
+		{
+			glm::vec3 noise( randomFloats( generator ) * 2.0 - 1.0,
+							 randomFloats( generator ) * 2.0 - 1.0,
+							 0.0f ); // rotate around z-axis (in tangent space)
+			ssaoNoise.push_back( noise );
+		}
+
+
 	}
+
 
 	void LabWork8::handleEvents( const SDL_Event & p_event )
 	{

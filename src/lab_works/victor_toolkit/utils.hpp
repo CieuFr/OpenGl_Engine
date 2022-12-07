@@ -19,4 +19,7 @@ static inline std::string readFile( const std::string & p_filePath )
 	return s.str();
 }
 
+
+static float myLerp( float a, float b, float f ) { return a + f * ( b - a ); }
+
 #endif

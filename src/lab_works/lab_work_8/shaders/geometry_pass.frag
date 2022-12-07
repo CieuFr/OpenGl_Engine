@@ -5,6 +5,8 @@ layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec3 gAmbiant;
 layout (location = 3) out vec3 gDiffuse;
 layout (location = 4) out vec4 gSpecular;
+layout (location = 5) out vec3 gAlbedo;
+
 
 layout (binding = 1) uniform sampler2D uDiffuseMap;
 layout (binding = 2) uniform sampler2D uAmbientMap;
@@ -100,6 +102,7 @@ void main()
 	gAmbiant = afterCheckAmbient;
 	gDiffuse = afterCheckDiffuse;
 	gSpecular =vec4(afterCheckSpecular,shininess);
+	gAlbedo.rgb = vec3(0.95);
 
 
 }

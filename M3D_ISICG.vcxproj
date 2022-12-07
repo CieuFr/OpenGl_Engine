@@ -89,6 +89,10 @@
     <None Include="src\lab_works\lab_work_7\shaders\ao3.vert" />
     <None Include="src\lab_works\lab_work_7\shaders\ao4.frag" />
     <None Include="src\lab_works\lab_work_7\shaders\ao4.vert" />
+    <None Include="src\lab_works\lab_work_8\shaders\ssao.frag" />
+    <None Include="src\lab_works\lab_work_8\shaders\ssao.vert" />
+    <None Include="src\lab_works\lab_work_8\shaders\ssao_blur.frag" />
+    <None Include="src\lab_works\lab_work_8\shaders\ssao_blur.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

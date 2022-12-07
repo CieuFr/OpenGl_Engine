@@ -8,21 +8,58 @@ layout (binding = 1) uniform sampler2D gNormal;
 layout (binding = 2) uniform sampler2D gAmbiant;
 layout (binding = 3) uniform sampler2D gDiffuse;
 layout (binding = 4) uniform sampler2D gSpecular;
+layout (binding = 5) uniform sampler2D gAlbedo;
+layout (binding = 6) uniform sampler2D ssao;
 
-uniform vec3 TlightPos;
+
+uniform vec3 lightPos;
+
+struct Light {
+    vec3 Position;
+    vec3 Color;
+    
+    float Linear;
+    float Quadratic;
+};
+
+uniform Light light;
+
 
 void main()
 {
 
 	ivec2 texCoords = ivec2(gl_FragCoord.xy);
-	vec3 position = texelFetch(gPosition,ivec2(texCoords),0).xyz;
-    vec3 normal = texelFetch(gNormal,ivec2(texCoords),0).xyz;    
-    vec3 ambient = texelFetch(gAmbiant,ivec2(texCoords),0).xyz;	
-    vec3 diffuse = texelFetch(gDiffuse,ivec2(texCoords),0).xyz;	
+	vec3 FragPos = texelFetch(gPosition,ivec2(texCoords),0).xyz;
+    vec3 Normal = texelFetch(gNormal,ivec2(texCoords),0).xyz;    
+    //vec3 ambient = texelFetch(gAmbiant,ivec2(texCoords),0).xyz;	
+    vec3 Diffuse = texelFetch(gDiffuse,ivec2(texCoords),0).xyz;	
     vec3 specular = texelFetch(gSpecular,ivec2(texCoords),0).xyz;	
     float shininess = texelFetch(gSpecular,ivec2(texCoords),0).w;
+    float AmbientOcclusion = texelFetch(ssao,ivec2(texCoords),0).w;
 
 
+    // then calculate lighting as usual
+    vec3 ambient = vec3(0.3 * Diffuse * AmbientOcclusion);
+    vec3 lighting  = ambient; 
+    vec3 viewDir  = normalize(-FragPos); // viewpos is (0.0.0)
+    // diffuse
+    vec3 lightDir = normalize(light.Position - FragPos);
+    vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * light.Color;
+    // specular
+    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    float spec = pow(max(dot(Normal, halfwayDir), 0.0), 8.0);
+    //vec3 specular = light.Color * spec;
+    // attenuation
+    float distance = length(light.Position - FragPos);
+    float attenuation = 1.0 / (1.0 + light.Linear * distance + light.Quadratic * distance * distance);
+    diffuse *= attenuation;
+    specular *= attenuation;
+    lighting += diffuse + specular;
+
+    fragColor = vec4(lighting, 1.0);
+
+
+	/*
 	vec3 viewDir = normalize( - position.xyz);
 	vec3 lightDir = normalize(position.xyz - TlightPos);
 
@@ -50,7 +87,7 @@ void main()
 
 	result = ((result*(a*result+b))/(result*(c*result+d)+e));
 	fragColor =  vec4(result,1)  ;
-
+	*/
 	//Transparence
 	//texture(uDiffuseMap,texCoords).w
 }

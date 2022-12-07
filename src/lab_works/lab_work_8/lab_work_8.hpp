@@ -11,6 +11,7 @@
 #include "define.hpp"
 #include "victor_toolkit/basic_object_drawer.hpp"
 #include "victor_toolkit/program_wrapper.hpp"
+#include <random>
 #include <vector>
 
 namespace M3D_ISICG
@@ -29,7 +30,6 @@ namespace M3D_ISICG
 
 		// TP6
 		void initGBuffer();
-		void initGBuffer2();
 		// PARAM GBUFFER2
 		GLuint positionTexture;
 		GLuint normalTexture;
@@ -39,9 +39,13 @@ namespace M3D_ISICG
 		GLuint depthTexture;
 
 		bool initLightingPassProgram();
+		bool initAOPasses();
+
 		void renderLightingPass();
-		void drawQuad();
-		void drawQuad2();
+		void renderAOPasses();
+
+		void computeAO();
+
 
 		BasicObjectDrawer drawer;
 
@@ -88,6 +92,20 @@ namespace M3D_ISICG
 
 		// =================FIN TP 6 =============
 
+
+		// SSAO
+
+		Vec3f lightColor = glm::vec3( 0.2, 0.2, 0.7 );
+		GLuint									ssaoFBO;
+		GLuint									ssaoBlurFBO;
+		std::vector<glm::vec3>					ssaoKernel;
+		GLuint									noiseTexture;
+		GLuint									ssaoColorBuffer, ssaoColorBufferBlur;
+		std::vector<glm::vec3>					ssaoNoise;
+
+		// FIN SSAO
+
+
 		GLuint transformationMatrix;
 		Mat4f  _transformationMatrix = MAT4F_ID;
 		Mat4f  _matrixWtoV			 = MAT4F_ID;
@@ -114,6 +132,8 @@ namespace M3D_ISICG
 		GLuint		   _lightingPassProgram = GL_INVALID_VALUE;
 		ProgramWrapper programWrapper;
 		ProgramWrapper programWrapper2;
+		ProgramWrapper programWrapper3;
+		ProgramWrapper programWrapper4;
 
 		// ================
 
