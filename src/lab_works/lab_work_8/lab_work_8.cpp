@@ -96,18 +96,18 @@ namespace M3D_ISICG
 		programWrapper3.createProgramOnlyFS( fragShaderStr );
 		programWrapper4.createProgramOnlyFS( fragShaderStr2 );
 
-		glGenFramebuffers( 1, &ssaoFBO );
-		glGenFramebuffers( 1, &ssaoBlurFBO );
+		glCreateFramebuffers( 1, &ssaoFBO );
+		glCreateFramebuffers( 1, &ssaoBlurFBO );
 
 		computeAO();
 
 		glCreateTextures( GL_TEXTURE_2D, 1, &noiseTexture );
-		glTextureStorage2D( noiseTexture, 1, GL_RGBA32F, _windowWidth, _windowHeight );
+		glTextureStorage2D( noiseTexture, 1, GL_RGBA32F, 4, 4 );
 		glTextureParameteri( noiseTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTextureParameteri( noiseTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		glTextureParameteri( noiseTexture, GL_TEXTURE_WRAP_S, GL_REPEAT );
 		glTextureParameteri( noiseTexture, GL_TEXTURE_WRAP_T, GL_REPEAT );
-		glTextureSubImage2D( ssaoColorBuffer, 0, 0, 0, _windowWidth, _windowHeight, GL_RED, GL_FLOAT, &ssaoNoise[ 0 ] );
+		glTextureSubImage2D( noiseTexture, 0, 0, 0, 4, 4, GL_RED, GL_FLOAT, &ssaoNoise[ 0 ] );
 		
 		glCreateTextures( GL_TEXTURE_2D, 1, &ssaoColorBuffer );
 		glTextureStorage2D( ssaoColorBuffer, 1, GL_RGBA32F, _windowWidth, _windowHeight );
@@ -115,7 +115,7 @@ namespace M3D_ISICG
 		glTextureParameteri( ssaoColorBuffer, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		glNamedFramebufferTexture( ssaoFBO, GL_COLOR_ATTACHMENT0, ssaoColorBuffer, 0 );
 
-		glTextureSubImage2D( ssaoColorBuffer, 0, 0, 0, _windowWidth, _windowHeight, GL_RED, GL_FLOAT, NULL );
+		//glTextureSubImage2D( ssaoColorBuffer, 0, 0, 0, _windowWidth, _windowHeight, GL_RED, GL_FLOAT, NULL );
 
 		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _fboId, GL_DRAW_FRAMEBUFFER ) )
 		{
@@ -127,7 +127,7 @@ namespace M3D_ISICG
 		glTextureParameteri( ssaoColorBufferBlur, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTextureParameteri( ssaoColorBufferBlur, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		glNamedFramebufferTexture( ssaoBlurFBO, GL_COLOR_ATTACHMENT0, ssaoColorBufferBlur, 0 );
-		glTextureSubImage2D( ssaoColorBufferBlur, 0, 0, 0, _windowWidth, _windowHeight, GL_RED, GL_FLOAT, NULL );
+		//glTextureSubImage2D( ssaoColorBufferBlur, 0, 0, 0, _windowWidth, _windowHeight, GL_RED, GL_FLOAT, NULL );
 
 
 		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( ssaoBlurFBO, GL_DRAW_FRAMEBUFFER ) )

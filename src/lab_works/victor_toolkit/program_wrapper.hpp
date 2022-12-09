@@ -98,8 +98,6 @@ class ProgramWrapper
 	
 		const std::string fragShaderStr	  = readFile( path );
 
-
-		std::cout << "fragShaderStr : " << fragShaderStr << "\ n ";
 		// Création des shaders
 
 		const GLuint aFragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
