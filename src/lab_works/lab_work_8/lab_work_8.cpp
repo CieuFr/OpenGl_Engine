@@ -35,10 +35,10 @@ namespace M3D_ISICG
 		// glEnable( GL_BLEND );
 		// glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 		// Chemin des shaders
+		initAOPasses();
 
 		initGBuffer();
 		initLightingPassProgram();
-		initAOPasses();
 
 		
 		_initCamera();
@@ -52,10 +52,10 @@ namespace M3D_ISICG
 
 		//=============TP 5 ==============/
 
-		_tmm.load( "bunny", FilePath( "./data/models/bunny.obj" ) );
+		_tmm.load( "sponza", FilePath( "./data/models/sponza.obj" ) );
 
 		// REMOVE COMMENT FOR SPONZA
-		//_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
+		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
 
 
 		std::cout << "Done!" << std::endl;
@@ -99,15 +99,16 @@ namespace M3D_ISICG
 		glTextureParameteri( noiseTexture, GL_TEXTURE_WRAP_T, GL_REPEAT );
 		glTextureSubImage2D( noiseTexture, 0, 0, 0, 4, 4, GL_RGB, GL_FLOAT, &ssaoNoise[ 0 ] );
 		
-		
+
 		glCreateTextures( GL_TEXTURE_2D, 1, &ssaoOutputTexture );
-		glTextureStorage2D( ssaoOutputTexture, 1, GL_RGBA32F, _windowWidth, _windowHeight );
+		glTextureStorage2D( ssaoOutputTexture, 1, GL_R32F, _windowWidth, _windowHeight );
 		glTextureParameteri( ssaoOutputTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTextureParameteri( ssaoOutputTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		glNamedFramebufferTexture( ssaoFBO, GL_COLOR_ATTACHMENT0, ssaoOutputTexture, 0 );
 
 		glNamedFramebufferDrawBuffers( ssaoFBO, 1,_aoDrawBuffer );
-
+	
+		
 	
 		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( ssaoFBO, GL_DRAW_FRAMEBUFFER ) )
 		{
@@ -115,7 +116,7 @@ namespace M3D_ISICG
 		}
 
 		glCreateTextures( GL_TEXTURE_2D, 1, &blurOutputTexture );
-		glTextureStorage2D( blurOutputTexture, 1, GL_RGBA32F, _windowWidth, _windowHeight );
+		glTextureStorage2D( blurOutputTexture, 1, GL_R32F, _windowWidth, _windowHeight );
 		glTextureParameteri( blurOutputTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTextureParameteri( blurOutputTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		glNamedFramebufferTexture( ssaoBlurFBO, GL_COLOR_ATTACHMENT0, blurOutputTexture, 0 );
@@ -152,7 +153,7 @@ namespace M3D_ISICG
 			glNamedFramebufferTexture( _gBufferFBO, _drawBuffers[ i ], _gBufferTextures[ i ], 0 );
 		}
 
-		glTextureStorage2D( _gBufferTextures[ 5 ], 1, GL_DEPTH_COMPONENT32F, _windowWidth, _windowHeight );
+		glTextureStorage2D( _gBufferTextures[ 5 ], 1, GL_DEPTH_COMPONENT24, _windowWidth, _windowHeight );
 		glTextureParameteri( _gBufferTextures[ 5 ], GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTextureParameteri( _gBufferTextures[ 5 ], GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		glNamedFramebufferTexture( _gBufferFBO, GL_DEPTH_ATTACHMENT, _gBufferTextures[ 5 ], 0 );
@@ -170,7 +171,7 @@ namespace M3D_ISICG
 		renderGeometryPass();
 	
 		renderAOPass();
-		//renderBlurPass();
+		renderBlurPass();
 		//renderAOPasses();
 		
 		if ( lightPassEnabled )
@@ -179,7 +180,8 @@ namespace M3D_ISICG
 		}
 		else
 		{ 
-			glNamedFramebufferReadBuffer( ssaoFBO, _drawBuffers[0] );
+			
+			/*glNamedFramebufferReadBuffer( ssaoFBO, _drawBuffers[0] );
 
 			glBlitNamedFramebuffer( ssaoFBO,
 									0,
@@ -192,10 +194,10 @@ namespace M3D_ISICG
 									_windowWidth,
 									_windowHeight,
 									GL_COLOR_BUFFER_BIT,
-									GL_NEAREST );
+									GL_NEAREST );*/
 			
 
-			/*glNamedFramebufferReadBuffer( _gBufferFBO, _drawBuffers[ _listBoxSelectedValue ] );
+			glNamedFramebufferReadBuffer( _gBufferFBO, _drawBuffers[ _listBoxSelectedValue ] );
 
 			glBlitNamedFramebuffer( _gBufferFBO,
 									0,
@@ -208,7 +210,7 @@ namespace M3D_ISICG
 									_windowWidth,
 									_windowHeight,
 									GL_COLOR_BUFFER_BIT,
-									GL_NEAREST );*/
+									GL_NEAREST );
 		}
 
 		// TODO CLEAN , UNIFORM, TEXTURE, DRAW
@@ -218,7 +220,7 @@ namespace M3D_ISICG
 	void LabWork8::renderGeometryPass() {
 		glUseProgram( aProgram );
 		glEnable( GL_DEPTH_TEST );
-		// glClearColor
+
 
 		if ( luminosityNeedsUpdating )
 		{
@@ -282,22 +284,24 @@ namespace M3D_ISICG
 	void LabWork8::renderLightingPass()
 	{
 		glUseProgram( _lightingPassProgram );
-		glDisable( GL_DEPTH_TEST );
-		glClear( GL_COLOR_BUFFER_BIT );
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+
+		glDisable( GL_DEPTH_TEST );
+		
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
 
 		for ( size_t i = 0; i < 6; i++ )
 		{
 			glBindTextureUnit( i, _gBufferTextures[ i ] );
 		}
-		glBindTextureUnit( 6, ssaoOutputTexture );
+		glBindTextureUnit( 6, blurOutputTexture );
 
 		if (printAO) {
-			float * data = new float[ _windowWidth * _windowHeight * 3 ];
-			glGetTextureImage( ssaoOutputTexture, 0, GL_RGB, GL_FLOAT, _windowWidth * _windowHeight * 3 * 4, data );
-			std::cout << "SSAO OUTPUT TEXTURE \n";
-			for ( int i = 0; i < _windowWidth * _windowHeight * 3 * 4; i++ )
+			float * data = new float[ _windowWidth * _windowHeight];
+			glGetTextureImage( ssaoOutputTexture, 0, GL_RED, GL_FLOAT, _windowWidth * _windowHeight * sizeof(float), data );
+			for ( int i = 0; i < _windowWidth * _windowHeight; i++ )
 			{
 				std::cout << " | " << data[ i ] << " | " ;
 				
@@ -319,7 +323,7 @@ namespace M3D_ISICG
 
 		glBindVertexArray( 0 );
 
-		for ( size_t i = 0; i < 6; i++ )
+		for ( size_t i = 0; i < 7; i++ )
 		{
 			glBindTextureUnit( i, 0 );
 		}
@@ -331,10 +335,13 @@ namespace M3D_ISICG
 		
 		glUseProgram( programWrapper3.getProgramId() );
 		
-		glDisable( GL_DEPTH_TEST );
-		glClear( GL_COLOR_BUFFER_BIT );
-		
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, ssaoFBO );
+
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		glDisable( GL_DEPTH_TEST );
+
+		
+	
 		glBindTextureUnit( 0, _gBufferTextures[ 0 ] );
 		glBindTextureUnit( 1, _gBufferTextures[ 1 ] );
 		glBindTextureUnit( 2, noiseTexture );
@@ -362,10 +369,9 @@ namespace M3D_ISICG
 			programWrapper3.getProgramId(), glGetUniformLocation( programWrapper3.getProgramId(), "kernelSize" ), kernelSize );
 
 
-				std::cout << "kernel : " << kernelSize << " \n ";
-		        std::cout << "bias : " << bias << " \n ";
-				std::cout << "rad : " << radius << " \n ";
-
+		glProgramUniform1i( programWrapper3.getProgramId(),
+							glGetUniformLocation( programWrapper3.getProgramId(), "power" ),
+							power );
 
 		
 		glBindVertexArray( quadVAO );
@@ -377,126 +383,28 @@ namespace M3D_ISICG
 		glBindTextureUnit( 0, 0);
 		glBindTextureUnit( 1, 0 );
 		glBindTextureUnit( 2, 0 );
-		
+
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 		
 	}
 	void LabWork8::renderBlurPass() {
 
-			glUseProgram( programWrapper4.getProgramId() );
-
-
-
-		
-		
-		/*
-			glUseProgram( programWrapper3.getProgramId() );
-		
+		glUseProgram( programWrapper4.getProgramId() );
 		glDisable( GL_DEPTH_TEST );
 		glClear( GL_COLOR_BUFFER_BIT );
-		
-		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, ssaoFBO );
-		glBindTextureUnit( 0, _gBufferTextures[ 0 ] );
-		glBindTextureUnit( 1, _gBufferTextures[ 1 ] );
-		glBindTextureUnit( 2, noiseTexture );
-
-		glProgramUniform3fv( programWrapper3.getProgramId(),
-							 glGetUniformLocation( programWrapper3.getProgramId(), "samples" ),
-							 64,
-							 reinterpret_cast<float *>( ssaoKernel.data() ) );
-
-		glProgramUniformMatrix4fv( programWrapper3.getProgramId(),
-								   glGetUniformLocation( programWrapper3.getProgramId(), "projection" ),
-								   1,
-								   GL_FALSE,
-								   glm::value_ptr( _camera->getProjectionMatrix() ) );
-	
-		glProgramUniform1f( programWrapper3.getProgramId(),
-							glGetUniformLocation( programWrapper3.getProgramId(), "bias" ),
-							bias );
-
-		glProgramUniform1f(
-			programWrapper3.getProgramId(), glGetUniformLocation( programWrapper3.getProgramId(), "radius" ), radius );
-
-		
-		glProgramUniform1i(
-			programWrapper3.getProgramId(), glGetUniformLocation( programWrapper3.getProgramId(), "kernelSize" ), kernelSize );
-
-		
-		glBindVertexArray( quadVAO );
-
-		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
-
-		glBindVertexArray( 0 );
-
-		glBindTextureUnit( 0, 0);
-		glBindTextureUnit( 1, 0 );
-		glBindTextureUnit( 2, 0 );
-		
-		
-		
-		
-		
-		
-		*/
-		
-	}
-
-	void LabWork8::renderAOPasses() {
-				
-		programWrapper3.useProgram();
-		glDisable( GL_DEPTH_TEST );
-		glClear( GL_COLOR_BUFFER_BIT );
-		glBindFramebuffer( GL_FRAMEBUFFER, ssaoFBO );
-
-		glBindTextureUnit( 0, _gBufferTextures[ 0 ] );
-		glBindTextureUnit( 1, _gBufferTextures[ 1 ] );
-		glBindTextureUnit( 2, noiseTexture );
-	
-		glProgramUniform3fv( programWrapper3.getProgramId(),
-							 glGetUniformLocation( programWrapper3.getProgramId(), "samples" ),
-								 64,
-								 reinterpret_cast<float *>( ssaoKernel.data() ) );
-
-		glProgramUniformMatrix4fv( programWrapper3.getProgramId(),
-								   glGetUniformLocation( programWrapper3.getProgramId(), "projection" ),
-								   1,
-								   GL_FALSE,
-								   glm::value_ptr( _camera->getProjectionMatrix() ) );
-
-		glProgramUniform1f( programWrapper3.getProgramId(),
-							glGetUniformLocation( programWrapper3.getProgramId(), "width" ),
-							_windowWidth );
-		glProgramUniform1f( programWrapper3.getProgramId(),
-							glGetUniformLocation( programWrapper3.getProgramId(), "height" ),
-							_windowHeight );
-		
-		glBindVertexArray( quadVAO );
-
-		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
-
-		glBindVertexArray( 0 );
-
-		glBindTextureUnit( 0, 0 );
-		glBindTextureUnit( 1, 0 );
-		glBindTextureUnit( 2, 0 );
-
-		programWrapper4.useProgram();
-		glDisable( GL_DEPTH_TEST );
-		glClear( GL_COLOR_BUFFER_BIT );
-		
 		glBindFramebuffer( GL_FRAMEBUFFER, ssaoBlurFBO );
-	
+
 		glBindTextureUnit( 0, ssaoOutputTexture );
-	
+		
 		glBindVertexArray( quadVAO );
 
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 
 		glBindVertexArray( 0 );
 
-		glBindTextureUnit( 0, 0 );
-
-	}
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+			
+		}
 
 	void LabWork8::computeAO() {
 		std::uniform_real_distribution<float> randomFloats( 0.f, 1.f ); // generates random floats between 0.0 and 1.0
@@ -576,6 +484,7 @@ namespace M3D_ISICG
 	void LabWork8::displayUI()
 	{
 		luminosityNeedsUpdating = ImGui::SliderInt( "SSAO : Kernel Size", &kernelSize, 0, 128 );
+		luminosityNeedsUpdating = ImGui::SliderInt( "SSAO : Power", &power, 0, 10 );
 		luminosityNeedsUpdating = ImGui::SliderFloat( "SSAO : Radius", &radius, 0.1, 5 );
 		luminosityNeedsUpdating = ImGui::SliderFloat( "SSAO : Bias", &bias, 0.001, 0.1 );
 		

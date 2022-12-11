@@ -44,7 +44,6 @@ namespace M3D_ISICG
 		void renderLightingPass();
 		void renderAOPass();
 		void renderBlurPass();
-		void renderAOPasses();
 		void renderGeometryPass();
 
 		void computeAO();
@@ -77,8 +76,7 @@ namespace M3D_ISICG
 		GLuint _gBufferFBO;
 		GLuint _gBufferTextures[ 6 ];
 		
-		GLenum _aoDrawBuffer[ 1 ] = { GL_COLOR_ATTACHMENT0
-									 };
+		GLenum _aoDrawBuffer[ 1] = { GL_COLOR_ATTACHMENT0};
 		
 
 		GLenum _drawBuffers[ 5 ] = { GL_COLOR_ATTACHMENT0,
@@ -114,6 +112,8 @@ namespace M3D_ISICG
 		int	  kernelSize = 64;
 		float radius	 = 0.5;
 		float bias		 = 0.025;
+		int power		 = 1;
+
 
 
 		// FIN SSAO

@@ -35,7 +35,7 @@ layout(binding = 0) uniform sampler2D ssaoInput;
 
 void main() 
 {
-    ivec2 TexCoords = ivec2(gl_FragCoord.xy);
+    ivec2 texCoords = ivec2(gl_FragCoord.xy);
     vec2 texelSize = 1.0 / vec2(textureSize(ssaoInput, 0));
     float result = 0.0;
     for (int x = -2; x < 2; ++x) 
@@ -43,7 +43,7 @@ void main()
         for (int y = -2; y < 2; ++y) 
         {
             vec2 offset = vec2(float(x), float(y)) * texelSize;
-            result += texture(ssaoInput, TexCoords + offset).r;
+            result += texelFetch(ssaoInput, ivec2(texCoords + offset),0).r;
         }
     }
     FragColor = result / (4.0 * 4.0);
