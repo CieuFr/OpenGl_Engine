@@ -21,7 +21,6 @@ namespace M3D_ISICG
 		glDeleteVertexArrays( 1, &quadVAO );
 		// Delete VBO
 		glDeleteBuffers( 1, &quadVBO );
-
 		// Delete VBO
 		glDeleteBuffers( 1, &quadEBO );
 	}
@@ -36,12 +35,12 @@ namespace M3D_ISICG
 		// glEnable( GL_BLEND );
 		// glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 		// Chemin des shaders
-		const std::string vertexShaderStr = _shaderFolder + "geometry_pass.vert";
-		const std::string fragShaderStr	  = _shaderFolder + "geometry_pass.frag";
-		std::string		  paths[ 2 ]	  = { vertexShaderStr, fragShaderStr };
-		programWrapper.createProgram( paths );
-		aProgram = programWrapper.getProgramId();
 
+		initGBuffer();
+		initLightingPassProgram();
+		initAOPasses();
+
+		
 		_initCamera();
 
 		// Get Uniform luminosity
@@ -53,19 +52,11 @@ namespace M3D_ISICG
 
 		//=============TP 5 ==============/
 
-		_tmm.load( "sponza", FilePath( "./data/models/sponza.obj" ) );
+		_tmm.load( "bunny", FilePath( "./data/models/bunny.obj" ) );
 
 		// REMOVE COMMENT FOR SPONZA
-		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
+		//_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
 
-		//=============TP 6 ==============/
-
-		initLightingPassProgram();
-		initGBuffer();
-		initAOPasses();
-
-		// INIT du program
-		glUseProgram( aProgram );
 
 		std::cout << "Done!" << std::endl;
 		return true;
@@ -87,11 +78,10 @@ namespace M3D_ISICG
 		return true;
 	}
 
-
 	bool LabWork8::initAOPasses()
 	{
-		const std::string fragShaderStr	  = _shaderFolder + "ssao_blur.frag";
-		const std::string fragShaderStr2 = _shaderFolder + "ssao.frag";
+		const std::string fragShaderStr = _shaderFolder + "ssao.frag";
+		const std::string fragShaderStr2	  = _shaderFolder + "ssao_blur.frag";
 
 		programWrapper3.createProgramOnlyFS( fragShaderStr );
 		programWrapper4.createProgramOnlyFS( fragShaderStr2 );
@@ -107,48 +97,50 @@ namespace M3D_ISICG
 		glTextureParameteri( noiseTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		glTextureParameteri( noiseTexture, GL_TEXTURE_WRAP_S, GL_REPEAT );
 		glTextureParameteri( noiseTexture, GL_TEXTURE_WRAP_T, GL_REPEAT );
-		glTextureSubImage2D( noiseTexture, 0, 0, 0, 4, 4, GL_RED, GL_FLOAT, &ssaoNoise[ 0 ] );
+		glTextureSubImage2D( noiseTexture, 0, 0, 0, 4, 4, GL_RGB, GL_FLOAT, &ssaoNoise[ 0 ] );
 		
-		glCreateTextures( GL_TEXTURE_2D, 1, &ssaoColorBuffer );
-		glTextureStorage2D( ssaoColorBuffer, 1, GL_RGBA32F, _windowWidth, _windowHeight );
-		glTextureParameteri( ssaoColorBuffer, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTextureParameteri( ssaoColorBuffer, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glNamedFramebufferTexture( ssaoFBO, GL_COLOR_ATTACHMENT0, ssaoColorBuffer, 0 );
+		
+		glCreateTextures( GL_TEXTURE_2D, 1, &ssaoOutputTexture );
+		glTextureStorage2D( ssaoOutputTexture, 1, GL_RGBA32F, _windowWidth, _windowHeight );
+		glTextureParameteri( ssaoOutputTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( ssaoOutputTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( ssaoFBO, GL_COLOR_ATTACHMENT0, ssaoOutputTexture, 0 );
 
-		//glTextureSubImage2D( ssaoColorBuffer, 0, 0, 0, _windowWidth, _windowHeight, GL_RED, GL_FLOAT, NULL );
+		glNamedFramebufferDrawBuffers( ssaoFBO, 1,_aoDrawBuffer );
 
-		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _fboId, GL_DRAW_FRAMEBUFFER ) )
+	
+		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( ssaoFBO, GL_DRAW_FRAMEBUFFER ) )
 		{
 			std::cout << "FRAMEBUFFER SSAOFBO ERROR \n";
 		}
 
-		glCreateTextures( GL_TEXTURE_2D, 1, &ssaoColorBufferBlur );
-		glTextureStorage2D( ssaoColorBufferBlur, 1, GL_RGBA32F, _windowWidth, _windowHeight );
-		glTextureParameteri( ssaoColorBufferBlur, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTextureParameteri( ssaoColorBufferBlur, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glNamedFramebufferTexture( ssaoBlurFBO, GL_COLOR_ATTACHMENT0, ssaoColorBufferBlur, 0 );
-		//glTextureSubImage2D( ssaoColorBufferBlur, 0, 0, 0, _windowWidth, _windowHeight, GL_RED, GL_FLOAT, NULL );
+		glCreateTextures( GL_TEXTURE_2D, 1, &blurOutputTexture );
+		glTextureStorage2D( blurOutputTexture, 1, GL_RGBA32F, _windowWidth, _windowHeight );
+		glTextureParameteri( blurOutputTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( blurOutputTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( ssaoBlurFBO, GL_COLOR_ATTACHMENT0, blurOutputTexture, 0 );
 
+		glNamedFramebufferDrawBuffers( ssaoBlurFBO, 1, _aoDrawBuffer );
 
+		
 		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( ssaoBlurFBO, GL_DRAW_FRAMEBUFFER ) )
 		{
 			std::cout << "FRAMEBUFFER SSAOFBO ERROR \n";
 		}
 
-
-		//glNamedFramebufferDrawBuffers( _fboId, 6, _drawBuffers );
-
-
-
 		return true;
 	}
 
-
-	// TP6
-
 	void LabWork8::initGBuffer()
 	{
-		glCreateFramebuffers( 1, &_fboId );
+
+		const std::string vertexShaderStr = _shaderFolder + "geometry_pass.vert";
+		const std::string fragShaderStr	  = _shaderFolder + "geometry_pass.frag";
+		std::string		  paths[ 2 ]	  = { vertexShaderStr, fragShaderStr };
+		programWrapper.createProgram( paths );
+		aProgram = programWrapper.getProgramId();
+
+		glCreateFramebuffers( 1, &_gBufferFBO );
 
 		glCreateTextures( GL_TEXTURE_2D, 6, _gBufferTextures );
 
@@ -157,25 +149,73 @@ namespace M3D_ISICG
 			glTextureStorage2D( _gBufferTextures[ i ], 1, GL_RGBA32F, _windowWidth, _windowHeight );
 			glTextureParameteri( _gBufferTextures[ i ], GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 			glTextureParameteri( _gBufferTextures[ i ], GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-			glNamedFramebufferTexture( _fboId, _drawBuffers[ i ], _gBufferTextures[ i ], 0 );
+			glNamedFramebufferTexture( _gBufferFBO, _drawBuffers[ i ], _gBufferTextures[ i ], 0 );
 		}
 
 		glTextureStorage2D( _gBufferTextures[ 5 ], 1, GL_DEPTH_COMPONENT32F, _windowWidth, _windowHeight );
 		glTextureParameteri( _gBufferTextures[ 5 ], GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTextureParameteri( _gBufferTextures[ 5 ], GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glNamedFramebufferTexture( _fboId, GL_DEPTH_ATTACHMENT, _gBufferTextures[ 5 ], 0 );
+		glNamedFramebufferTexture( _gBufferFBO, GL_DEPTH_ATTACHMENT, _gBufferTextures[ 5 ], 0 );
 
-		glNamedFramebufferDrawBuffers( _fboId, 5, _drawBuffers );
+		glNamedFramebufferDrawBuffers( _gBufferFBO, 5, _drawBuffers );
 
-		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _fboId, GL_DRAW_FRAMEBUFFER ) )
+		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _gBufferFBO, GL_DRAW_FRAMEBUFFER ) )
 		{
 			std::cout << "FRAMEBUFFER ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR \n";
 		}
 	}
 
-
 	void LabWork8::render()
 	{
+		renderGeometryPass();
+	
+		renderAOPass();
+		//renderBlurPass();
+		//renderAOPasses();
+		
+		if ( lightPassEnabled )
+		{
+			renderLightingPass();
+		}
+		else
+		{ 
+			glNamedFramebufferReadBuffer( ssaoFBO, _drawBuffers[0] );
+
+			glBlitNamedFramebuffer( ssaoFBO,
+									0,
+									0,
+									0,
+									_windowWidth,
+									_windowHeight,
+									0,
+									0,
+									_windowWidth,
+									_windowHeight,
+									GL_COLOR_BUFFER_BIT,
+									GL_NEAREST );
+			
+
+			/*glNamedFramebufferReadBuffer( _gBufferFBO, _drawBuffers[ _listBoxSelectedValue ] );
+
+			glBlitNamedFramebuffer( _gBufferFBO,
+									0,
+									0,
+									0,
+									_windowWidth,
+									_windowHeight,
+									0,
+									0,
+									_windowWidth,
+									_windowHeight,
+									GL_COLOR_BUFFER_BIT,
+									GL_NEAREST );*/
+		}
+
+		// TODO CLEAN , UNIFORM, TEXTURE, DRAW
+	}
+
+
+	void LabWork8::renderGeometryPass() {
 		glUseProgram( aProgram );
 		glEnable( GL_DEPTH_TEST );
 		// glClearColor
@@ -229,38 +269,15 @@ namespace M3D_ISICG
 		glProgramUniform3fv(
 			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera->_position ) );
 
-		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, _fboId );
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, _gBufferFBO );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		_tmm.render( aProgram );
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
-
-		if ( lightPassEnabled )
-		{
-			renderAOPasses();
-			renderLightingPass();
-		}
-		else
-		{
-			glNamedFramebufferReadBuffer( _fboId, _drawBuffers[ _listBoxSelectedValue ] );
-
-			glBlitNamedFramebuffer( _fboId,
-									0,
-									0,
-									0,
-									_windowWidth,
-									_windowHeight,
-									0,
-									0,
-									_windowWidth,
-									_windowHeight,
-									GL_COLOR_BUFFER_BIT,
-									GL_NEAREST );
+		
 		}
 
-		// TODO CLEAN , UNIFORM, TEXTURE, DRAW
-	}
 
 	void LabWork8::renderLightingPass()
 	{
@@ -274,12 +291,25 @@ namespace M3D_ISICG
 		{
 			glBindTextureUnit( i, _gBufferTextures[ i ] );
 		}
-		glBindTextureUnit( 6,ssaoColorBufferBlur );
+		glBindTextureUnit( 6, ssaoOutputTexture );
 
+		if (printAO) {
+			float * data = new float[ _windowWidth * _windowHeight * 3 ];
+			glGetTextureImage( ssaoOutputTexture, 0, GL_RGB, GL_FLOAT, _windowWidth * _windowHeight * 3 * 4, data );
+			std::cout << "SSAO OUTPUT TEXTURE \n";
+			for ( int i = 0; i < _windowWidth * _windowHeight * 3 * 4; i++ )
+			{
+				std::cout << " | " << data[ i ] << " | " ;
+				
+			}
+			printAO = false;
+			
+		}
+		
 
 		// ATTENTION A PASSER EN TANGENT SPACE
 		glProgramUniform3fv( _lightingPassProgram,
-							 glGetUniformLocation( aProgram, "TlightPos" ),
+							 glGetUniformLocation( aProgram, "lightPos" ),
 							 1,
 							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position, 1 ) ) );
 
@@ -296,17 +326,131 @@ namespace M3D_ISICG
 	}
 
 
-	void LabWork8::renderAOPasses() {
-		glBindFramebuffer( GL_FRAMEBUFFER, ssaoFBO );
-		programWrapper3.useProgram();
+
+	void LabWork8::renderAOPass() {
+		
+		glUseProgram( programWrapper3.getProgramId() );
+		
 		glDisable( GL_DEPTH_TEST );
 		glClear( GL_COLOR_BUFFER_BIT );
-
+		
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, ssaoFBO );
 		glBindTextureUnit( 0, _gBufferTextures[ 0 ] );
 		glBindTextureUnit( 1, _gBufferTextures[ 1 ] );
 		glBindTextureUnit( 2, noiseTexture );
 
+		glProgramUniform3fv( programWrapper3.getProgramId(),
+							 glGetUniformLocation( programWrapper3.getProgramId(), "samples" ),
+							 64,
+							 reinterpret_cast<float *>( ssaoKernel.data() ) );
 
+		glProgramUniformMatrix4fv( programWrapper3.getProgramId(),
+								   glGetUniformLocation( programWrapper3.getProgramId(), "projection" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( _camera->getProjectionMatrix() ) );
+	
+		glProgramUniform1f( programWrapper3.getProgramId(),
+							glGetUniformLocation( programWrapper3.getProgramId(), "bias" ),
+							bias );
+
+		glProgramUniform1f(
+			programWrapper3.getProgramId(), glGetUniformLocation( programWrapper3.getProgramId(), "radius" ), radius );
+
+		
+		glProgramUniform1i(
+			programWrapper3.getProgramId(), glGetUniformLocation( programWrapper3.getProgramId(), "kernelSize" ), kernelSize );
+
+
+				std::cout << "kernel : " << kernelSize << " \n ";
+		        std::cout << "bias : " << bias << " \n ";
+				std::cout << "rad : " << radius << " \n ";
+
+
+		
+		glBindVertexArray( quadVAO );
+
+		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+
+		glBindVertexArray( 0 );
+
+		glBindTextureUnit( 0, 0);
+		glBindTextureUnit( 1, 0 );
+		glBindTextureUnit( 2, 0 );
+		
+		
+	}
+	void LabWork8::renderBlurPass() {
+
+			glUseProgram( programWrapper4.getProgramId() );
+
+
+
+		
+		
+		/*
+			glUseProgram( programWrapper3.getProgramId() );
+		
+		glDisable( GL_DEPTH_TEST );
+		glClear( GL_COLOR_BUFFER_BIT );
+		
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, ssaoFBO );
+		glBindTextureUnit( 0, _gBufferTextures[ 0 ] );
+		glBindTextureUnit( 1, _gBufferTextures[ 1 ] );
+		glBindTextureUnit( 2, noiseTexture );
+
+		glProgramUniform3fv( programWrapper3.getProgramId(),
+							 glGetUniformLocation( programWrapper3.getProgramId(), "samples" ),
+							 64,
+							 reinterpret_cast<float *>( ssaoKernel.data() ) );
+
+		glProgramUniformMatrix4fv( programWrapper3.getProgramId(),
+								   glGetUniformLocation( programWrapper3.getProgramId(), "projection" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( _camera->getProjectionMatrix() ) );
+	
+		glProgramUniform1f( programWrapper3.getProgramId(),
+							glGetUniformLocation( programWrapper3.getProgramId(), "bias" ),
+							bias );
+
+		glProgramUniform1f(
+			programWrapper3.getProgramId(), glGetUniformLocation( programWrapper3.getProgramId(), "radius" ), radius );
+
+		
+		glProgramUniform1i(
+			programWrapper3.getProgramId(), glGetUniformLocation( programWrapper3.getProgramId(), "kernelSize" ), kernelSize );
+
+		
+		glBindVertexArray( quadVAO );
+
+		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+
+		glBindVertexArray( 0 );
+
+		glBindTextureUnit( 0, 0);
+		glBindTextureUnit( 1, 0 );
+		glBindTextureUnit( 2, 0 );
+		
+		
+		
+		
+		
+		
+		*/
+		
+	}
+
+	void LabWork8::renderAOPasses() {
+				
+		programWrapper3.useProgram();
+		glDisable( GL_DEPTH_TEST );
+		glClear( GL_COLOR_BUFFER_BIT );
+		glBindFramebuffer( GL_FRAMEBUFFER, ssaoFBO );
+
+		glBindTextureUnit( 0, _gBufferTextures[ 0 ] );
+		glBindTextureUnit( 1, _gBufferTextures[ 1 ] );
+		glBindTextureUnit( 2, noiseTexture );
 	
 		glProgramUniform3fv( programWrapper3.getProgramId(),
 							 glGetUniformLocation( programWrapper3.getProgramId(), "samples" ),
@@ -319,24 +463,30 @@ namespace M3D_ISICG
 								   GL_FALSE,
 								   glm::value_ptr( _camera->getProjectionMatrix() ) );
 
-
+		glProgramUniform1f( programWrapper3.getProgramId(),
+							glGetUniformLocation( programWrapper3.getProgramId(), "width" ),
+							_windowWidth );
+		glProgramUniform1f( programWrapper3.getProgramId(),
+							glGetUniformLocation( programWrapper3.getProgramId(), "height" ),
+							_windowHeight );
+		
 		glBindVertexArray( quadVAO );
 
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 
 		glBindVertexArray( 0 );
 
+		glBindTextureUnit( 0, 0 );
 		glBindTextureUnit( 1, 0 );
 		glBindTextureUnit( 2, 0 );
-		glBindTextureUnit( 0, 0 );
 
-		
-		glBindFramebuffer( GL_FRAMEBUFFER, ssaoBlurFBO );
 		programWrapper4.useProgram();
 		glDisable( GL_DEPTH_TEST );
 		glClear( GL_COLOR_BUFFER_BIT );
-
-		glBindTextureUnit( 0, ssaoColorBuffer );
+		
+		glBindFramebuffer( GL_FRAMEBUFFER, ssaoBlurFBO );
+	
+		glBindTextureUnit( 0, ssaoOutputTexture );
 	
 		glBindVertexArray( quadVAO );
 
@@ -344,7 +494,7 @@ namespace M3D_ISICG
 
 		glBindVertexArray( 0 );
 
-		glBindTextureUnit( 1, 0 );
+		glBindTextureUnit( 0, 0 );
 
 	}
 
@@ -376,8 +526,9 @@ namespace M3D_ISICG
 		}
 
 
-	}
 
+
+	}
 
 	void LabWork8::handleEvents( const SDL_Event & p_event )
 	{
@@ -424,7 +575,11 @@ namespace M3D_ISICG
 
 	void LabWork8::displayUI()
 	{
-		luminosityNeedsUpdating = ImGui::SliderFloat( "Luminosity", &_luminosity, 0, 1 );
+		luminosityNeedsUpdating = ImGui::SliderInt( "SSAO : Kernel Size", &kernelSize, 0, 128 );
+		luminosityNeedsUpdating = ImGui::SliderFloat( "SSAO : Radius", &radius, 0.1, 5 );
+		luminosityNeedsUpdating = ImGui::SliderFloat( "SSAO : Bias", &bias, 0.001, 0.1 );
+		
+
 		if ( ImGui::ColorEdit3( "BackGround Color", glm::value_ptr( _bgColor ) ) )
 		{
 			glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );

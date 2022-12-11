@@ -27,7 +27,7 @@ uniform Light light;
 
 void main()
 {
-
+/*
 	ivec2 texCoords = ivec2(gl_FragCoord.xy);
 	vec3 FragPos = texelFetch(gPosition,ivec2(texCoords),0).xyz;
     vec3 Normal = texelFetch(gNormal,ivec2(texCoords),0).xyz;    
@@ -57,11 +57,22 @@ void main()
     lighting += diffuse + specular;
 
     fragColor = vec4(lighting, 1.0);
+    */
 
-
-	/*
+	
+	ivec2 texCoords = ivec2(gl_FragCoord.xy);
+	vec3 position = texelFetch(gPosition,ivec2(texCoords),0).xyz;
+    vec3 normal = texelFetch(gNormal,ivec2(texCoords),0).xyz;    
+    vec3 ambient = texelFetch(gAmbiant,ivec2(texCoords),0).xyz;	
+    vec3 diffuse = texelFetch(gDiffuse,ivec2(texCoords),0).xyz;	
+    vec3 specular = texelFetch(gSpecular,ivec2(texCoords),0).xyz;	
+    float shininess = texelFetch(gSpecular,ivec2(texCoords),0).w;
+    float AmbientOcclusion = texture(ssao,ivec2(texCoords)).r;
+    
+     vec3 ambientWithAO = vec3(AmbientOcclusion * ambient);
+     
 	vec3 viewDir = normalize( - position.xyz);
-	vec3 lightDir = normalize(position.xyz - TlightPos);
+	vec3 lightDir = normalize(position.xyz - lightPos);
 
 	vec3 H = normalize(viewDir - lightDir);
 
@@ -70,9 +81,10 @@ void main()
 	cosThetaPowShininess = pow(max(dot(normal,H),0.0),shininess) ;
 
     vec3 specularLighting = specular.xxx * cosThetaPowShininess ;
-	float cosTheta = max(dot(normalize(normal),normalize(TlightPos-position.xyz)),0.f);
+	float cosTheta = max(dot(normalize(normal),normalize(lightPos-position.xyz)),0.f);
 	vec3 diffuseLight = diffuse * cosTheta ;
-	vec3 result =  (ambient + diffuseLight.xyz + specularLighting);
+    //remettre l'AO
+	vec3 result =  ambientWithAO + diffuseLight.xyz + specularLighting;
 
 	float a = 2.51f;
 	float b = 0.03f;
@@ -80,14 +92,15 @@ void main()
 	float d = 0.59f;
 	float e = 0.14f;
 
-	float facteurAtenuation = 1/dot(TlightPos,position)*dot(TlightPos,position); 
+	float facteurAtenuation = 1/dot(lightPos,position)*dot(lightPos,position); 
 	
 	 result = vec3(pow(result.x,1.5),pow(result.y,1.5),pow(result.z,1.5));
 	// result *= facteurAtenuation;
 
 	result = ((result*(a*result+b))/(result*(c*result+d)+e));
-	fragColor =  vec4(result,1)  ;
-	*/
-	//Transparence
-	//texture(uDiffuseMap,texCoords).w
+	fragColor =  vec4(result* AmbientOcclusion,1)  ;
+
+	//fragColor =  vec4(AmbientOcclusion,AmbientOcclusion,AmbientOcclusion,1)  ;
+    
+    
 }

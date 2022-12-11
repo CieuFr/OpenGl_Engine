@@ -42,7 +42,10 @@ namespace M3D_ISICG
 		bool initAOPasses();
 
 		void renderLightingPass();
+		void renderAOPass();
+		void renderBlurPass();
 		void renderAOPasses();
+		void renderGeometryPass();
 
 		void computeAO();
 
@@ -71,8 +74,12 @@ namespace M3D_ISICG
 
 		// =================TP 6 ==================
 
-		GLuint _fboId;
+		GLuint _gBufferFBO;
 		GLuint _gBufferTextures[ 6 ];
+		
+		GLenum _aoDrawBuffer[ 1 ] = { GL_COLOR_ATTACHMENT0
+									 };
+		
 
 		GLenum _drawBuffers[ 5 ] = { GL_COLOR_ATTACHMENT0,
 									 GL_COLOR_ATTACHMENT1,
@@ -100,8 +107,14 @@ namespace M3D_ISICG
 		GLuint									ssaoBlurFBO;
 		std::vector<glm::vec3>					ssaoKernel;
 		GLuint									noiseTexture;
-		GLuint									ssaoColorBuffer, ssaoColorBufferBlur;
+		GLuint									ssaoOutputTexture, blurOutputTexture;
 		std::vector<glm::vec3>					ssaoNoise;
+		bool									printAO = false;
+
+		int	  kernelSize = 64;
+		float radius	 = 0.5;
+		float bias		 = 0.025;
+
 
 		// FIN SSAO
 
