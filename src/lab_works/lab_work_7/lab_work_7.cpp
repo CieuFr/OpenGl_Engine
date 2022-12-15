@@ -1,47 +1,25 @@
-#include "lab_work_7.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui.h"
+#include "lab_work_7.hpp"
 #include "utils/random.hpp"
 #include "utils/read_file.hpp"
+#include "victor_toolkit/utils.hpp"
 #include <iostream>
-#include <string>
 
 namespace M3D_ISICG
 {
 
 	const std::string LabWork7::_shaderFolder = "src/lab_works/lab_work_7/shaders/";
 
-	LabWork7::~LabWork7() { glDeleteProgram( aProgram ); }
-
-	float ourLerp( float a, float b, float f ) { return a + f * ( b - a ); }
-
-	// renderQuad() renders a 1x1 XY quad in NDC
-	// -----------------------------------------
-	unsigned int quadVAO = 0;
-	unsigned int quadVBO;
-	void		 renderQuad()
+	LabWork7::~LabWork7()
 	{
-		if ( quadVAO == 0 )
-		{
-			float quadVertices[] = {
-				// positions        // texture Coords
-				-1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-				1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
-			};
-			// setup plane VAO
-			glGenVertexArrays( 1, &quadVAO );
-			glGenBuffers( 1, &quadVBO );
-			glBindVertexArray( quadVAO );
-			glBindBuffer( GL_ARRAY_BUFFER, quadVBO );
-			glBufferData( GL_ARRAY_BUFFER, sizeof( quadVertices ), &quadVertices, GL_STATIC_DRAW );
-			glEnableVertexAttribArray( 0 );
-			glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof( float ), (void *)0 );
-			glEnableVertexAttribArray( 1 );
-			glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof( float ), (void *)( 3 * sizeof( float ) ) );
-		}
-		glBindVertexArray( quadVAO );
-		glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
-		glBindVertexArray( 0 );
+		glDeleteProgram( aProgram );
+		glDisableVertexArrayAttrib( quadVAO, 0 );
+		glDeleteVertexArrays( 1, &quadVAO );
+		// Delete VBO
+		glDeleteBuffers( 1, &quadVBO );
+		// Delete VBO
+		glDeleteBuffers( 1, &quadEBO );
 	}
 
 	bool LabWork7::init()
@@ -51,66 +29,14 @@ namespace M3D_ISICG
 		glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );
 
 		glEnable( GL_DEPTH_TEST );
-
+		// glEnable( GL_BLEND );
+		// glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 		// Chemin des shaders
-		const std::string vertexShaderStr = readFile( _shaderFolder + "ao1.vert" );
-		const std::string fragShaderStr	  = readFile( _shaderFolder + "ao1.frag" );
-
-		// Création des shaders
-		const GLuint aVertexShader	 = glCreateShader( GL_VERTEX_SHADER );
-		const GLuint aFragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
-
-		// Récupération des locations des shaders
-		const GLchar * vSrc = vertexShaderStr.c_str();
-		const GLchar * fSrc = fragShaderStr.c_str();
-
-		// Création des shaders
-		glShaderSource( aVertexShader, 1, &vSrc, NULL );
-		glShaderSource( aFragmentShader, 1, &fSrc, NULL );
-
-		// Compilation des shaders
-		glCompileShader( aVertexShader );
-		glCompileShader( aFragmentShader );
-
-		// Code Cf. Tp 1 pour vérifier si les shaders compilent
-		GLint compiled;
-		glGetShaderiv( aVertexShader, GL_COMPILE_STATUS, &compiled );
-		if ( !compiled )
-		{
-			GLchar log[ 1024 ];
-			glGetShaderInfoLog( aVertexShader, sizeof( log ), NULL, log );
-			glDeleteShader( aVertexShader );
-			glDeleteShader( aFragmentShader );
-			std ::cerr << " Error compiling vertex shader : " << log << std ::endl;
-			return false;
-		}
-
-		// Initialisation du Program
-		aProgram  = glCreateProgram();
-		aProgram2 = glCreateProgram();
-		aProgram3 = glCreateProgram();
-		aProgram4 = glCreateProgram();
-
-		// Attache des shaders
-		glAttachShader( aProgram, aVertexShader );
-		glAttachShader( aProgram, aFragmentShader );
-
-		// Link du programme
-		glLinkProgram( aProgram );
-		GLint linked;
-		glGetProgramiv( aProgram, GL_LINK_STATUS, &linked );
-		if ( !linked )
-		{
-			GLchar log[ 1024 ];
-			glGetProgramInfoLog( aProgram, sizeof( log ), NULL, log );
-			std ::cerr << " Error linking program : " << log << std ::endl;
-			return false;
-		}
-
-		// Deletion des shaders
-		glDeleteShader( aVertexShader );
-		glDeleteShader( aFragmentShader );
-
+		initAOPasses();
+		initDepthMap();
+		initGBuffer();
+		initLightingPassProgram();
+		quadVAO = drawer.drawQuad();
 		_initCamera();
 
 		// Get Uniform luminosity
@@ -120,303 +46,12 @@ namespace M3D_ISICG
 		// Get Uniform transformationMatrix
 		transformationMatrix = glGetUniformLocation( aProgram, "uMVPMatrix" );
 
-		////=============AO2 ==============/
-
-		const std::string vertexShaderStr2 = readFile( _shaderFolder + "ao2.vert" );
-		const std::string fragShaderStr2   = readFile( _shaderFolder + "ao2.frag" );
-
-		// Création des shaders
-		const GLuint aVertexShader2	  = glCreateShader( GL_VERTEX_SHADER );
-		const GLuint aFragmentShader2 = glCreateShader( GL_FRAGMENT_SHADER );
-
-		// Récupération des locations des shaders
-		const GLchar * vSrc2 = vertexShaderStr2.c_str();
-		const GLchar * fSrc2 = fragShaderStr2.c_str();
-
-		// Création des shaders
-		glShaderSource( aVertexShader2, 1, &vSrc2, NULL );
-		glShaderSource( aFragmentShader2, 1, &fSrc2, NULL );
-
-		// Compilation des shaders
-		glCompileShader( aVertexShader2 );
-		glCompileShader( aFragmentShader2 );
-
-		GLint compiled2;
-		glGetShaderiv( aVertexShader2, GL_COMPILE_STATUS, &compiled2 );
-		if ( !compiled2 )
-		{
-			GLchar log[ 1024 ];
-			glGetShaderInfoLog( aVertexShader2, sizeof( log ), NULL, log );
-			glDeleteShader( aVertexShader2 );
-			glDeleteShader( aFragmentShader2 );
-			std ::cerr << " Error compiling vertex shader : " << log << std ::endl;
-			return false;
-		}
-
-		glAttachShader( aProgram2, aVertexShader2 );
-		glAttachShader( aProgram2, aFragmentShader2 );
-		glLinkProgram( aProgram2 );
-
-		GLint linked2;
-		glGetProgramiv( aProgram2, GL_LINK_STATUS, &linked2 );
-		if ( !linked2 )
-		{
-			GLchar log[ 1024 ];
-			glGetProgramInfoLog( aProgram2, sizeof( log ), NULL, log );
-			std ::cerr << " Error linking program : " << log << std ::endl;
-			return false;
-		}
-
-		glDeleteShader( aVertexShader2 );
-		glDeleteShader( aFragmentShader2 );
-
-		//==================3======================
-		const std::string vertexShaderStr3 = readFile( _shaderFolder + "ao3.vert" );
-		const std::string fragShaderStr3   = readFile( _shaderFolder + "ao3.frag" );
-
-		// Création des shaders
-		const GLuint aVertexShader3	  = glCreateShader( GL_VERTEX_SHADER );
-		const GLuint aFragmentShader3 = glCreateShader( GL_FRAGMENT_SHADER );
-
-		// Récupération des locations des shaders
-		const GLchar * vSrc3 = vertexShaderStr3.c_str();
-		const GLchar * fSrc3 = fragShaderStr3.c_str();
-
-		// Création des shaders
-		glShaderSource( aVertexShader3, 1, &vSrc3, NULL );
-		glShaderSource( aFragmentShader3, 1, &fSrc3, NULL );
-
-		// Compilation des shaders
-		glCompileShader( aVertexShader3 );
-		glCompileShader( aFragmentShader3 );
-
-		GLint compiled3;
-		glGetShaderiv( aVertexShader3, GL_COMPILE_STATUS, &compiled3 );
-		if ( !compiled3 )
-		{
-			GLchar log[ 1024 ];
-			glGetShaderInfoLog( aVertexShader3, sizeof( log ), NULL, log );
-			glDeleteShader( aVertexShader3 );
-			glDeleteShader( aFragmentShader3 );
-			std ::cerr << " Error compiling vertex shader : " << log << std ::endl;
-			return false;
-		}
-
-		glAttachShader( aProgram3, aVertexShader3 );
-		glAttachShader( aProgram3, aFragmentShader3 );
-		glLinkProgram( aProgram3 );
-		GLint linked3;
-		glGetProgramiv( aProgram3, GL_LINK_STATUS, &linked3 );
-		if ( !linked3 )
-		{
-			GLchar log[ 1024 ];
-			glGetProgramInfoLog( aProgram3, sizeof( log ), NULL, log );
-			std ::cerr << " Error linking program : " << log << std ::endl;
-			return false;
-		}
-
-		glDeleteShader( aVertexShader3 );
-		glDeleteShader( aFragmentShader3 );
-
-		//==================4======================
-
-		const std::string vertexShaderStr4 = readFile( _shaderFolder + "ao4.vert" );
-		const std::string fragShaderStr4   = readFile( _shaderFolder + "ao4.frag" );
-		// Création des shaders
-		const GLuint aVertexShader4	  = glCreateShader( GL_VERTEX_SHADER );
-		const GLuint aFragmentShader4 = glCreateShader( GL_FRAGMENT_SHADER );
-		// Récupération des locations des shaders
-		const GLchar * vSrc4 = vertexShaderStr4.c_str();
-		const GLchar * fSrc4 = fragShaderStr4.c_str();
-		// Création des shaders
-		glShaderSource( aVertexShader4, 1, &vSrc4, NULL );
-		glShaderSource( aFragmentShader4, 1, &fSrc4, NULL );
-		// Compilation des shaders
-		glCompileShader( aVertexShader4 );
-		glCompileShader( aFragmentShader4 );
-
-		GLint compiled4;
-		glGetShaderiv( aVertexShader4, GL_COMPILE_STATUS, &compiled4 );
-		if ( !compiled4 )
-		{
-			GLchar log[ 1024 ];
-			glGetShaderInfoLog( aVertexShader4, sizeof( log ), NULL, log );
-			glDeleteShader( aVertexShader4 );
-			glDeleteShader( aFragmentShader4 );
-			std ::cerr << " Error compiling vertex shader : " << log << std ::endl;
-			return false;
-		}
-
-		glAttachShader( aProgram4, aVertexShader4 );
-		glAttachShader( aProgram4, aFragmentShader4 );
-		glLinkProgram( aProgram4 );
-
-		GLint linked4;
-		glGetProgramiv( aProgram4, GL_LINK_STATUS, &linked4 );
-		if ( !linked4 )
-		{
-			GLchar log[ 1024 ];
-			glGetProgramInfoLog( aProgram4, sizeof( log ), NULL, log );
-			std ::cerr << " Error linking program : " << log << std ::endl;
-			return false;
-		}
-
-		glDeleteShader( aVertexShader4 );
-		glDeleteShader( aFragmentShader );
-
-		//===================AO ==========================
-
-		/* Shader shaderGeometryPass( "ao1.vert", "ao1.frag" );
-		Shader shaderLightingPass( "ao2.vert", "ao2.frag" );
-		Shader shaderSSAO( "ao3.vert", "ao3.frag" );
-		Shader shaderSSAOBlur( "ao4.vert", "ao4.frag" );*/
-
-		const unsigned int SCR_WIDTH  = 800;
-		const unsigned int SCR_HEIGHT = 600;
-
-		glGenFramebuffers( 1, &gBuffer );
-		glBindFramebuffer( GL_FRAMEBUFFER, gBuffer );
-
-		/*	glTextureStorage2D( texture._id, 1, internalFormat, image._width, image._height );
-			glTextureParameteri( texture._id, GL_TEXTURE_WRAP_S, GL_REPEAT );
-			glTextureParameteri( texture._id, GL_TEXTURE_WRAP_T, GL_REPEAT );
-			glTextureParameteri( texture._id, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-			glTextureParameteri( texture._id, GL_TEXTURE_MAG_FILTER, GL_LINEAR );*/
-
-		// position color buffer
-		glGenTextures( 1, &gPosition );
-		glBindTexture( GL_TEXTURE_2D, gPosition );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0 );
-		// normal color buffer
-		glGenTextures( 1, &gNormal );
-		glBindTexture( GL_TEXTURE_2D, gNormal );
-
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0 );
-		// color + specular color buffer
-		glGenTextures( 1, &gAlbedo );
-		glBindTexture( GL_TEXTURE_2D, gAlbedo );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0 );
-		// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
-		unsigned int attachments[ 3 ] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-		glDrawBuffers( 3, attachments );
-		// create and attach depth buffer (renderbuffer)
-		unsigned int rboDepth;
-		glGenRenderbuffers( 1, &rboDepth );
-		glBindRenderbuffer( GL_RENDERBUFFER, rboDepth );
-		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT );
-		glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth );
-		// finally check if framebuffer is complete
-		if ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
-			std::cout << "Framebuffer not complete!" << std::endl;
-		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-
-		glGenFramebuffers( 1, &ssaoFBO );
-		glGenFramebuffers( 1, &ssaoBlurFBO );
-		glBindFramebuffer( GL_FRAMEBUFFER, ssaoFBO );
-
-		// SSAO color buffer
-		glGenTextures( 1, &ssaoColorBuffer );
-		glBindTexture( GL_TEXTURE_2D, ssaoColorBuffer );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RED, SCR_WIDTH, SCR_HEIGHT, 0, GL_RED, GL_FLOAT, NULL );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBuffer, 0 );
-		if ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
-			std::cout << "SSAO Framebuffer not complete!" << std::endl;
-		// and blur stage
-		glBindFramebuffer( GL_FRAMEBUFFER, ssaoBlurFBO );
-		glGenTextures( 1, &ssaoColorBufferBlur );
-		glBindTexture( GL_TEXTURE_2D, ssaoColorBufferBlur );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RED, SCR_WIDTH, SCR_HEIGHT, 0, GL_RED, GL_FLOAT, NULL );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBufferBlur, 0 );
-		if ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
-			std::cout << "SSAO Blur Framebuffer not complete!" << std::endl;
-		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-
-		// generate sample kernel
-		// ----------------------
-		std::uniform_real_distribution<GLfloat> randomFloats( 0.0, 1.0 ); // generates random floats between 0.0 and 1.0
-		std::default_random_engine				generator;
-
-		for ( unsigned int i = 0; i < 64; ++i )
-		{
-			glm::vec3 sample( randomFloats( generator ) * 2.0 - 1.0,
-							  randomFloats( generator ) * 2.0 - 1.0,
-							  randomFloats( generator ) );
-			sample = glm::normalize( sample );
-			sample *= randomFloats( generator );
-			float scale = float( i ) / 64.0f;
-
-			// scale samples s.t. they're more aligned to center of kernel
-			scale = ourLerp( 0.1f, 1.0f, scale * scale );
-			sample *= scale;
-			ssaoKernel.push_back( sample );
-		}
-
-		// generate noise texture
-		// ----------------------
-		std::vector<glm::vec3> ssaoNoise;
-		for ( unsigned int i = 0; i < 16; i++ )
-		{
-			glm::vec3 noise( randomFloats( generator ) * 2.0 - 1.0,
-							 randomFloats( generator ) * 2.0 - 1.0,
-							 0.0f ); // rotate around z-axis (in tangent space)
-			ssaoNoise.push_back( noise );
-		}
-
-		glGenTextures( 1, &noiseTexture );
-		glBindTexture( GL_TEXTURE_2D, noiseTexture );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[ 0 ] );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-
-		// lighting info
-		// -------------
-
-		lightColor = glm::vec3( 0.2, 0.2, 0.7 );
-
-		/*
-		glUseProgram( aProgram2 );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "gPosition" ), 0.f );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "gNormal" ), 1.f );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "gAlbedo" ), 2.f );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "ssao" ), 3.f );
-
-		glUseProgram( aProgram3 );
-		glProgramUniform1f( aProgram3, glGetUniformLocation( aProgram3, "gPosition" ), 0 );
-		glProgramUniform1f( aProgram3, glGetUniformLocation( aProgram3, "gNormal" ), 1 );
-		glProgramUniform1f( aProgram3, glGetUniformLocation( aProgram3, "texNoise" ), 2 );
-
-		glUseProgram( aProgram4 );
-		glProgramUniform1f( aProgram4, glGetUniformLocation( aProgram4, "ssaoInput" ), 0 );
-		*/
-
-		//=================== FIN AO  ==========================
-
-		//=============TP 4 ==============/
+		//=============TP 5 ==============/
 
 		_tmm.load( "bunny", FilePath( "./data/models/bunny.obj" ) );
 
+		// REMOVE COMMENT FOR SPONZA
 		//_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
-		//=============FIN ==============/
-
-		// INIT du program
-		glUseProgram( aProgram );
 
 		std::cout << "Done!" << std::endl;
 		return true;
@@ -424,10 +59,179 @@ namespace M3D_ISICG
 
 	void LabWork7::animate( const float p_deltaTime ) {}
 
+	bool LabWork7::initLightingPassProgram()
+	{
+		const std::string vertexShaderStr = _shaderFolder + "lighting_pass.vert";
+		const std::string fragShaderStr	  = _shaderFolder + "lighting_pass.frag";
+		std::string		  paths[ 2 ]	  = { vertexShaderStr, fragShaderStr };
+
+		_programLightingPass.createProgramOnlyFS( fragShaderStr );
+		_lightingPassProgram = _programLightingPass.getProgramId();
+
+		return true;
+	}
+
+	bool LabWork7::initDepthMap() {
+
+		// INIT PRINT DEPTH MAP 
+		const std::string vertexShaderStr = _shaderFolder + "print_depth.vert";
+		const std::string fragShaderStr	  = _shaderFolder + "print_depth.frag";
+		std::string		  paths[ 2 ]	  = { vertexShaderStr, fragShaderStr };
+
+		_programPrintDepthMap.createProgram( paths );
+
+		// INIT DEPTH MAP 
+
+		const std::string vertexShaderStr2 = _shaderFolder + "depth_map.vert";
+		const std::string fragShaderStr2	 = _shaderFolder + "depth_map.frag";
+		std::string		  paths2[ 2 ]	   = { vertexShaderStr2, fragShaderStr2 };
+
+		_programDepthMap.createProgram( paths2 );
+
+		glCreateFramebuffers( 1, &_depthMapFBO );
+
+		glCreateTextures( GL_TEXTURE_2D, 1,&depthMapTexture);
+
+		glTextureStorage2D( depthMapTexture, 1, GL_DEPTH_COMPONENT32F, _windowWidth, _windowHeight );
+		glTextureParameteri( depthMapTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( depthMapTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( _depthMapFBO, GL_DEPTH_ATTACHMENT, depthMapTexture, 0 );
+
+		//glNamedFramebufferDrawBuffers( _depthMapFBO, 1, _depthMapDrawBuffer );
+
+		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _depthMapFBO, GL_DRAW_FRAMEBUFFER ) )
+		{
+			std::cout << "Erreur DEPTH MAP FBO \n";
+		}
+
+		return true;
+	}
+
+	bool LabWork7::initAOPasses()
+	{
+		const std::string fragShaderStr	 = _shaderFolder + "ssao.frag";
+		const std::string fragShaderStr2 = _shaderFolder + "ssao_blur.frag";
+
+		_programSSAO.createProgramOnlyFS( fragShaderStr );
+		_programSSAOBlur.createProgramOnlyFS( fragShaderStr2 );
+
+		glCreateFramebuffers( 1, &ssaoFBO );
+		glCreateFramebuffers( 1, &ssaoBlurFBO );
+
+		computeAO();
+
+		glCreateTextures( GL_TEXTURE_2D, 1, &noiseTexture );
+		glTextureStorage2D( noiseTexture, 1, GL_RGBA32F, 4, 4 );
+		glTextureParameteri( noiseTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( noiseTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glTextureParameteri( noiseTexture, GL_TEXTURE_WRAP_S, GL_REPEAT );
+		glTextureParameteri( noiseTexture, GL_TEXTURE_WRAP_T, GL_REPEAT );
+		glTextureSubImage2D( noiseTexture, 0, 0, 0, 4, 4, GL_RGB, GL_FLOAT, &ssaoNoise[ 0 ] );
+
+		glCreateTextures( GL_TEXTURE_2D, 1, &ssaoOutputTexture );
+		glTextureStorage2D( ssaoOutputTexture, 1, GL_R32F, _windowWidth, _windowHeight );
+		glTextureParameteri( ssaoOutputTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( ssaoOutputTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( ssaoFBO, GL_COLOR_ATTACHMENT0, ssaoOutputTexture, 0 );
+
+		glNamedFramebufferDrawBuffers( ssaoFBO, 1, _aoDrawBuffer );
+
+		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( ssaoFBO, GL_DRAW_FRAMEBUFFER ) )
+		{
+			std::cout << "FRAMEBUFFER SSAOFBO ERROR \n";
+		}
+
+		glCreateTextures( GL_TEXTURE_2D, 1, &blurOutputTexture );
+		glTextureStorage2D( blurOutputTexture, 1, GL_R32F, _windowWidth, _windowHeight );
+		glTextureParameteri( blurOutputTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( blurOutputTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( ssaoBlurFBO, GL_COLOR_ATTACHMENT0, blurOutputTexture, 0 );
+
+		glNamedFramebufferDrawBuffers( ssaoBlurFBO, 1, _aoDrawBuffer );
+
+		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( ssaoBlurFBO, GL_DRAW_FRAMEBUFFER ) )
+		{
+			std::cout << "FRAMEBUFFER SSAOFBO ERROR \n";
+		}
+
+		return true;
+	}
+
+	void LabWork7::initGBuffer()
+	{
+		const std::string vertexShaderStr = _shaderFolder + "geometry_pass.vert";
+		const std::string fragShaderStr	  = _shaderFolder + "geometry_pass.frag";
+		std::string		  paths[ 2 ]	  = { vertexShaderStr, fragShaderStr };
+		_programGeometryPass.createProgram( paths );
+		aProgram = _programGeometryPass.getProgramId();
+
+		glCreateFramebuffers( 1, &_gBufferFBO );
+
+		glCreateTextures( GL_TEXTURE_2D, 6, _gBufferTextures );
+
+		for ( size_t i = 0; i < 5; i++ )
+		{
+			glTextureStorage2D( _gBufferTextures[ i ], 1, GL_RGBA32F, _windowWidth, _windowHeight );
+			glTextureParameteri( _gBufferTextures[ i ], GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+			glTextureParameteri( _gBufferTextures[ i ], GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+			glNamedFramebufferTexture( _gBufferFBO, _drawBuffers[ i ], _gBufferTextures[ i ], 0 );
+		}
+
+		glTextureStorage2D( _gBufferTextures[ 5 ], 1, GL_DEPTH_COMPONENT24, _windowWidth, _windowHeight );
+		glTextureParameteri( _gBufferTextures[ 5 ], GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( _gBufferTextures[ 5 ], GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( _gBufferFBO, GL_DEPTH_ATTACHMENT, _gBufferTextures[ 5 ], 0 );
+
+		glNamedFramebufferDrawBuffers( _gBufferFBO, 5, _drawBuffers );
+
+		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _gBufferFBO, GL_DRAW_FRAMEBUFFER ) )
+		{
+			std::cout << "FRAMEBUFFER ERROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOR \n";
+		}
+	}
+
 	void LabWork7::render()
 	{
-		// glClearColor
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		//renderGeometryPass();
+
+		//renderAOPass();
+		//renderBlurPass();
+		// renderAOPasses();
+
+		renderDepthMapPass();
+
+		renderPrintDepthMap();
+
+		if ( lightPassEnabled )
+		{
+			renderLightingPass();
+		}
+		else
+		{
+		
+			glNamedFramebufferReadBuffer( _gBufferFBO, _drawBuffers[ _listBoxSelectedValue ] );
+
+			glBlitNamedFramebuffer( _gBufferFBO,
+									0,
+									0,
+									0,
+									_windowWidth,
+									_windowHeight,
+									0,
+									0,
+									_windowWidth,
+									_windowHeight,
+									GL_COLOR_BUFFER_BIT,
+									GL_NEAREST );
+		}
+
+		// TODO CLEAN , UNIFORM, TEXTURE, DRAW
+	}
+
+	void LabWork7::renderGeometryPass()
+	{
+		glUseProgram( aProgram );
+		glEnable( GL_DEPTH_TEST );
 
 		if ( luminosityNeedsUpdating )
 		{
@@ -437,13 +241,13 @@ namespace M3D_ISICG
 		{
 			_updateViewMatrix();
 			_updateProjectionMatrix();
-			_camera.setFovy( _fovy );
+			_camera->setFovy( _fovy );
 			// fovyNeedsUpdating = false;
 		}
 
 		if ( perspecNeedsUpdating )
 		{
-			_camera.switchPerspect();
+			_camera->switchPerspect();
 			_updateProjectionMatrix();
 			perspecNeedsUpdating = false;
 		}
@@ -464,87 +268,228 @@ namespace M3D_ISICG
 								   GL_FALSE,
 								   glm::value_ptr( _matrixWtoV * _tmm._transformation ) );
 
-		lightPos = Vec4f( 1.42, 1.72, -0.5, 1.0f );
+		glProgramUniformMatrix4fv( aProgram,
+								   glGetUniformLocation( aProgram, "modelMatrix" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( _tmm._transformation ) );
+
 		glProgramUniform3fv( aProgram,
 							 glGetUniformLocation( aProgram, "lightPos" ),
 							 1,
-							 glm::value_ptr( _matrixWtoV * Vec4f( lightPos, 1.0 ) ) );
+							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position, 1 ) ) );
 
 		glProgramUniform3fv(
-			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera._position ) );
+			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera->_position ) );
 
-		////////////////////////AOOO/////////////////////////////////
-
-		glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-		// 1. geometry pass: render scene's geometry/color data into gbuffer
-		// -----------------------------------------------------------------
-		glBindFramebuffer( GL_FRAMEBUFFER, gBuffer );
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, _gBufferFBO );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		_tmm.render( aProgram );
 
-		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+	}
 
-		// 2. generate SSAO texture
-		// ------------------------
-		glBindFramebuffer( GL_FRAMEBUFFER, ssaoFBO );
-		glClear( GL_COLOR_BUFFER_BIT );
-		glUseProgram( aProgram3 );
-		// Send kernel + rotation
+	void LabWork7::renderLightingPass()
+	{
+		glUseProgram( _lightingPassProgram );
 
-		glProgramUniform3fv( aProgram3,
-							 glGetUniformLocation( aProgram3, "samples" ),
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+
+		glDisable( GL_DEPTH_TEST );
+
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+		for ( size_t i = 0; i < 6; i++ )
+		{
+			glBindTextureUnit( i, _gBufferTextures[ i ] );
+		}
+		glBindTextureUnit( 6, blurOutputTexture );
+
+		if ( printAO )
+		{
+			float * data = new float[ _windowWidth * _windowHeight ];
+			glGetTextureImage(
+				ssaoOutputTexture, 0, GL_RED, GL_FLOAT, _windowWidth * _windowHeight * sizeof( float ), data );
+			for ( int i = 0; i < _windowWidth * _windowHeight; i++ )
+			{
+				std::cout << " | " << data[ i ] << " | ";
+			}
+			printAO = false;
+		}
+
+		// ATTENTION A PASSER EN TANGENT SPACE
+		glProgramUniform3fv( _lightingPassProgram,
+							 glGetUniformLocation( aProgram, "lightPos" ),
+							 1,
+							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position, 1 ) ) );
+
+		glBindVertexArray( quadVAO );
+
+		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+
+		glBindVertexArray( 0 );
+
+		for ( size_t i = 0; i < 7; i++ )
+		{
+			glBindTextureUnit( i, 0 );
+		}
+	}
+
+	void LabWork7::renderAOPass()
+	{
+		glUseProgram( _programSSAO.getProgramId() );
+
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, ssaoFBO );
+
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		glDisable( GL_DEPTH_TEST );
+
+		glBindTextureUnit( 0, _gBufferTextures[ 0 ] );
+		glBindTextureUnit( 1, _gBufferTextures[ 1 ] );
+		glBindTextureUnit( 2, noiseTexture );
+
+		glProgramUniform3fv( _programSSAO.getProgramId(),
+							 glGetUniformLocation( _programSSAO.getProgramId(), "samples" ),
 							 64,
 							 reinterpret_cast<float *>( ssaoKernel.data() ) );
 
-		glProgramUniformMatrix4fv( aProgram3,
-								   glGetUniformLocation( aProgram3, "projection" ),
+		glProgramUniformMatrix4fv( _programSSAO.getProgramId(),
+								   glGetUniformLocation( _programSSAO.getProgramId(), "projection" ),
 								   1,
 								   GL_FALSE,
-								   glm::value_ptr( _camera.getProjectionMatrix() ) );
-		glBindTextureUnit( 0, gPosition );
-		glBindTextureUnit( 1, gNormal );
-		glBindTextureUnit( 2, noiseTexture );
-		renderQuad();
-		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+								   glm::value_ptr( _camera->getProjectionMatrix() ) );
 
-		// 3. blur SSAO texture to remove noise
-		// ------------------------------------
-		glBindFramebuffer( GL_FRAMEBUFFER, ssaoBlurFBO );
-		glClear( GL_COLOR_BUFFER_BIT );
-		glUseProgram( aProgram4 );
-		glBindTextureUnit( 0, ssaoColorBuffer );
-		renderQuad();
-		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+		glProgramUniform1f(
+			_programSSAO.getProgramId(), glGetUniformLocation( _programSSAO.getProgramId(), "bias" ), bias );
 
-		// 4. lighting pass: traditional deferred Blinn-Phong lighting with added screen-space ambient occlusion
-		// -----------------------------------------------------------------------------------------------------
+		glProgramUniform1f(
+			_programSSAO.getProgramId(), glGetUniformLocation( _programSSAO.getProgramId(), "radius" ), radius );
+
+		glProgramUniform1i( _programSSAO.getProgramId(),
+							glGetUniformLocation( _programSSAO.getProgramId(), "kernelSize" ),
+							kernelSize );
+
+		glProgramUniform1i(
+			_programSSAO.getProgramId(), glGetUniformLocation( _programSSAO.getProgramId(), "power" ), power );
+
+		glBindVertexArray( quadVAO );
+
+		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+
+		glBindVertexArray( 0 );
+
+		glBindTextureUnit( 0, 0 );
+		glBindTextureUnit( 1, 0 );
+		glBindTextureUnit( 2, 0 );
+
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+	}
+	
+	void LabWork7::renderDepthMapPass() {
+		
+		_programDepthMap.useProgram();
+		
+	    glProgramUniformMatrix4fv( _programDepthMap.getProgramId(),
+								   glGetUniformLocation( _programDepthMap.getProgramId(), "model" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( _tmm._transformation ) );
+
+		glProgramUniformMatrix4fv( _programDepthMap.getProgramId(),
+								   glGetUniformLocation( _programDepthMap.getProgramId(), "lightSpaceMatrix" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( lightSpaceMatrix ) );
+
+
+		glEnable( GL_DEPTH_TEST );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		glUseProgram( aProgram2 );
-		// send light relevant uniforms
-		glm::vec3 lightPosView = glm::vec3( _camera.getViewMatrix() * glm::vec4( lightPos, 1.0 ) );
-		glProgramUniform3fv(
-			aProgram2, glGetUniformLocation( aProgram2, "light.Position" ), 1, glm::value_ptr( lightPosView ) );
-		glProgramUniform3fv(
-			aProgram2, glGetUniformLocation( aProgram2, "light.Color" ), 1, glm::value_ptr( lightColor ) );
+		glBindFramebuffer( GL_FRAMEBUFFER, _depthMapFBO );
 
-		// Update attenuation parameters
-		const float linear	  = 0.09f;
-		const float quadratic = 0.032f;
+		_tmm.render( _programDepthMap.getProgramId() );
 
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "light.Linear" ), linear );
-		glProgramUniform1f( aProgram2, glGetUniformLocation( aProgram2, "light.Quadratic" ), quadratic );
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 
-		glBindTextureUnit( 0, gPosition );
-		glBindTextureUnit( 1, gNormal );
-		glBindTextureUnit( 2, gAlbedo );
-		glBindTextureUnit( 3, ssaoColorBufferBlur );
+	}
 
-		renderQuad();
+	void LabWork7::renderPrintDepthMap()
+	{
+		_programPrintDepthMap.useProgram();
+		glEnable( GL_DEPTH_TEST );
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-		//============================FIN AO ==============================
+		computerShadowMap();
+
+
+		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+	    glBindTextureUnit( 0, depthMapTexture );
+
+		glBindVertexArray( quadVAO );
+
+		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+
+		glBindVertexArray( 0 );
+
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+
+	}
+
+
+
+	void LabWork7::renderBlurPass()
+	{
+		glUseProgram( _programSSAOBlur.getProgramId() );
+		glDisable( GL_DEPTH_TEST );
+		glClear( GL_COLOR_BUFFER_BIT );
+		glBindFramebuffer( GL_FRAMEBUFFER, ssaoBlurFBO );
+
+		glBindTextureUnit( 0, ssaoOutputTexture );
+
+		glBindVertexArray( quadVAO );
+
+		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+
+		glBindVertexArray( 0 );
+
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+	}
+
+	void LabWork7::computeAO()
+	{
+		std::uniform_real_distribution<float> randomFloats( 0.f, 1.f ); // generates random floats between 0.0 and 1.0
+		std::default_random_engine			  generator;
+
+		for ( unsigned int i = 0; i < 64; ++i )
+		{
+			glm::vec3 sample( randomFloats( generator ) * 2.0 - 1.0,
+							  randomFloats( generator ) * 2.0 - 1.0,
+							  randomFloats( generator ) );
+			sample = glm::normalize( sample );
+			sample *= randomFloats( generator );
+			float scale = float( i ) / 64.0f;
+
+			// scale samples s.t. they're more aligned to center of kernel
+			scale = myLerp( 0.1f, 1.0f, scale * scale );
+			sample *= scale;
+			ssaoKernel.push_back( sample );
+		}
+
+		for ( unsigned int i = 0; i < 16; i++ )
+		{
+			glm::vec3 noise( randomFloats( generator ) * 2.0 - 1.0,
+							 randomFloats( generator ) * 2.0 - 1.0,
+							 0.0f ); // rotate around z-axis (in tangent space)
+			ssaoNoise.push_back( noise );
+		}
+	}
+
+	void LabWork7::computerShadowMap() {
+		// TODO MODIFIER
+		lightProjection = glm::ortho( -10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane );  
+		lightView	= glm::lookAt( glm::vec3( -2.0f, 4.0f, -1.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ); 
+		lightSpaceMatrix = lightProjection * lightView; 
 	}
 
 	void LabWork7::handleEvents( const SDL_Event & p_event )
@@ -554,27 +499,27 @@ namespace M3D_ISICG
 			switch ( p_event.key.keysym.scancode )
 			{
 			case SDL_SCANCODE_W: // Front
-				_camera.moveFront( _cameraSpeed );
+				_camera->moveFront( _cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_S: // Back
-				_camera.moveFront( -_cameraSpeed );
+				_camera->moveFront( -_cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_A: // Left
-				_camera.moveRight( -_cameraSpeed );
+				_camera->moveRight( -_cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_D: // Right
-				_camera.moveRight( _cameraSpeed );
+				_camera->moveRight( _cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_R: // Up
-				_camera.moveUp( _cameraSpeed );
+				_camera->moveUp( _cameraSpeed );
 				_updateViewMatrix();
 				break;
 			case SDL_SCANCODE_F: // Bottom
-				_camera.moveUp( -_cameraSpeed );
+				_camera->moveUp( -_cameraSpeed );
 				_updateViewMatrix();
 				break;
 			default: break;
@@ -585,14 +530,18 @@ namespace M3D_ISICG
 		if ( p_event.type == SDL_MOUSEMOTION && p_event.motion.state & SDL_BUTTON_LMASK
 			 && !ImGui::GetIO().WantCaptureMouse )
 		{
-			_camera.rotate( p_event.motion.xrel * _cameraSensitivity, p_event.motion.yrel * _cameraSensitivity );
+			_camera->rotate( p_event.motion.xrel * _cameraSensitivity, p_event.motion.yrel * _cameraSensitivity );
 			_updateViewMatrix();
 		}
 	}
 
 	void LabWork7::displayUI()
 	{
-		luminosityNeedsUpdating = ImGui::SliderFloat( "Luminosity", &_luminosity, 0, 1 );
+		luminosityNeedsUpdating = ImGui::SliderInt( "SSAO : Kernel Size", &kernelSize, 0, 128 );
+		luminosityNeedsUpdating = ImGui::SliderInt( "SSAO : Power", &power, 0, 10 );
+		luminosityNeedsUpdating = ImGui::SliderFloat( "SSAO : Radius", &radius, 0.1, 5 );
+		luminosityNeedsUpdating = ImGui::SliderFloat( "SSAO : Bias", &bias, 0.001, 0.1 );
+
 		if ( ImGui::ColorEdit3( "BackGround Color", glm::value_ptr( _bgColor ) ) )
 		{
 			glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );
@@ -601,6 +550,24 @@ namespace M3D_ISICG
 		ImGui::Checkbox( "Trackball", &trackballSwitch );
 		perspecNeedsUpdating = ImGui::Checkbox( "Ortho", &perspecOrtho );
 
+		ImGui::Checkbox( "LightingPass", &lightPassEnabled );
+
+		// source imgui
+
+		if ( ImGui::BeginListBox( "ATTACHMENT TO DISPLAY" ) )
+		{
+			for ( int n = 0; n < 5; n++ )
+			{
+				const bool is_selected = ( _listBoxSelectedValue == n );
+				if ( ImGui::Selectable( _listBox[ n ], is_selected ) )
+					_listBoxSelectedValue = n;
+
+				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+				if ( is_selected )
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndListBox();
+		}
 		fovyNeedsUpdating = ImGui::SliderFloat( "Fovy", &_fovy, 0, 180 );
 		ImGui::Begin( "Settings lab work 1" );
 		ImGui::Text( "No setting available!" );
@@ -609,21 +576,21 @@ namespace M3D_ISICG
 
 	void LabWork7::_updateViewMatrix()
 	{
-		_matrixWtoV			  = _camera.getViewMatrix();
+		_matrixWtoV			  = _camera->getViewMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 	}
 
 	void LabWork7::_updateProjectionMatrix()
 	{
-		_matrixVtoC			  = _camera.getProjectionMatrix();
+		_matrixVtoC			  = _camera->getProjectionMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
 	}
 
 	void LabWork7::_initCamera()
 	{
-		_camera.setScreenSize( 1280, 720 );
-		_camera.setPosition( Vec3f( 0.f, 0.f, 3.f ) );
-		_camera.setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
+		_camera->setScreenSize( 1280, 720 );
+		_camera->setPosition( Vec3f( 0.f, 0.f, 0.2f ) );
+		_camera->setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
 		_updateViewMatrix();
 		_updateProjectionMatrix();
 		_transformationMatrix = _matrixVtoC * _matrixWtoV * _tmm._transformation;
