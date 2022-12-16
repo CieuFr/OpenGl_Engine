@@ -78,7 +78,7 @@ namespace M3D_ISICG
 		const std::string fragShaderStr	  = _shaderFolder + "print_depth.frag";
 		std::string		  paths[ 2 ]	  = { vertexShaderStr, fragShaderStr };
 
-		_programPrintDepthMap.createProgram( paths );
+		_programPrintDepthMap.createProgramOnlyFS( fragShaderStr );
 
 		// INIT DEPTH MAP 
 
@@ -202,7 +202,7 @@ namespace M3D_ISICG
 
 		renderPrintDepthMap();
 
-		if ( lightPassEnabled )
+	/*	if ( lightPassEnabled )
 		{
 			renderLightingPass();
 		}
@@ -223,7 +223,7 @@ namespace M3D_ISICG
 									_windowHeight,
 									GL_COLOR_BUFFER_BIT,
 									GL_NEAREST );
-		}
+		}*/
 
 		// TODO CLEAN , UNIFORM, TEXTURE, DRAW
 	}
@@ -420,7 +420,6 @@ namespace M3D_ISICG
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		computerShadowMap();
-
 
 		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 

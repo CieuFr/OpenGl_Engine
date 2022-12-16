@@ -46,6 +46,7 @@ void main()
 		textureNormalOrProgramNormal =  normalize(normal) ;
 
 	}
+	textureNormalOrProgramNormal =  normalize(normal) ;
 
 	afterCheckPosition = position.xyz;
 
