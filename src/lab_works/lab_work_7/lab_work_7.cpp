@@ -97,12 +97,15 @@ namespace M3D_ISICG
 		glTextureParameteri( depthMapTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		glNamedFramebufferTexture( _depthMapFBO, GL_DEPTH_ATTACHMENT, depthMapTexture, 0 );
 
-		//glNamedFramebufferDrawBuffers( _depthMapFBO, 1, _depthMapDrawBuffer );
+		glNamedFramebufferDrawBuffers( _depthMapFBO, 1, _depthMapDrawBuffer );
+		glDrawBuffer( GL_NONE );
+		glReadBuffer( GL_NONE );
 
 		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _depthMapFBO, GL_DRAW_FRAMEBUFFER ) )
 		{
 			std::cout << "Erreur DEPTH MAP FBO \n";
 		}
+		glBindFramebuffer( GL_FRAMEBUFFER, 0 );  
 
 		return true;
 	}
@@ -306,18 +309,7 @@ namespace M3D_ISICG
 		}
 		glBindTextureUnit( 6, blurOutputTexture );
 
-		if ( printAO )
-		{
-			float * data = new float[ _windowWidth * _windowHeight ];
-			glGetTextureImage(
-				ssaoOutputTexture, 0, GL_RED, GL_FLOAT, _windowWidth * _windowHeight * sizeof( float ), data );
-			for ( int i = 0; i < _windowWidth * _windowHeight; i++ )
-			{
-				std::cout << " | " << data[ i ] << " | ";
-			}
-			printAO = false;
-		}
-
+	
 		// ATTENTION A PASSER EN TANGENT SPACE
 		glProgramUniform3fv( _lightingPassProgram,
 							 glGetUniformLocation( aProgram, "lightPos" ),
@@ -402,10 +394,12 @@ namespace M3D_ISICG
 								   GL_FALSE,
 								   glm::value_ptr( lightSpaceMatrix ) );
 
-
+//		glViewport( 0, 0, _windowWidth, _windowHeight );
 		glEnable( GL_DEPTH_TEST );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
 		glBindFramebuffer( GL_FRAMEBUFFER, _depthMapFBO );
+
 
 		_tmm.render( _programDepthMap.getProgramId() );
 
@@ -415,6 +409,24 @@ namespace M3D_ISICG
 
 	void LabWork7::renderPrintDepthMap()
 	{
+		if ( printDepth )
+		{
+			float * data = new float[ _windowWidth * _windowHeight ];
+			glGetTextureImage( depthMapTexture,
+							   0,
+							   GL_DEPTH_COMPONENT,
+							   GL_FLOAT,
+							   _windowWidth * _windowHeight * sizeof( float ),
+							   data );
+			for ( int i = 0; i < _windowWidth * _windowHeight; i++ )
+			{
+				std::cout << " | " << data[ i ] << " | ";
+			}
+			printDepth = false;
+		}
+
+
+
 		_programPrintDepthMap.useProgram();
 		glEnable( GL_DEPTH_TEST );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );

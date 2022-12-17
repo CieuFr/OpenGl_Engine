@@ -87,7 +87,7 @@ namespace M3D_ISICG
 
 		GLenum _aoDrawBuffer[ 1 ] = { GL_COLOR_ATTACHMENT0 };
 
-		GLenum _depthMapDrawBuffer[ 1 ] = { GL_DEPTH_COMPONENT };
+		GLenum _depthMapDrawBuffer[ 1 ] = { GL_NONE };
 
 
 		GLenum _drawBuffers[ 5 ] = { GL_COLOR_ATTACHMENT0,
@@ -117,7 +117,7 @@ namespace M3D_ISICG
 		GLuint				   noiseTexture;
 		GLuint				   ssaoOutputTexture, blurOutputTexture;
 		std::vector<glm::vec3> ssaoNoise;
-		bool				   printAO = false;
+		bool				   printDepth = true;
 
 		int	  kernelSize = 64;
 		float radius	 = 0.5;
