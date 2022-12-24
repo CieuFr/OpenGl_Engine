@@ -21,6 +21,9 @@ namespace M3D_ISICG
 
 		void render( const GLuint p_glProgram ) const override;
 
+		void renderDepth( const GLuint p_glProgram ) const ;
+
+
 		void cleanGL() override;
 
 	  private:

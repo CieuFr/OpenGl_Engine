@@ -10,20 +10,38 @@ layout (binding = 3) uniform sampler2D gDiffuse;
 layout (binding = 4) uniform sampler2D gSpecular;
 layout (binding = 5) uniform sampler2D gAlbedo;
 layout (binding = 6) uniform sampler2D ssao;
+layout (binding = 7) uniform sampler2D shadowMap;
 
 
 uniform vec3 lightPos;
 
+uniform mat4 lightSpaceMatrix;
+
 struct Light {
     vec3 Position;
     vec3 Color;
-    
     float Linear;
     float Quadratic;
 };
 
 uniform Light light;
 
+//LEARN OPENGL
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+
+    return shadow;
+}
 
 void main()
 {
@@ -38,7 +56,7 @@ void main()
     float AmbientOcclusion = texelFetch(ssao,texCoords,0).x;
     
      //vec3 ambientWithAO = vec3(AmbientOcclusion * ambient);
-     vec3 lighting = vec3(0.3 * diffuse * AmbientOcclusion);
+     vec3 ambientOccluded = vec3(0.3 * diffuse * AmbientOcclusion);
 	vec3 viewDir = normalize( - position.xyz);
 	vec3 lightDir = normalize(position.xyz - lightPos);
 
@@ -51,7 +69,13 @@ void main()
     vec3 specularLighting = specular.xxx * cosThetaPowShininess;
 	float cosTheta = max(dot(normalize(normal),normalize(lightPos-position.xyz)),0.f);
 	vec3 diffuseLight = diffuse * cosTheta;
-	vec3 result =  lighting + diffuseLight.xyz + specularLighting;
+
+
+     vec4 positionLightSpace = lightSpaceMatrix * vec4(position, 1.0);
+     float shadow = ShadowCalculation(positionLightSpace);     
+     
+     
+	vec3 result =  ambientOccluded + ((diffuseLight.xyz + specularLighting) * (1-shadow));
 
 	float a = 2.51f;
 	float b = 0.03f;

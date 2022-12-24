@@ -95,6 +95,18 @@ namespace M3D_ISICG
 
 	}
 
+		void TriangleMesh::renderDepth( const GLuint p_glProgram ) const
+	{
+		glBindVertexArray( _vao );
+
+		glDrawElements( GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0 );
+
+		glBindVertexArray( 0 );
+
+	}
+
+
+
 	void TriangleMesh::cleanGL()
 	{
 		glDisableVertexArrayAttrib( _vao, 0 );

@@ -112,12 +112,12 @@ namespace M3D_ISICG
 
 		Vec3f				   lightColor = glm::vec3( 0.2, 0.2, 0.7 );
 		GLuint				   ssaoFBO;
-		GLuint				   ssaoBlurFBO;
+		GLuint				   ssaoBlurFBO; 
 		std::vector<glm::vec3> ssaoKernel;
 		GLuint				   noiseTexture;
 		GLuint				   ssaoOutputTexture, blurOutputTexture;
 		std::vector<glm::vec3> ssaoNoise;
-		bool				   printDepth = true;
+		bool				   printDepth = false;
 
 		int	  kernelSize = 64;
 		float radius	 = 0.5;
@@ -127,9 +127,15 @@ namespace M3D_ISICG
 		// FIN SSAO
 
 		//===========SHADOW MAP ============
+
+		unsigned int SHADOW_WIDTH = 760, SHADOW_HEIGHT = 760;
 		GLuint depthMapTexture;
 		GLuint _shadowMapFBO;
 		GLuint _depthMapFBO;
+		float  lightX		   = -2.0f;
+		float  lightY = 4.0f;
+		float  lightZ		   = -1.0f;
+		float		 orthoCoefficient = 5;
 
 		Mat4f lightProjection = MAT4F_ID;
 		float near_plane = 1.0f, far_plane = 7.5f;

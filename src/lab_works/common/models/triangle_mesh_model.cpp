@@ -53,6 +53,14 @@ namespace M3D_ISICG
 		}
 	}
 
+		void TriangleMeshModel::renderDepth( const GLuint p_glProgram ) const
+	{
+		for ( size_t i = 0; i < _meshes.size(); i++ )
+		{
+			_meshes[ i ].renderDepth( p_glProgram );
+		}
+	}
+
 	void TriangleMeshModel::cleanGL()
 	{
 		for ( size_t i = 0; i < _meshes.size(); i++ )

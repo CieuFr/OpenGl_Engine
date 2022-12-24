@@ -23,6 +23,11 @@ namespace M3D_ISICG
 		glDeleteBuffers( 1, &quadVBO );
 		// Delete VBO
 		glDeleteBuffers( 1, &quadEBO );
+		glDeleteProgram( programWrapper2.getProgramId() );
+		glDeleteProgram( programWrapper3.getProgramId() );
+		glDeleteProgram( programWrapper4.getProgramId() );
+
+
 	}
 
 	bool LabWork8::init()
@@ -52,7 +57,7 @@ namespace M3D_ISICG
 
 		//=============TP 5 ==============/
 
-		_tmm.load( "sponza", FilePath( "./data/models/sponza.obj" ) );
+		_tmm.load( "lost_empire", FilePath( "./data/models/lost_empire.obj" ) );
 
 		// REMOVE COMMENT FOR SPONZA
 		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
@@ -221,7 +226,6 @@ namespace M3D_ISICG
 		glUseProgram( aProgram );
 		glEnable( GL_DEPTH_TEST );
 
-
 		if ( luminosityNeedsUpdating )
 		{
 			glProgramUniform1f( aProgram, luminosityUint, _luminosity );
@@ -313,7 +317,7 @@ namespace M3D_ISICG
 
 		// ATTENTION A PASSER EN TANGENT SPACE
 		glProgramUniform3fv( _lightingPassProgram,
-							 glGetUniformLocation( aProgram, "lightPos" ),
+							 glGetUniformLocation( _lightingPassProgram, "lightPos" ),
 							 1,
 							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position, 1 ) ) );
 
@@ -401,6 +405,9 @@ namespace M3D_ISICG
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 
 		glBindVertexArray( 0 );
+
+		glBindTextureUnit( 0, 0 );
+
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 			

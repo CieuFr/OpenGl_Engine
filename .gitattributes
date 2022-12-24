@@ -113,3 +113,11 @@
 /data/models/textures/vase_round.png filter=lfs diff=lfs merge=lfs -text
 /data/models/textures/vase_round_ddn.png filter=lfs diff=lfs merge=lfs -text
 /data/models/textures/vase_round_spec.png filter=lfs diff=lfs merge=lfs -text
+/data/models/lost_empire-RGB.png filter=lfs diff=lfs merge=lfs -text
+/data/models/lost_empire-RGBA.png filter=lfs diff=lfs merge=lfs -text
+/data/models/lost_empire.jpg filter=lfs diff=lfs merge=lfs -text
+/data/models/lost_empire.obj filter=lfs diff=lfs merge=lfs -text
+/data/models/textures/lost_empire-RGB.png filter=lfs diff=lfs merge=lfs -text
+/data/models/textures/lost_empire-RGBA.png filter=lfs diff=lfs merge=lfs -text
+/data/models/textures/lost_empire.jpg filter=lfs diff=lfs merge=lfs -text
+/data/models/textures/lost_empire.obj filter=lfs diff=lfs merge=lfs -text

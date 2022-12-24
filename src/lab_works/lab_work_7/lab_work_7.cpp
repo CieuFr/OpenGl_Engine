@@ -20,6 +20,19 @@ namespace M3D_ISICG
 		glDeleteBuffers( 1, &quadVBO );
 		// Delete VBO
 		glDeleteBuffers( 1, &quadEBO );
+		glDeleteBuffers(1, &ssaoBlurFBO );
+		glDeleteBuffers( 1,&ssaoFBO );
+		glDeleteBuffers( 1, &_depthMapFBO );
+		glDeleteBuffers( 1, &_shadowMapFBO );
+		glDeleteBuffers( 1,&_gBufferFBO );
+
+
+
+		glDeleteProgram( _programLightingPass.getProgramId() );
+		glDeleteProgram( _programSSAO.getProgramId() );
+		glDeleteProgram( _programSSAOBlur.getProgramId() );
+		glDeleteProgram( _programDepthMap.getProgramId() );
+		glDeleteProgram( _programPrintDepthMap.getProgramId() );
 	}
 
 	bool LabWork7::init()
@@ -48,10 +61,10 @@ namespace M3D_ISICG
 
 		//=============TP 5 ==============/
 
-		_tmm.load( "bunny", FilePath( "./data/models/bunny.obj" ) );
+		_tmm.load( "sponza", FilePath( "./data/models/sponza.obj" ) );
 
 		// REMOVE COMMENT FOR SPONZA
-		//_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
+		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
 
 		std::cout << "Done!" << std::endl;
 		return true;
@@ -90,16 +103,25 @@ namespace M3D_ISICG
 
 		glCreateFramebuffers( 1, &_depthMapFBO );
 
-		glCreateTextures( GL_TEXTURE_2D, 1,&depthMapTexture);
 
-		glTextureStorage2D( depthMapTexture, 1, GL_DEPTH_COMPONENT32F, _windowWidth, _windowHeight );
+		glBindFramebuffer( GL_FRAMEBUFFER, _depthMapFBO );
+
+		glCreateTextures( GL_TEXTURE_2D, 1, &depthMapTexture );
+		glTextureStorage2D( depthMapTexture, 1, GL_DEPTH_COMPONENT32F, _windowWidth, _windowHeight);
+		//glTextureStorage2D( depthMapTexture, 1, GL_DEPTH_COMPONENT32F, SHADOW_WIDTH, SHADOW_HEIGHT );
+
 		glTextureParameteri( depthMapTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTextureParameteri( depthMapTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glTextureParameteri( depthMapTexture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER );
+		glTextureParameteri( depthMapTexture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER );
 		glNamedFramebufferTexture( _depthMapFBO, GL_DEPTH_ATTACHMENT, depthMapTexture, 0 );
+		
+		
+		//glNamedFramebufferTexture( _depthMapFBO, GL_DEPTH_ATTACHMENT, depthMapTexture, 0 );
 
-		glNamedFramebufferDrawBuffers( _depthMapFBO, 1, _depthMapDrawBuffer );
-		glDrawBuffer( GL_NONE );
-		glReadBuffer( GL_NONE );
+		//
+	/*	glDrawBuffer( GL_NONE );
+		glReadBuffer( GL_NONE );*/
 
 		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _depthMapFBO, GL_DRAW_FRAMEBUFFER ) )
 		{
@@ -195,17 +217,16 @@ namespace M3D_ISICG
 
 	void LabWork7::render()
 	{
-		//renderGeometryPass();
+		renderGeometryPass();
 
-		//renderAOPass();
-		//renderBlurPass();
-		// renderAOPasses();
+		renderAOPass();
+		renderBlurPass();
 
 		renderDepthMapPass();
 
-		renderPrintDepthMap();
+		//renderPrintDepthMap();
 
-	/*	if ( lightPassEnabled )
+	if ( lightPassEnabled )
 		{
 			renderLightingPass();
 		}
@@ -226,13 +247,14 @@ namespace M3D_ISICG
 									_windowHeight,
 									GL_COLOR_BUFFER_BIT,
 									GL_NEAREST );
-		}*/
+		}
 
 		// TODO CLEAN , UNIFORM, TEXTURE, DRAW
 	}
 
 	void LabWork7::renderGeometryPass()
 	{
+
 		glUseProgram( aProgram );
 		glEnable( GL_DEPTH_TEST );
 
@@ -308,13 +330,22 @@ namespace M3D_ISICG
 			glBindTextureUnit( i, _gBufferTextures[ i ] );
 		}
 		glBindTextureUnit( 6, blurOutputTexture );
+		glBindTextureUnit( 7, depthMapTexture );
+
 
 	
 		// ATTENTION A PASSER EN TANGENT SPACE
 		glProgramUniform3fv( _lightingPassProgram,
-							 glGetUniformLocation( aProgram, "lightPos" ),
+							 glGetUniformLocation( _lightingPassProgram, "lightPos" ),
 							 1,
 							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position, 1 ) ) );
+
+
+		glProgramUniformMatrix4fv( _lightingPassProgram,
+								   glGetUniformLocation( _lightingPassProgram, "lightSpaceMatrix" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( lightSpaceMatrix ) );
 
 		glBindVertexArray( quadVAO );
 
@@ -322,7 +353,7 @@ namespace M3D_ISICG
 
 		glBindVertexArray( 0 );
 
-		for ( size_t i = 0; i < 7; i++ )
+		for ( size_t i = 0; i < 8; i++ )
 		{
 			glBindTextureUnit( i, 0 );
 		}
@@ -379,8 +410,11 @@ namespace M3D_ISICG
 	}
 	
 	void LabWork7::renderDepthMapPass() {
+		glEnable( GL_DEPTH_TEST );
+
+		computerShadowMap();
 		
-		_programDepthMap.useProgram();
+		glUseProgram( _programDepthMap.getProgramId() );
 		
 	    glProgramUniformMatrix4fv( _programDepthMap.getProgramId(),
 								   glGetUniformLocation( _programDepthMap.getProgramId(), "model" ),
@@ -394,23 +428,28 @@ namespace M3D_ISICG
 								   GL_FALSE,
 								   glm::value_ptr( lightSpaceMatrix ) );
 
-//		glViewport( 0, 0, _windowWidth, _windowHeight );
-		glEnable( GL_DEPTH_TEST );
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+			//glViewport( 0, 0, SHADOW_WIDTH, SHADOW_HEIGHT );
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, _depthMapFBO );
+	
+		glClear(  GL_DEPTH_BUFFER_BIT );
 
-		glBindFramebuffer( GL_FRAMEBUFFER, _depthMapFBO );
 
-
-		_tmm.render( _programDepthMap.getProgramId() );
+		_tmm.renderDepth( _programDepthMap.getProgramId() );
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+
+		// glViewport( 0, 0, _windowWidth, _windowHeight );
+		glClear( GL_DEPTH_BUFFER_BIT );
 
 	}
 
 	void LabWork7::renderPrintDepthMap()
 	{
+		glEnable( GL_DEPTH_TEST );
+
 		if ( printDepth )
 		{
+			float	prevValue = -1;
 			float * data = new float[ _windowWidth * _windowHeight ];
 			glGetTextureImage( depthMapTexture,
 							   0,
@@ -420,20 +459,19 @@ namespace M3D_ISICG
 							   data );
 			for ( int i = 0; i < _windowWidth * _windowHeight; i++ )
 			{
-				std::cout << " | " << data[ i ] << " | ";
+				if(prevValue != data[i]) std::cout << " | " << data[ i ] << " | ";
+				prevValue = data[ i ];
+
 			}
+			std::cout << std::endl;
 			printDepth = false;
 		}
 
 
-
-		_programPrintDepthMap.useProgram();
-		glEnable( GL_DEPTH_TEST );
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-		computerShadowMap();
+		glUseProgram( _programPrintDepthMap.getProgramId() );
 
 		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+		glClear( GL_DEPTH_BUFFER_BIT );
 
 	    glBindTextureUnit( 0, depthMapTexture );
 
@@ -443,10 +481,11 @@ namespace M3D_ISICG
 
 		glBindVertexArray( 0 );
 
+		glBindTextureUnit( 0, 0 );
+
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 
 	}
-
 
 
 	void LabWork7::renderBlurPass()
@@ -463,6 +502,8 @@ namespace M3D_ISICG
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 
 		glBindVertexArray( 0 );
+
+		glBindTextureUnit( 0, 0 );
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 	}
@@ -498,8 +539,9 @@ namespace M3D_ISICG
 
 	void LabWork7::computerShadowMap() {
 		// TODO MODIFIER
-		lightProjection = glm::ortho( -10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane );  
-		lightView	= glm::lookAt( glm::vec3( -2.0f, 4.0f, -1.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ); 
+		lightProjection = glm::ortho(
+			-orthoCoefficient, orthoCoefficient, -orthoCoefficient, orthoCoefficient, near_plane, far_plane );  
+		lightView	= glm::lookAt( glm::vec3( lightX, lightY, lightZ ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ); 
 		lightSpaceMatrix = lightProjection * lightView; 
 	}
 
@@ -553,6 +595,15 @@ namespace M3D_ISICG
 		luminosityNeedsUpdating = ImGui::SliderFloat( "SSAO : Radius", &radius, 0.1, 5 );
 		luminosityNeedsUpdating = ImGui::SliderFloat( "SSAO : Bias", &bias, 0.001, 0.1 );
 
+		luminosityNeedsUpdating = ImGui::SliderFloat( "lightX", &lightX, -10, 10);
+		luminosityNeedsUpdating = ImGui::SliderFloat( "lightY", &lightY, -10, 10 );
+		luminosityNeedsUpdating = ImGui::SliderFloat( "lightZ", &lightZ, -10, 10 );
+		luminosityNeedsUpdating = ImGui::SliderFloat( "orthoCoefficient", &orthoCoefficient, 0, 10 );
+		luminosityNeedsUpdating = ImGui::SliderFloat( "orthoNearPlace", &near_plane, 0, 10 );
+		luminosityNeedsUpdating = ImGui::SliderFloat( "orthoFarPlane", &far_plane, 0, 10 );
+
+
+
 		if ( ImGui::ColorEdit3( "BackGround Color", glm::value_ptr( _bgColor ) ) )
 		{
 			glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );
@@ -599,7 +650,7 @@ namespace M3D_ISICG
 
 	void LabWork7::_initCamera()
 	{
-		_camera->setScreenSize( 1280, 720 );
+		_camera->setScreenSize( _windowWidth, _windowHeight );
 		_camera->setPosition( Vec3f( 0.f, 0.f, 0.2f ) );
 		_camera->setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
 		_updateViewMatrix();
