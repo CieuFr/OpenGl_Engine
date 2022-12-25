@@ -196,6 +196,7 @@
     <ClInclude Include="src\lab_works\lab_work_3\scene_graph.hpp" />
     <ClInclude Include="src\lab_works\victor_toolkit\basic_object_drawer.hpp" />
     <ClInclude Include="src\lab_works\lab_work_8\lab_work_8.hpp" />
+    <ClInclude Include="src\lab_works\victor_toolkit\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\lab_works\lab_work_1\shaders\lw1.frag">

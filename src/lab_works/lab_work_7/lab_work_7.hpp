@@ -42,6 +42,8 @@ namespace M3D_ISICG
 		bool initAOPasses();
 		bool initShadowMap();
 		bool initDepthMap();
+		bool initSkyBox();
+
 
 
 
@@ -144,6 +146,10 @@ namespace M3D_ISICG
 
 		//=========== FIN SHADOW MAP ============
 
+		//=============SKYBOX ============
+		
+		GLuint skyboxTexture; 
+		//==============================
 
 		GLuint transformationMatrix;
 		Mat4f  _transformationMatrix = MAT4F_ID;

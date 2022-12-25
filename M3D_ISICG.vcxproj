@@ -59,6 +59,7 @@
     <ClInclude Include="src\lab_works\common\models\base_model.hpp" />
     <ClInclude Include="src\lab_works\common\models\triangle_mesh.hpp" />
     <ClInclude Include="src\lab_works\common\models\triangle_mesh_model.hpp" />
+    <ClInclude Include="src\lab_works\victor_toolkit\stb_image.h" />
     <ClInclude Include="src\lab_works\common\TrackBallCamera.hpp" />
     <ClInclude Include="src\lab_works\lab_work_1\lab_work_1.hpp" />
     <ClInclude Include="src\lab_works\lab_work_2\lab_work_2.hpp" />

@@ -121,3 +121,10 @@
 /data/models/textures/lost_empire-RGBA.png filter=lfs diff=lfs merge=lfs -text
 /data/models/textures/lost_empire.jpg filter=lfs diff=lfs merge=lfs -text
 /data/models/textures/lost_empire.obj filter=lfs diff=lfs merge=lfs -text
+/data/models/back.png filter=lfs diff=lfs merge=lfs -text
+/data/models/bottom.png filter=lfs diff=lfs merge=lfs -text
+/data/models/front.png filter=lfs diff=lfs merge=lfs -text
+/data/models/left.png filter=lfs diff=lfs merge=lfs -text
+/data/models/right.png filter=lfs diff=lfs merge=lfs -text
+/data/models/top.png filter=lfs diff=lfs merge=lfs -text
+/src/lab_works/victor_toolkit/stb_image.h filter=lfs diff=lfs merge=lfs -text
