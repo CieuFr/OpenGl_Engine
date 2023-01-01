@@ -121,6 +121,9 @@
     <ClCompile Include="src\lab_works\lab_work_8\lab_work_8.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\utils\random.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\application.hpp">
@@ -217,5 +220,7 @@
     <None Include="src\lab_works\lab_work_7\shaders\ssao.vert" />
     <None Include="src\lab_works\lab_work_7\shaders\ssao_blur.frag" />
     <None Include="src\lab_works\lab_work_7\shaders\ssao_blur.vert" />
+    <None Include="src\lab_works\lab_work_7\shaders\sky_box.vert" />
+    <None Include="src\lab_works\lab_work_7\shaders\sky_box.frag" />
   </ItemGroup>
 </Project>

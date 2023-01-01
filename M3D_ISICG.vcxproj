@@ -42,6 +42,7 @@
     <ClCompile Include="src\lab_works\lab_work_8\lab_work_8.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\utils\image.cpp" />
+    <ClCompile Include="src\utils\random.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\gl3w\GL\gl3w.h" />
@@ -86,6 +87,8 @@
     <None Include="src\lab_works\lab_work_2\shaders\lw1.vert" />
     <None Include="src\lab_works\lab_work_3\shaders\lw3.frag" />
     <None Include="src\lab_works\lab_work_3\shaders\lw3.vert" />
+    <None Include="src\lab_works\lab_work_7\shaders\sky_box.frag" />
+    <None Include="src\lab_works\lab_work_7\shaders\sky_box.vert" />
     <None Include="src\lab_works\lab_work_7\shaders\ssao.frag" />
     <None Include="src\lab_works\lab_work_7\shaders\ssao.vert" />
     <None Include="src\lab_works\lab_work_7\shaders\ssao_blur.frag" />

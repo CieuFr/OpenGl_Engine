@@ -53,6 +53,8 @@ namespace M3D_ISICG
 		void renderGeometryPass();
 		void renderDepthMapPass();
 		void renderPrintDepthMap();
+		void renderSkyBox();
+
 
 
 
@@ -122,8 +124,8 @@ namespace M3D_ISICG
 		bool				   printDepth = false;
 
 		int	  kernelSize = 64;
-		float radius	 = 0.5;
-		float bias		 = 0.025;
+		float radius	 = 0.5f;
+		float bias		 = 0.025f;
 		int	  power		 = 1;
 
 		// FIN SSAO
@@ -147,7 +149,7 @@ namespace M3D_ISICG
 		//=========== FIN SHADOW MAP ============
 
 		//=============SKYBOX ============
-		
+		Mesh   _skyboxMesh;
 		GLuint skyboxTexture; 
 		//==============================
 
@@ -181,6 +183,8 @@ namespace M3D_ISICG
 		ProgramWrapper _programSSAOBlur;
 		ProgramWrapper _programDepthMap;
 		ProgramWrapper _programPrintDepthMap;
+		ProgramWrapper _programSkyBox;
+
 
 
 

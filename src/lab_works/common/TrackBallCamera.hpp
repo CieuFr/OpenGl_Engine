@@ -42,7 +42,7 @@ namespace M3D_ISICG
 		 private: 
 
 		 void updateTrackBallCameraAfterMove();
-		  float pi = 3.141592653589793238462643383279502884;
+		  float pi = 3.141592653589793238462643383279502884f;
 		 float _radius;
 		 float _azimuthAngle; 
 

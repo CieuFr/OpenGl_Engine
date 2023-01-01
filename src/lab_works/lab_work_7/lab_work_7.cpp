@@ -50,6 +50,8 @@ namespace M3D_ISICG
 		initDepthMap();
 		initGBuffer();
 		initLightingPassProgram();
+		initSkyBox();
+		_skyboxMesh = drawer.createCube();
 		quadVAO = drawer.drawQuad();
 		_initCamera();
 
@@ -62,10 +64,10 @@ namespace M3D_ISICG
 
 		//=============TP 5 ==============/
 
-		_tmm.load( "sponza", FilePath( "./data/models/sponza.obj" ) );
+		_tmm.load( "bunny", FilePath( "./data/models/bunny.obj" ) );
 
 		// REMOVE COMMENT FOR SPONZA
-		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
+		//_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
 
 		std::cout << "Done!" << std::endl;
 		return true;
@@ -87,6 +89,15 @@ namespace M3D_ISICG
 
 	bool LabWork7::initSkyBox()
 	{ 
+				const std::string vertexShaderStr2 = _shaderFolder + "sky_box.vert";
+		const std::string fragShaderStr2   = _shaderFolder + "sky_box.frag";
+		std::string		  paths2[ 2 ]	   = { vertexShaderStr2, fragShaderStr2 };
+
+		_programSkyBox.createProgram( paths2 );
+
+
+
+
 		glCreateTextures( GL_TEXTURE_CUBE_MAP, 1, &skyboxTexture );
 		std::vector<std::string> faces { "./data/models/right.jpg", "./data/models/left.jpg", "./data/models/top.jpg", "./data/models/bottom.jpg", "./data/models/front.jpg", "./data/models/back.jpg" };
 		
@@ -97,15 +108,18 @@ namespace M3D_ISICG
 
 			data = stbi_load( faces[ i ].c_str(), &width, &height, &nrChannels, 0 );
 			// Envoi des données à OpenGL
-			glTexSubImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-							 0,
-							 0,
-							 0,
-							 width,
-							 height,
-							 GL_RGB,
-							 GL_UNSIGNED_BYTE,
-							 data );
+
+			if (data) {
+				glTexSubImage2D(
+					GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data );
+
+				stbi_image_free( data );
+			}
+			else {
+				std::cout << "Cubemap tex failed to load at path: " << faces[ i ] << std::endl;
+				stbi_image_free( data );
+			}
+			
 		}
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -113,6 +127,7 @@ namespace M3D_ISICG
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );  
 
+		return true;
 	}
 
 	bool LabWork7::initDepthMap() {
@@ -248,18 +263,19 @@ namespace M3D_ISICG
 
 	void LabWork7::render()
 	{
-		renderGeometryPass();
+		//renderSkyBox();
+	/*	renderGeometryPass();
 
 		renderAOPass();
 		renderBlurPass();
-
+		
 		renderDepthMapPass();
 
-		//renderPrintDepthMap();
+		renderPrintDepthMap();*/
 
 	if ( lightPassEnabled )
 		{
-			renderLightingPass();
+			//renderLightingPass();
 		}
 		else
 		{
@@ -285,7 +301,6 @@ namespace M3D_ISICG
 
 	void LabWork7::renderGeometryPass()
 	{
-
 		glUseProgram( aProgram );
 		glEnable( GL_DEPTH_TEST );
 
@@ -518,7 +533,6 @@ namespace M3D_ISICG
 
 	}
 
-
 	void LabWork7::renderBlurPass()
 	{
 		glUseProgram( _programSSAOBlur.getProgramId() );
@@ -574,6 +588,43 @@ namespace M3D_ISICG
 			-orthoCoefficient, orthoCoefficient, -orthoCoefficient, orthoCoefficient, near_plane, far_plane );  
 		lightView	= glm::lookAt( glm::vec3( lightX, lightY, lightZ ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ); 
 		lightSpaceMatrix = lightProjection * lightView; 
+	}
+
+
+	void LabWork7::renderSkyBox()
+	{
+		glUseProgram( _programSkyBox.getProgramId() );
+
+		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+		glProgramUniformMatrix4fv( _programSkyBox.getProgramId(),
+							glGetUniformLocation( _programSkyBox.getProgramId(), "projection" ),
+							1,
+							GL_FALSE,
+							glm::value_ptr( _camera->getProjectionMatrix() ) );
+
+		
+		glProgramUniformMatrix4fv( _programSkyBox.getProgramId(),
+								   glGetUniformLocation( _programSkyBox.getProgramId(), "view" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( _matrixWtoV ) );
+
+
+		
+		glBindTextureUnit( 0, skyboxTexture );
+
+		glBindVertexArray( _skyboxMesh.VAO );
+		glDepthMask( GL_FALSE );
+		glDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0 );
+		glDepthMask( GL_TRUE );
+		glBindVertexArray( 0 );
+
+		glBindTextureUnit( 0, 0 );
+
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+		
 	}
 
 	void LabWork7::handleEvents( const SDL_Event & p_event )
