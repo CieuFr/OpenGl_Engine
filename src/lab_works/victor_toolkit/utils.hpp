@@ -7,6 +7,8 @@
 #include "GL/gl3w.h"
 
 
+
+
 static inline std::string readFile( const std::string & p_filePath )
 {
 	std::ifstream ifs( p_filePath, std::ifstream::in );
@@ -21,5 +23,7 @@ static inline std::string readFile( const std::string & p_filePath )
 
 
 static float myLerp( float a, float b, float f ) { return a + f * ( b - a ); }
+
+
 
 #endif

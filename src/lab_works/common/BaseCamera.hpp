@@ -22,13 +22,15 @@ namespace M3D_ISICG
 		inline const Mat4f & getProjectionMatrix() const { return _projectionMatrix; }
 	
 		Vec3f _position = VEC3F_ZERO;
+		Vec3f _invDirection = Vec3f( 0.f, 0.f, 1.f ); // Dw dans le cours.
+		Vec3f _right		= Vec3f( -1.f, 0.f, 0.f ); // Rw dans le cours.
+		Vec3f _up			= Vec3f( 0.f, 1.f, 0.f );  // Uw dans le cours.
 	  protected:
 		bool _orthoPerspec = false;
 
 		
-		Vec3f _invDirection = Vec3f( 0.f, 0.f, 1.f );  // Dw dans le cours.
-		Vec3f _right		= Vec3f( -1.f, 0.f, 0.f ); // Rw dans le cours.
-		Vec3f _up			= Vec3f( 0.f, 1.f, 0.f );  // Uw dans le cours.
+		
+		
 		// Angles defining the orientation in degrees
 		float _yaw	 = 90.f;
 		float _pitch = 0.f;

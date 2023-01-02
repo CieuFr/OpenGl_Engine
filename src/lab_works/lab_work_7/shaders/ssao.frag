@@ -26,6 +26,7 @@ void main()
 
    
 	vec3 position = texelFetch(gPosition,ivec2(texCoords),0).xyz;
+    
 
     
     vec3 normal = texelFetch(gNormal,ivec2(texCoords),0).xyz;    

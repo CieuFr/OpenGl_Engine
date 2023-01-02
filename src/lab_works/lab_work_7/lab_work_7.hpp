@@ -13,6 +13,8 @@
 #include "victor_toolkit/program_wrapper.hpp"
 #include <random>
 #include <vector>
+#include "utils/image.hpp"
+
 
 namespace M3D_ISICG
 {
@@ -136,9 +138,12 @@ namespace M3D_ISICG
 		GLuint depthMapTexture;
 		GLuint _shadowMapFBO;
 		GLuint _depthMapFBO;
-		float  lightX		   = -2.0f;
-		float  lightY = 4.0f;
-		float  lightZ		   = -1.0f;
+		float		 puissanceLumière = 1.f;
+		float		 distanceDiminutionLumiere = 0.2f;
+		
+		float  lightX		   = 0.f;
+		float  lightY = 1.f;
+		float  lightZ		   = 0.0f;
 		float		 orthoCoefficient = 5;
 
 		Mat4f lightProjection = MAT4F_ID;
@@ -151,6 +156,7 @@ namespace M3D_ISICG
 		//=============SKYBOX ============
 		Mesh   _skyboxMesh;
 		GLuint skyboxTexture; 
+		Image  image;
 		//==============================
 
 		GLuint transformationMatrix;

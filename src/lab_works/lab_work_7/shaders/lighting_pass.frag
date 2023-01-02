@@ -17,14 +17,11 @@ uniform vec3 lightPos;
 
 uniform mat4 lightSpaceMatrix;
 
-struct Light {
-    vec3 Position;
-    vec3 Color;
-    float Linear;
-    float Quadratic;
-};
+uniform float lightPower;
+uniform float lightAttenuationDistance;
 
-uniform Light light;
+
+
 
 //LEARN OPENGL
 float ShadowCalculation(vec4 fragPosLightSpace)
@@ -34,7 +31,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
     // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    float closestDepth = texelFetch(shadowMap,ivec2(projCoords),0).r;
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
     // check whether current frag pos is in shadow
@@ -76,45 +73,32 @@ void main()
      
      
 	vec3 result =  ambientOccluded + ((diffuseLight.xyz + specularLighting) * (1-shadow));
-
+    // TONE MAPPING
 	float a = 2.51f;
 	float b = 0.03f;
 	float c = 2.43f;
 	float d = 0.59f;
 	float e = 0.14f;
-
-	float facteurAtenuation = 1/dot(lightPos,position)*dot(lightPos,position); 
-	
+    
+    // LIGHT ATTENUATION
+    float A = lightPower; 
+    float r = lightAttenuationDistance;
+    float pi = 3.14159265359;
+    float constant = 1.0;
+    float  linear = (4 * pi * r * r) / A;
+     float quadratic = (4 * pi * r * r) / (A * A);
+    float distanceLightObject = dot(normal,normalize(lightPos-position.xyz));
+	float facteurAtenuation = 1.0 / (constant + linear * distanceLightObject + quadratic * distanceLightObject * distanceLightObject); 
+		result *= facteurAtenuation;
 	 result = vec3(pow(result.x,1.5),pow(result.y,1.5),pow(result.z,1.5));
-	// result *= facteurAtenuation;
+
 
 	result = ((result*(a*result+b))/(result*(c*result+d)+e));
-	fragColor = vec4(diffuseLight * AmbientOcclusion  + specularLighting,1) ;
-   //fragColor = vec4(AmbientOcclusion * 255,AmbientOcclusion * 255,AmbientOcclusion * 255, 1.);
-	//fragColor =  vec4(AmbientOcclusion,AmbientOcclusion,AmbientOcclusion,1)  ;
+    fragColor = vec4(result,1.0);
+	//fragColor = vec4(diffuseLight * AmbientOcclusion  + specularLighting,1) ;
+   
+    //fragColor = vec4(vec3(1-shadow),1);
     
     
-
-// blinn-phong (in view-space)
-//    vec3 ambient = vec3(0.3 * diffuse * AmbientOcclusion); // here we add occlusion factor
-//    vec3 lighting  = ambient; 
-//    vec3 viewDir  = normalize(-position); // viewpos is (0.0.0) in view-space
-//    // diffuse
-//    vec3 lightDir = normalize(lightPos - position);
-//    vec3 diffuse2 = max(dot(normal, lightDir), 0.0) * diffuse * light.Color;
-//    // specular
-//    vec3 halfwayDir = normalize(lightDir + viewDir);  
-//    float spec = pow(max(dot(normal, halfwayDir), 0.0), 8.0);
-//    vec3 specular2 = vec3( 0.2, 0.2, 0.7 ) * spec;
-//    // attenuation
-//    float dist = length(lightPos - position);
-//    float attenuation = 1.0 / (1.0 + light.Linear * dist + light.Quadratic * dist * dist);
-//    diffuse  *= attenuation;
-//    specular2 *= attenuation;
-//    lighting += diffuse + specular2;
-//
-//    fragColor = vec4(lighting, 1.0);
-
-
 
 }

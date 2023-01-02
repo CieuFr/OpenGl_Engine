@@ -6,6 +6,9 @@
 #include "victor_toolkit/utils.hpp"
 #include <iostream>
 #include "victor_toolkit/stb_image.h"
+#include "utils/image.hpp"
+
+
 
 namespace M3D_ISICG
 {
@@ -64,10 +67,10 @@ namespace M3D_ISICG
 
 		//=============TP 5 ==============/
 
-		_tmm.load( "bunny", FilePath( "./data/models/bunny.obj" ) );
+		_tmm.load( "sponza", FilePath( "./data/models/sponza.obj" ) );
 
 		// REMOVE COMMENT FOR SPONZA
-		//_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
+		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
 
 		std::cout << "Done!" << std::endl;
 		return true;
@@ -87,6 +90,7 @@ namespace M3D_ISICG
 		return true;
 	}
 
+
 	bool LabWork7::initSkyBox()
 	{ 
 				const std::string vertexShaderStr2 = _shaderFolder + "sky_box.vert";
@@ -95,37 +99,48 @@ namespace M3D_ISICG
 
 		_programSkyBox.createProgram( paths2 );
 
-
-
-
-		glCreateTextures( GL_TEXTURE_CUBE_MAP, 1, &skyboxTexture );
-		std::vector<std::string> faces { "./data/models/right.jpg", "./data/models/left.jpg", "./data/models/top.jpg", "./data/models/bottom.jpg", "./data/models/front.jpg", "./data/models/back.jpg" };
 		
-		int				width, height, nrChannels;
-		unsigned char * data;  
-		for ( GLuint i = 0; i <6; i++ )
+		glCreateTextures( GL_TEXTURE_CUBE_MAP, 1, &skyboxTexture );
+
+		glTextureParameteri( skyboxTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTextureParameteri( skyboxTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTextureParameteri( skyboxTexture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTextureParameteri( skyboxTexture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTextureParameteri( skyboxTexture, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+
+		std::string faces[6] {
+			"./data/models/right.png",	"./data/models/left.png",  "./data/models/top.png",
+			"./data/models/bottom.png", "./data/models/front.png", "./data/models/back.png"
+		};
+
+		bool  notInit = true;
+		Image image;
+
+		for ( size_t i = 0; i < 6; i++ )
 		{
-
-			data = stbi_load( faces[ i ].c_str(), &width, &height, &nrChannels, 0 );
-			// Envoi des données à OpenGL
-
-			if (data) {
-				glTexSubImage2D(
-					GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data );
-
-				stbi_image_free( data );
+			image.load( faces[ i ] );
+			
+			if (notInit) {
+				glTextureStorage2D(skyboxTexture,1, GL_RGB32F, image._width, image._height );
+				notInit = false;
 			}
-			else {
-				std::cout << "Cubemap tex failed to load at path: " << faces[ i ] << std::endl;
-				stbi_image_free( data );
-			}
+				glTextureSubImage3D( skyboxTexture,
+									 0,
+									 0,
+									 0,
+									 i,
+									 image._width,
+									 image._height,
+									 1,
+									 GL_RGBA,
+									 GL_UNSIGNED_BYTE,
+									 image._pixels );
 			
 		}
-		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-		glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );  
+
+
+
+	
 
 		return true;
 	}
@@ -263,19 +278,20 @@ namespace M3D_ISICG
 
 	void LabWork7::render()
 	{
-		//renderSkyBox();
-	/*	renderGeometryPass();
+		renderSkyBox();
+		renderGeometryPass();
 
 		renderAOPass();
 		renderBlurPass();
 		
 		renderDepthMapPass();
+			
 
-		renderPrintDepthMap();*/
+		//renderPrintDepthMap();
 
 	if ( lightPassEnabled )
 		{
-			//renderLightingPass();
+			renderLightingPass();
 		}
 		else
 		{
@@ -348,7 +364,7 @@ namespace M3D_ISICG
 		glProgramUniform3fv( aProgram,
 							 glGetUniformLocation( aProgram, "lightPos" ),
 							 1,
-							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position, 1 ) ) );
+							 glm::value_ptr( _matrixWtoV * Vec4f(lightX,lightY,lightZ, 1 ) ) );
 
 		glProgramUniform3fv(
 			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera->_position ) );
@@ -379,14 +395,25 @@ namespace M3D_ISICG
 		glBindTextureUnit( 7, depthMapTexture );
 
 
+
 	
 		// ATTENTION A PASSER EN TANGENT SPACE
+	/*	glProgramUniform3fv( _lightingPassProgram,
+							 glGetUniformLocation( _lightingPassProgram, "lightPos" ),
+							 1,
+							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position, 1 ) ) );*/
+
+		glProgramUniform1f( _lightingPassProgram, glGetUniformLocation( _lightingPassProgram, "lightPower" ), puissanceLumière );
+		glProgramUniform1f(
+			_lightingPassProgram, glGetUniformLocation( _lightingPassProgram, "lightAttenuationDistance" ), distanceDiminutionLumiere );
+
+		
+
 		glProgramUniform3fv( _lightingPassProgram,
 							 glGetUniformLocation( _lightingPassProgram, "lightPos" ),
 							 1,
-							 glm::value_ptr( _matrixWtoV * Vec4f( _camera->_position, 1 ) ) );
-
-
+							 glm::value_ptr( _matrixWtoV * Vec4f(lightX,lightY,lightZ, 1 ) ) );
+		
 		glProgramUniformMatrix4fv( _lightingPassProgram,
 								   glGetUniformLocation( _lightingPassProgram, "lightSpaceMatrix" ),
 								   1,
@@ -593,37 +620,46 @@ namespace M3D_ISICG
 
 	void LabWork7::renderSkyBox()
 	{
+
+		glDepthFunc( GL_LEQUAL );
 		glUseProgram( _programSkyBox.getProgramId() );
 
 		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		glm::mat4 view = glm::mat4( 1.0f );
+		glm::mat4 projection = glm::mat4( 1.0f );
+		view				 = glm::mat4(
+		glm::mat3( glm::lookAt( _camera->_position, _camera->_position + _camera->_invDirection, _camera->_up ) ) );
+		projection = glm::perspective( glm::radians( 45.0f ), (float)_windowWidth / _windowHeight, 0.1f, 100.0f );	
+
 
 		glProgramUniformMatrix4fv( _programSkyBox.getProgramId(),
 							glGetUniformLocation( _programSkyBox.getProgramId(), "projection" ),
 							1,
 							GL_FALSE,
-							glm::value_ptr( _camera->getProjectionMatrix() ) );
+							glm::value_ptr( projection) );
 
 		
 		glProgramUniformMatrix4fv( _programSkyBox.getProgramId(),
 								   glGetUniformLocation( _programSkyBox.getProgramId(), "view" ),
 								   1,
 								   GL_FALSE,
-								   glm::value_ptr( _matrixWtoV ) );
-
-
-		
-		glBindTextureUnit( 0, skyboxTexture );
+								   glm::value_ptr( view ) );
 
 		glBindVertexArray( _skyboxMesh.VAO );
-		glDepthMask( GL_FALSE );
+		
+		glBindTextureUnit( 0, skyboxTexture );
+		
 		glDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0 );
-		glDepthMask( GL_TRUE );
+
 		glBindVertexArray( 0 );
 
 		glBindTextureUnit( 0, 0 );
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+
+		glDepthFunc( GL_LESS );
+
 		
 	}
 
@@ -672,11 +708,13 @@ namespace M3D_ISICG
 
 	void LabWork7::displayUI()
 	{
+		ImGui::Text( "position = %f, %f, %f", _camera->_position.x, _camera->_position.y, _camera->_position.z );
 		luminosityNeedsUpdating = ImGui::SliderInt( "SSAO : Kernel Size", &kernelSize, 0, 128 );
 		luminosityNeedsUpdating = ImGui::SliderInt( "SSAO : Power", &power, 0, 10 );
 		luminosityNeedsUpdating = ImGui::SliderFloat( "SSAO : Radius", &radius, 0.1, 5 );
 		luminosityNeedsUpdating = ImGui::SliderFloat( "SSAO : Bias", &bias, 0.001, 0.1 );
-
+		luminosityNeedsUpdating = ImGui::SliderFloat( "puissance Lumière", &puissanceLumière, 0, 10 );
+		luminosityNeedsUpdating = ImGui::SliderFloat( "distance diminution lumiere", &distanceDiminutionLumiere,0, 100 );
 		luminosityNeedsUpdating = ImGui::SliderFloat( "lightX", &lightX, -10, 10);
 		luminosityNeedsUpdating = ImGui::SliderFloat( "lightY", &lightY, -10, 10 );
 		luminosityNeedsUpdating = ImGui::SliderFloat( "lightZ", &lightZ, -10, 10 );
@@ -733,7 +771,7 @@ namespace M3D_ISICG
 	void LabWork7::_initCamera()
 	{
 		_camera->setScreenSize( _windowWidth, _windowHeight );
-		_camera->setPosition( Vec3f( 0.f, 0.f, 0.2f ) );
+		_camera->setPosition( Vec3f( 0.f, 1.f, 0.2f ) );
 		_camera->setLookAt( Vec3f( 0.f, 0.f, 0.f ) );
 		_updateViewMatrix();
 		_updateProjectionMatrix();
