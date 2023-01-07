@@ -6,7 +6,6 @@ layout (location = 2) out vec3 gAmbiant;
 layout (location = 3) out vec3 gDiffuse;
 layout (location = 4) out vec4 gSpecular;
 
-
 layout (binding = 1) uniform sampler2D uDiffuseMap;
 layout (binding = 2) uniform sampler2D uAmbientMap;
 layout (binding = 3) uniform sampler2D uSpecularMap;
@@ -21,7 +20,6 @@ uniform vec3 ambient;
 uniform float luminosity;
 uniform vec3 diffuse;
 
-uniform vec3 cameraPos;
 uniform vec3 specular;
 uniform float shininess;
 
@@ -31,11 +29,17 @@ uniform bool uHasSpecularMap;
 uniform bool uHasAmbientMap;
 uniform bool uHasNormalMap;
 
+uniform mat4 worldToViewMatrix;
+out vec4 positionView;
+
+
+
+
 void main()
 {
      // TEXTURES
 	 if(texture(uDiffuseMap,texCoords).w <0.5) discard;
-
+	 
 	 vec3 afterCheckLightPos;
 	 vec3 afterCheckPosition;
 
@@ -48,13 +52,11 @@ void main()
 
 	}
 
-	afterCheckPosition = position.xyz;
+	afterCheckPosition = vec3(worldToViewMatrix* position);
 
 	vec3 viewDir = normalize( - afterCheckPosition);
 	vec3 lightDir = normalize(afterCheckPosition - afterCheckLightPos);
 
-
-	// FLIP NORMALS
 	float normalDirection;
 	normalDirection = dot(textureNormalOrProgramNormal,viewDir);
 	vec3 normalAfterCheck;
@@ -63,6 +65,7 @@ void main()
 	} else {
 		normalAfterCheck = textureNormalOrProgramNormal;
 	}
+	// FLIP NORMALS
 
 
 	float afterCheckShininess = 0;
@@ -96,10 +99,9 @@ void main()
 	}
 
 
-    gPosition = afterCheckPosition;
+    gPosition = position.xyz;
  	gNormal = normalize(normalAfterCheck);
 	gAmbiant = afterCheckAmbient;
 	gDiffuse = afterCheckDiffuse;
 	gSpecular =vec4(afterCheckSpecular,shininess);
-
 }

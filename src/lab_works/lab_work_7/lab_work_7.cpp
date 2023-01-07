@@ -30,14 +30,16 @@ namespace M3D_ISICG
 		glDeleteBuffers( 1, &_shadowMapFBO );
 		glDeleteBuffers( 1,&_gBufferFBO );
 
-
-
 		glDeleteProgram( _programLightingPass.getProgramId() );
 		glDeleteProgram( _programSSAO.getProgramId() );
 		glDeleteProgram( _programSSAOBlur.getProgramId() );
 		glDeleteProgram( _programDepthMap.getProgramId() );
 		glDeleteProgram( _programPrintDepthMap.getProgramId() );
+		glDeleteProgram( _programSkyBox.getProgramId() );
+
 	}
+
+	// ================FONCTION D'INITIALISATION ==================== //
 
 	bool LabWork7::init()
 	{
@@ -55,7 +57,7 @@ namespace M3D_ISICG
 		initLightingPassProgram();
 		initSkyBox();
 		_skyboxMesh = drawer.createCube();
-		quadVAO = drawer.drawQuad();
+		quadVAO		= drawer.drawQuad();
 		_initCamera();
 
 		// Get Uniform luminosity
@@ -72,11 +74,13 @@ namespace M3D_ISICG
 		// REMOVE COMMENT FOR SPONZA
 		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
 
+
+		// REMOVE COMMENT FOR LOST_EMPIRE
+		//_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.3, 0.3, 0.3 ) );
+
 		std::cout << "Done!" << std::endl;
 		return true;
 	}
-
-	void LabWork7::animate( const float p_deltaTime ) {}
 
 	bool LabWork7::initLightingPassProgram()
 	{
@@ -89,7 +93,6 @@ namespace M3D_ISICG
 
 		return true;
 	}
-
 
 	bool LabWork7::initSkyBox()
 	{ 
@@ -165,8 +168,6 @@ namespace M3D_ISICG
 		glCreateFramebuffers( 1, &_depthMapFBO );
 
 
-		glBindFramebuffer( GL_FRAMEBUFFER, _depthMapFBO );
-
 		glCreateTextures( GL_TEXTURE_2D, 1, &depthMapTexture );
 		glTextureStorage2D( depthMapTexture, 1, GL_DEPTH_COMPONENT32F, _windowWidth, _windowHeight);
 		//glTextureStorage2D( depthMapTexture, 1, GL_DEPTH_COMPONENT32F, SHADOW_WIDTH, SHADOW_HEIGHT );
@@ -176,7 +177,14 @@ namespace M3D_ISICG
 		glTextureParameteri( depthMapTexture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER );
 		glTextureParameteri( depthMapTexture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER );
 		glNamedFramebufferTexture( _depthMapFBO, GL_DEPTH_ATTACHMENT, depthMapTexture, 0 );
-		
+		float clampColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		glTextureParameterfv( GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, clampColor );
+
+		glBindFramebuffer( GL_FRAMEBUFFER, _depthMapFBO );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0 );
+
+		glDrawBuffer( GL_NONE );
+		glReadBuffer( GL_NONE );
 		
 		//glNamedFramebufferTexture( _depthMapFBO, GL_DEPTH_ATTACHMENT, depthMapTexture, 0 );
 
@@ -276,9 +284,12 @@ namespace M3D_ISICG
 		}
 	}
 
+	// ================FONCTION DE RENDU ==================== //
+	
 	void LabWork7::render()
 	{
-		renderSkyBox();
+		renderConditionsCheck();
+		
 		renderGeometryPass();
 
 		renderAOPass();
@@ -291,6 +302,7 @@ namespace M3D_ISICG
 
 	if ( lightPassEnabled )
 		{
+			//renderSkyBox();
 			renderLightingPass();
 		}
 		else
@@ -313,6 +325,42 @@ namespace M3D_ISICG
 		}
 
 		// TODO CLEAN , UNIFORM, TEXTURE, DRAW
+	}
+
+	void LabWork7::renderConditionsCheck() {
+
+		if ( luminosityNeedsUpdating )
+		{
+			glProgramUniform1f( aProgram, luminosityUint, _luminosity );
+		}
+		if ( fovyNeedsUpdating )
+		{
+			_updateViewMatrix();
+			_updateProjectionMatrix();
+			_camera->setFovy( _fovy );
+		}
+
+		if ( perspecNeedsUpdating )
+		{
+			_camera->switchPerspect();
+			_updateProjectionMatrix();
+			perspecNeedsUpdating = false;
+		}
+		
+		if ( trackBallNeedsUpdating )
+		{
+			if ( trackBallEnabled )
+			{
+				_camera->setPosition( Vec3f( 0 ) );
+				_trackBallCamera.switchCamera( _camera->_position );
+				_camera = &_trackBallCamera;
+			}
+			else
+			{
+				_baseCamera.switchCamera( _camera->_position );
+				_camera = &_baseCamera;
+			}
+		}
 	}
 
 	void LabWork7::renderGeometryPass()
@@ -366,9 +414,13 @@ namespace M3D_ISICG
 							 1,
 							 glm::value_ptr( _matrixWtoV * Vec4f(lightX,lightY,lightZ, 1 ) ) );
 
-		glProgramUniform3fv(
-			aProgram, glGetUniformLocation( aProgram, "cameraPos" ), 1, glm::value_ptr( _camera->_position ) );
+		glProgramUniformMatrix4fv( aProgram,
+								   glGetUniformLocation( aProgram, "worldToViewMatrix" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( _matrixWtoV ) );
 
+		
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, _gBufferFBO );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -420,6 +472,12 @@ namespace M3D_ISICG
 								   GL_FALSE,
 								   glm::value_ptr( lightSpaceMatrix ) );
 
+		glProgramUniformMatrix4fv( _lightingPassProgram,
+								   glGetUniformLocation( _lightingPassProgram, "worldToViewMatrix" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( _matrixWtoV ) );
+
 		glBindVertexArray( quadVAO );
 
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
@@ -445,6 +503,12 @@ namespace M3D_ISICG
 		glBindTextureUnit( 1, _gBufferTextures[ 1 ] );
 		glBindTextureUnit( 2, noiseTexture );
 
+		glProgramUniformMatrix4fv( _programSSAO.getProgramId(),
+								   glGetUniformLocation( _programSSAO.getProgramId(), "worldToViewMatrix" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( _matrixWtoV ) );
+
 		glProgramUniform3fv( _programSSAO.getProgramId(),
 							 glGetUniformLocation( _programSSAO.getProgramId(), "samples" ),
 							 64,
@@ -455,6 +519,12 @@ namespace M3D_ISICG
 								   1,
 								   GL_FALSE,
 								   glm::value_ptr( _camera->getProjectionMatrix() ) );
+
+	/*	glProgramUniform3fv( _programSSAO.getProgramId(),
+							 glGetUniformLocation( _programSSAO.getProgramId(), "_bgColor" ),
+							 1,
+							 glm::value_ptr( _bgColor ) );
+		*/
 
 		glProgramUniform1f(
 			_programSSAO.getProgramId(), glGetUniformLocation( _programSSAO.getProgramId(), "bias" ), bias );
@@ -501,7 +571,7 @@ namespace M3D_ISICG
 								   GL_FALSE,
 								   glm::value_ptr( lightSpaceMatrix ) );
 
-			//glViewport( 0, 0, SHADOW_WIDTH, SHADOW_HEIGHT );
+		//glViewport( 0, 0, SHADOW_WIDTH, SHADOW_HEIGHT );
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, _depthMapFBO );
 	
 		glClear(  GL_DEPTH_BUFFER_BIT );
@@ -560,6 +630,46 @@ namespace M3D_ISICG
 
 	}
 
+	void LabWork7::renderSkyBox()
+	{
+		glDepthFunc( GL_LEQUAL );
+		glUseProgram( _programSkyBox.getProgramId() );
+
+		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		glm::mat4 view		 = glm::mat4( 1.0f );
+		glm::mat4 projection = glm::mat4( 1.0f );
+		view				 = glm::mat4(
+			glm::mat3( glm::lookAt( _camera->_position, _camera->_position + _camera->_invDirection, _camera->_up ) ) );
+		projection = glm::perspective( glm::radians( 45.0f ), (float)_windowWidth / _windowHeight, 0.1f, 100.0f );
+
+		glProgramUniformMatrix4fv( _programSkyBox.getProgramId(),
+								   glGetUniformLocation( _programSkyBox.getProgramId(), "projection" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( projection ) );
+
+		glProgramUniformMatrix4fv( _programSkyBox.getProgramId(),
+								   glGetUniformLocation( _programSkyBox.getProgramId(), "view" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( view ) );
+
+		glBindVertexArray( _skyboxMesh.VAO );
+
+		glBindTextureUnit( 0, skyboxTexture );
+
+		glDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0 );
+
+		glBindVertexArray( 0 );
+
+		glBindTextureUnit( 0, 0 );
+
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+
+		glDepthFunc( GL_LESS );
+	}
+
 	void LabWork7::renderBlurPass()
 	{
 		glUseProgram( _programSSAOBlur.getProgramId() );
@@ -580,6 +690,7 @@ namespace M3D_ISICG
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 	}
 
+	// ================FONCTION DE CALCUL ==================== //
 	void LabWork7::computeAO()
 	{
 		std::uniform_real_distribution<float> randomFloats( 0.f, 1.f ); // generates random floats between 0.0 and 1.0
@@ -610,59 +721,14 @@ namespace M3D_ISICG
 	}
 
 	void LabWork7::computerShadowMap() {
-		// TODO MODIFIER
 		lightProjection = glm::ortho(
 			-orthoCoefficient, orthoCoefficient, -orthoCoefficient, orthoCoefficient, near_plane, far_plane );  
 		lightView	= glm::lookAt( glm::vec3( lightX, lightY, lightZ ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ); 
 		lightSpaceMatrix = lightProjection * lightView; 
 	}
 
-
-	void LabWork7::renderSkyBox()
-	{
-
-		glDepthFunc( GL_LEQUAL );
-		glUseProgram( _programSkyBox.getProgramId() );
-
-		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		glm::mat4 view = glm::mat4( 1.0f );
-		glm::mat4 projection = glm::mat4( 1.0f );
-		view				 = glm::mat4(
-		glm::mat3( glm::lookAt( _camera->_position, _camera->_position + _camera->_invDirection, _camera->_up ) ) );
-		projection = glm::perspective( glm::radians( 45.0f ), (float)_windowWidth / _windowHeight, 0.1f, 100.0f );	
-
-
-		glProgramUniformMatrix4fv( _programSkyBox.getProgramId(),
-							glGetUniformLocation( _programSkyBox.getProgramId(), "projection" ),
-							1,
-							GL_FALSE,
-							glm::value_ptr( projection) );
-
-		
-		glProgramUniformMatrix4fv( _programSkyBox.getProgramId(),
-								   glGetUniformLocation( _programSkyBox.getProgramId(), "view" ),
-								   1,
-								   GL_FALSE,
-								   glm::value_ptr( view ) );
-
-		glBindVertexArray( _skyboxMesh.VAO );
-		
-		glBindTextureUnit( 0, skyboxTexture );
-		
-		glDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0 );
-
-		glBindVertexArray( 0 );
-
-		glBindTextureUnit( 0, 0 );
-
-		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
-
-		glDepthFunc( GL_LESS );
-
-		
-	}
-
+	
+	// ================AUTRES ==================== //
 	void LabWork7::handleEvents( const SDL_Event & p_event )
 	{
 		if ( p_event.type == SDL_KEYDOWN )
@@ -706,6 +772,8 @@ namespace M3D_ISICG
 		}
 	}
 
+	void LabWork7::animate( const float p_deltaTime ) {}
+
 	void LabWork7::displayUI()
 	{
 		ImGui::Text( "position = %f, %f, %f", _camera->_position.x, _camera->_position.y, _camera->_position.z );
@@ -715,21 +783,19 @@ namespace M3D_ISICG
 		luminosityNeedsUpdating = ImGui::SliderFloat( "SSAO : Bias", &bias, 0.001, 0.1 );
 		luminosityNeedsUpdating = ImGui::SliderFloat( "puissance Lumière", &puissanceLumière, 0, 10 );
 		luminosityNeedsUpdating = ImGui::SliderFloat( "distance diminution lumiere", &distanceDiminutionLumiere,0, 100 );
-		luminosityNeedsUpdating = ImGui::SliderFloat( "lightX", &lightX, -10, 10);
-		luminosityNeedsUpdating = ImGui::SliderFloat( "lightY", &lightY, -10, 10 );
-		luminosityNeedsUpdating = ImGui::SliderFloat( "lightZ", &lightZ, -10, 10 );
+		luminosityNeedsUpdating = ImGui::SliderFloat( "lightX", &lightX, -10, 30);
+		luminosityNeedsUpdating = ImGui::SliderFloat( "lightY", &lightY, -10, 30 );
+		luminosityNeedsUpdating = ImGui::SliderFloat( "lightZ", &lightZ, -10, 30 );
 		luminosityNeedsUpdating = ImGui::SliderFloat( "orthoCoefficient", &orthoCoefficient, 0, 10 );
 		luminosityNeedsUpdating = ImGui::SliderFloat( "orthoNearPlace", &near_plane, 0, 10 );
 		luminosityNeedsUpdating = ImGui::SliderFloat( "orthoFarPlane", &far_plane, 0, 10 );
-
-
 
 		if ( ImGui::ColorEdit3( "BackGround Color", glm::value_ptr( _bgColor ) ) )
 		{
 			glClearColor( _bgColor.x, _bgColor.y, _bgColor.z, _bgColor.w );
 		};
 
-		ImGui::Checkbox( "Trackball", &trackballSwitch );
+		trackBallNeedsUpdating = ImGui::Checkbox( "Trackball", &trackBallEnabled );
 		perspecNeedsUpdating = ImGui::Checkbox( "Ortho", &perspecOrtho );
 
 		ImGui::Checkbox( "LightingPass", &lightPassEnabled );

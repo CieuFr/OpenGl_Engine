@@ -56,6 +56,7 @@ namespace M3D_ISICG
 		void renderDepthMapPass();
 		void renderPrintDepthMap();
 		void renderSkyBox();
+		void renderConditionsCheck();
 
 
 
@@ -89,18 +90,19 @@ namespace M3D_ISICG
 		// =================TP 6 ==================
 
 		GLuint _gBufferFBO;
-		GLuint _gBufferTextures[ 6 ];
+		GLuint _gBufferTextures[ 7 ];
 
 		GLenum _aoDrawBuffer[ 1 ] = { GL_COLOR_ATTACHMENT0 };
 
 		GLenum _depthMapDrawBuffer[ 1 ] = { GL_NONE };
 
 
-		GLenum _drawBuffers[ 5 ] = { GL_COLOR_ATTACHMENT0,
+		GLenum _drawBuffers[ 6 ] = { GL_COLOR_ATTACHMENT0,
 									 GL_COLOR_ATTACHMENT1,
 									 GL_COLOR_ATTACHMENT2,
 									 GL_COLOR_ATTACHMENT3,
-									 GL_COLOR_ATTACHMENT4 };
+									 GL_COLOR_ATTACHMENT4, 
+									 GL_COLOR_ATTACHMENT5 };
 
 		const char * _listBox[ 5 ] = { "Attachment0", "Attachment1", "Attachment2", "Attachment3", "Attachment4" };
 		int			 _listBoxSelectedValue = 0;
@@ -134,7 +136,7 @@ namespace M3D_ISICG
 
 		//===========SHADOW MAP ============
 
-		unsigned int SHADOW_WIDTH = 760, SHADOW_HEIGHT = 760;
+		unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 		GLuint depthMapTexture;
 		GLuint _shadowMapFBO;
 		GLuint _depthMapFBO;

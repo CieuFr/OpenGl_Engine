@@ -57,7 +57,7 @@ namespace M3D_ISICG
 
 		//=============TP 5 ==============/
 
-		_tmm.load( "lost_empire", FilePath( "./data/models/lost_empire.obj" ) );
+		_tmm.load( "sponza", FilePath( "./data/models/sponza.obj" ) );
 
 		// REMOVE COMMENT FOR SPONZA
 		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );

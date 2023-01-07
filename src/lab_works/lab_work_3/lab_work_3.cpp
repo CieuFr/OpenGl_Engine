@@ -153,7 +153,7 @@ namespace M3D_ISICG
 			perspecNeedsUpdating = false;
 		}
 
-			if ( trackBallNeedsUpdating )
+		if ( trackBallNeedsUpdating )
 		{
 			if ( trackBallEnabled )
 			{

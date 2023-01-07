@@ -16,14 +16,15 @@ uniform vec3 lightPos;
 out vec3 normal;
 out vec4 position;
 out vec2 texCoords;
-out vec3 tangentLightPos;
-out vec3 tangentPosition;
 out vec3 viewLightPos;
+out vec4 positionView;
+
 
 void main()
 {
 	gl_Position = uMVPMatrix * vec4( aVertexPosition, 1.f );
-	position = MVMatrix *  vec4( aVertexPosition, 1.f );
+	positionView = MVMatrix *  vec4( aVertexPosition, 1.f );
+	position = modelMatrix *  vec4( aVertexPosition, 1.f );
 	normal =  normalMatrix * aVertexNormal;
 	texCoords = aVertexTexCoords;
 	normal = normalize(normal);
