@@ -20,6 +20,12 @@ namespace M3D_ISICG
 		glDeleteProgram( aProgram );
 		glDisableVertexArrayAttrib( quadVAO, 0 );
 		glDeleteVertexArrays( 1, &quadVAO );
+		glDisableVertexArrayAttrib( _skyboxMesh.VAO, 0 );
+		glDeleteVertexArrays( 1, &_skyboxMesh.VAO );
+		glDeleteBuffers( 1, &_skyboxMesh.VBOColors );
+		glDeleteBuffers( 1, &_skyboxMesh.VBOVertices );
+		glDeleteBuffers( 1, &_skyboxMesh.EBO );
+
 		// Delete VBO
 		glDeleteBuffers( 1, &quadVBO );
 		// Delete VBO
@@ -36,6 +42,7 @@ namespace M3D_ISICG
 		glDeleteProgram( _programDepthMap.getProgramId() );
 		glDeleteProgram( _programPrintDepthMap.getProgramId() );
 		glDeleteProgram( _programSkyBox.getProgramId() );
+		
 
 	}
 

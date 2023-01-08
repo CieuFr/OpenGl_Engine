@@ -15,6 +15,11 @@ namespace M3D_ISICG
 	LabWork5::~LabWork5() {
 		glDeleteProgram( aProgram );
 		glDeleteProgram( _programSkyBox.getProgramId() );
+		glDisableVertexArrayAttrib( _skyboxMesh.VAO, 0 );
+		glDeleteVertexArrays( 1, &_skyboxMesh.VAO );
+		glDeleteBuffers( 1, &_skyboxMesh.VBOColors );
+		glDeleteBuffers( 1, &_skyboxMesh.VBOVertices );
+		glDeleteBuffers( 1, &_skyboxMesh.EBO );
 
 	}
 

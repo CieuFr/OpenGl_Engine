@@ -46,9 +46,6 @@ namespace M3D_ISICG
 		bool initDepthMap();
 		bool initSkyBox();
 
-
-
-
 		void renderLightingPass();
 		void renderAOPass();
 		void renderBlurPass();
@@ -58,14 +55,10 @@ namespace M3D_ISICG
 		void renderSkyBox();
 		void renderConditionsCheck();
 
-
-
-
 		void computeAO();
 		void computerShadowMap();
 
 
-		BasicObjectDrawer drawer;
 
 	  private:
 		BaseCamera *	_camera = &_baseCamera;
@@ -157,6 +150,7 @@ namespace M3D_ISICG
 		//=========== FIN SHADOW MAP ============
 
 		//=============SKYBOX ============
+		BasicObjectDrawer drawer;
 		Mesh   _skyboxMesh;
 		GLuint skyboxTexture; 
 		Image  image;
