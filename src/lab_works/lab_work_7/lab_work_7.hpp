@@ -104,7 +104,8 @@ namespace M3D_ISICG
 									 GL_COLOR_ATTACHMENT4, 
 									 GL_COLOR_ATTACHMENT5 };
 
-		const char * _listBox[ 5 ] = { "Attachment0", "Attachment1", "Attachment2", "Attachment3", "Attachment4" };
+		const char * _listBox[ 6 ]
+			= { "Attachment0", "Attachment1", "Attachment2", "Attachment3", "Attachment4", "Attachment5" };
 		int			 _listBoxSelectedValue = 0;
 
 		GLuint quadVAO = 0;

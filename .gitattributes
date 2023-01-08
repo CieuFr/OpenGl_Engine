@@ -128,3 +128,11 @@
 /data/models/right.png filter=lfs diff=lfs merge=lfs -text
 /data/models/top.png filter=lfs diff=lfs merge=lfs -text
 /src/lab_works/victor_toolkit/stb_image.h filter=lfs diff=lfs merge=lfs -text
+/data/models/house-RGB.png filter=lfs diff=lfs merge=lfs -text
+/data/models/house-RGBA.png filter=lfs diff=lfs merge=lfs -text
+/data/models/house.jpg filter=lfs diff=lfs merge=lfs -text
+/data/models/house.obj filter=lfs diff=lfs merge=lfs -text
+/data/models/rungholt-RGB.png filter=lfs diff=lfs merge=lfs -text
+/data/models/rungholt-RGBA.png filter=lfs diff=lfs merge=lfs -text
+/data/models/rungholt.jpg filter=lfs diff=lfs merge=lfs -text
+/data/models/rungholt.obj filter=lfs diff=lfs merge=lfs -text

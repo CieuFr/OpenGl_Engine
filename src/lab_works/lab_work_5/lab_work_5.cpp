@@ -14,10 +14,48 @@ namespace M3D_ISICG
 
 	LabWork5::~LabWork5() {
 		glDeleteProgram( aProgram );
+		glDeleteProgram( _programSkyBox.getProgramId() );
 
 	}
 
-	
+	bool LabWork5::initSkyBox()
+	{
+		const std::string vertexShaderStr2 = _shaderFolder + "sky_box.vert";
+		const std::string fragShaderStr2   = _shaderFolder + "sky_box.frag";
+		std::string		  paths2[ 2 ]	   = { vertexShaderStr2, fragShaderStr2 };
+
+		_programSkyBox.createProgram( paths2 );
+
+		glCreateTextures( GL_TEXTURE_CUBE_MAP, 1, &skyboxTexture );
+
+		glTextureParameteri( skyboxTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		glTextureParameteri( skyboxTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTextureParameteri( skyboxTexture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTextureParameteri( skyboxTexture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		glTextureParameteri( skyboxTexture, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+
+		std::string faces[ 6 ] { "./data/models/right.png",	 "./data/models/left.png",	"./data/models/top.png",
+								 "./data/models/bottom.png", "./data/models/front.png", "./data/models/back.png" };
+
+		bool  notInit = true;
+		Image image;
+
+		for ( size_t i = 0; i < 6; i++ )
+		{
+			image.load( faces[ i ] );
+
+			if ( notInit )
+			{
+				glTextureStorage2D( skyboxTexture, 1, GL_RGB32F, image._width, image._height );
+				notInit = false;
+			}
+			glTextureSubImage3D(
+				skyboxTexture, 0, 0, 0, i, image._width, image._height, 1, GL_RGBA, GL_UNSIGNED_BYTE, image._pixels );
+		}
+
+		return true;
+	}
+
 
 	bool LabWork5::init()
 	{
@@ -55,9 +93,9 @@ namespace M3D_ISICG
 		_tmm.load("sponza", FilePath("./data/models/sponza.obj" ));
 
 		_tmm._transformation = glm::scale( _tmm._transformation, Vec3f( 0.003, 0.003, 0.003 ) );
+		_skyboxMesh			 = drawer.createCube();
 		
-
-
+		initSkyBox();
 		
 			// INIT du program
 		glUseProgram( aProgram );
@@ -65,6 +103,49 @@ namespace M3D_ISICG
 
 		std::cout << "Done!" << std::endl;
 		return true;
+	}
+
+
+	void LabWork5::renderSkyBox()
+	{
+		//glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+		glDepthFunc( GL_LEQUAL );
+		glUseProgram( _programSkyBox.getProgramId() );
+
+		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		glm::mat4 view		 = glm::mat4( 1.0f );
+		glm::mat4 projection = glm::mat4( 1.0f );
+		view				 = glm::mat4(
+			glm::mat3( glm::lookAt( _camera->_position, _camera->_position + _camera->_invDirection, _camera->_up ) ) );
+		projection = glm::perspective( glm::radians( 45.0f ), (float)_windowWidth / _windowHeight, 0.1f, 100.0f );
+
+		glProgramUniformMatrix4fv( _programSkyBox.getProgramId(),
+								   glGetUniformLocation( _programSkyBox.getProgramId(), "projection" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( projection ) );
+
+		glProgramUniformMatrix4fv( _programSkyBox.getProgramId(),
+								   glGetUniformLocation( _programSkyBox.getProgramId(), "view" ),
+								   1,
+								   GL_FALSE,
+								   glm::value_ptr( view ) );
+
+		glBindVertexArray( _skyboxMesh.VAO );
+
+		glBindTextureUnit( 0, skyboxTexture );
+
+		glDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0 );
+
+		glBindVertexArray( 0 );
+
+		glBindTextureUnit( 0, 0 );
+
+		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
+
+		glDepthFunc( GL_LESS );
 	}
 
 
@@ -77,8 +158,6 @@ namespace M3D_ISICG
 		//glClearColor
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-		
-	
 		if (luminosityNeedsUpdating) {
 			program1.setUniform( "luminosity", _luminosity );
 		}
@@ -96,6 +175,7 @@ namespace M3D_ISICG
 		{
 			_camera->switchPerspect();
 			_updateProjectionMatrix();
+			
 			perspecNeedsUpdating = false;
 		}
 
@@ -154,6 +234,10 @@ namespace M3D_ISICG
 
 		_tmm.render( aProgram );
 
+	
+		renderSkyBox();	
+	
+	
 	}
 
 	void LabWork5::handleEvents( const SDL_Event & p_event )

@@ -124,11 +124,14 @@ void main()
     float distanceLightObject = dot(normal,normalize(lightPos-position.xyz));
 	float facteurAtenuation = 1.0 / (constant + linear * distanceLightObject + quadratic * distanceLightObject * distanceLightObject); 
 	result *= facteurAtenuation;
-	 result = vec3(pow(result.x,1.5),pow(result.y,1.5),pow(result.z,1.5));
+	
+	result = vec3(pow(result.x,1.5),pow(result.y,1.5),pow(result.z,1.5));
 
 	result = ((result*(a*result+b))/(result*(c*result+d)+e));
     
     fragColor = vec4(result,1.0);
+
+	
 	//fragColor = vec4(diffuseLight * AmbientOcclusion  + specularLighting,1) ;
    
     //fragColor = vec4(vec3(1-shadow),1);

@@ -1,10 +1,12 @@
-Underground city in the 
-"Lost Empire" area from the Vokselia Minecraft world
-http://vokselia.com
-CC BY 3.0 License http://creativecommons.org/licenses/by/3.0/
+Neu Rungholt medieval village Minecraft map
+(stylized recreation of the real city, http://en.wikipedia.org/wiki/Rungholt)
+entitled "Alone in the dark" by "kescha"
+http://www.planetminecraft.com/project/neu-rungholt/
+"Fell[sic] free to use the map or parts of it for you own projects. "
 
-224,998 faces
-449,992 vertices 
+
+6,704,264 faces
+12,308,528 vertices 
 after loading and welding colocated vertices
 
 ------------------

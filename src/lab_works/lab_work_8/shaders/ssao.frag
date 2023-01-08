@@ -20,7 +20,7 @@ uniform mat4 projection;
 
 void main()
 {
-    vec2 noiseScale = vec2(1280/4.0, 720/4.0); 
+   // vec2 noiseScale = vec2(1280/4.0, 720/4.0); 
 
 	ivec2 texCoords = ivec2(gl_FragCoord.xy);
 
@@ -30,8 +30,10 @@ void main()
     
     vec3 normal = texelFetch(gNormal,ivec2(texCoords),0).xyz;    
 
-    vec3 texxyz = texture(texNoise, texCoords * noiseScale).xyz;
-    vec3 randomVec = normalize(texture(texNoise, texCoords * noiseScale).xyz);
+//    vec3 texxyz = texture(texNoise, texCoords * noiseScale).xyz;
+//    vec3 randomVec = normalize(texture(texNoise, texCoords * noiseScale).xyz);
+    vec3 randomVec = normalize(texture(texNoise, texCoords ).xyz);
+    
   
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
     vec3 bitangent = cross(normal, tangent);

@@ -261,9 +261,9 @@ namespace M3D_ISICG
 
 		glCreateFramebuffers( 1, &_gBufferFBO );
 
-		glCreateTextures( GL_TEXTURE_2D, 6, _gBufferTextures );
+		glCreateTextures( GL_TEXTURE_2D, 7, _gBufferTextures );
 
-		for ( size_t i = 0; i < 5; i++ )
+		for ( size_t i = 0; i < 6; i++ )
 		{
 			glTextureStorage2D( _gBufferTextures[ i ], 1, GL_RGBA32F, _windowWidth, _windowHeight );
 			glTextureParameteri( _gBufferTextures[ i ], GL_TEXTURE_MIN_FILTER, GL_NEAREST );
@@ -271,12 +271,12 @@ namespace M3D_ISICG
 			glNamedFramebufferTexture( _gBufferFBO, _drawBuffers[ i ], _gBufferTextures[ i ], 0 );
 		}
 
-		glTextureStorage2D( _gBufferTextures[ 5 ], 1, GL_DEPTH_COMPONENT24, _windowWidth, _windowHeight );
-		glTextureParameteri( _gBufferTextures[ 5 ], GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		glTextureParameteri( _gBufferTextures[ 5 ], GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		glNamedFramebufferTexture( _gBufferFBO, GL_DEPTH_ATTACHMENT, _gBufferTextures[ 5 ], 0 );
+		glTextureStorage2D( _gBufferTextures[ 6 ], 1, GL_DEPTH_COMPONENT24, _windowWidth, _windowHeight );
+		glTextureParameteri( _gBufferTextures[ 6 ], GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTextureParameteri( _gBufferTextures[ 6 ], GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glNamedFramebufferTexture( _gBufferFBO, GL_DEPTH_ATTACHMENT, _gBufferTextures[ 6 ], 0 );
 
-		glNamedFramebufferDrawBuffers( _gBufferFBO, 5, _drawBuffers );
+		glNamedFramebufferDrawBuffers( _gBufferFBO, 6, _drawBuffers );
 
 		if ( GL_FRAMEBUFFER_COMPLETE != glCheckNamedFramebufferStatus( _gBufferFBO, GL_DRAW_FRAMEBUFFER ) )
 		{
@@ -302,8 +302,9 @@ namespace M3D_ISICG
 
 	if ( lightPassEnabled )
 		{
-			//renderSkyBox();
+			renderSkyBox();
 			renderLightingPass();
+		
 		}
 		else
 		{
@@ -437,7 +438,7 @@ namespace M3D_ISICG
 
 		glDisable( GL_DEPTH_TEST );
 
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		//glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		for ( size_t i = 0; i < 6; i++ )
 		{
@@ -502,12 +503,8 @@ namespace M3D_ISICG
 		glBindTextureUnit( 0, _gBufferTextures[ 0 ] );
 		glBindTextureUnit( 1, _gBufferTextures[ 1 ] );
 		glBindTextureUnit( 2, noiseTexture );
+		glBindTextureUnit( 3, _gBufferTextures[ 5 ] );
 
-		glProgramUniformMatrix4fv( _programSSAO.getProgramId(),
-								   glGetUniformLocation( _programSSAO.getProgramId(), "worldToViewMatrix" ),
-								   1,
-								   GL_FALSE,
-								   glm::value_ptr( _matrixWtoV ) );
 
 		glProgramUniform3fv( _programSSAO.getProgramId(),
 							 glGetUniformLocation( _programSSAO.getProgramId(), "samples" ),
@@ -519,12 +516,6 @@ namespace M3D_ISICG
 								   1,
 								   GL_FALSE,
 								   glm::value_ptr( _camera->getProjectionMatrix() ) );
-
-	/*	glProgramUniform3fv( _programSSAO.getProgramId(),
-							 glGetUniformLocation( _programSSAO.getProgramId(), "_bgColor" ),
-							 1,
-							 glm::value_ptr( _bgColor ) );
-		*/
 
 		glProgramUniform1f(
 			_programSSAO.getProgramId(), glGetUniformLocation( _programSSAO.getProgramId(), "bias" ), bias );
@@ -608,6 +599,7 @@ namespace M3D_ISICG
 			}
 			std::cout << std::endl;
 			printDepth = false;
+			
 		}
 
 
@@ -616,7 +608,8 @@ namespace M3D_ISICG
 		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 		glClear( GL_DEPTH_BUFFER_BIT );
 
-	    glBindTextureUnit( 0, depthMapTexture );
+	  
+		 glBindTextureUnit( 0, depthMapTexture );
 
 		glBindVertexArray( quadVAO );
 
@@ -726,7 +719,6 @@ namespace M3D_ISICG
 		lightView	= glm::lookAt( glm::vec3( lightX, lightY, lightZ ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ) ); 
 		lightSpaceMatrix = lightProjection * lightView; 
 	}
-
 	
 	// ================AUTRES ==================== //
 	void LabWork7::handleEvents( const SDL_Event & p_event )
@@ -804,7 +796,7 @@ namespace M3D_ISICG
 
 		if ( ImGui::BeginListBox( "ATTACHMENT TO DISPLAY" ) )
 		{
-			for ( int n = 0; n < 5; n++ )
+			for ( int n = 0; n < 6; n++ )
 			{
 				const bool is_selected = ( _listBoxSelectedValue == n );
 				if ( ImGui::Selectable( _listBox[ n ], is_selected ) )

@@ -12,6 +12,10 @@
 #include "../common/models/triangle_mesh_model.hpp"
 #include "../common/models/base_model.hpp"
 #include "victor_toolkit/program_wrapper.hpp"
+#include "victor_toolkit/basic_object_drawer.hpp"
+#include "victor_toolkit/program_wrapper.hpp"
+#include "utils/image.hpp"
+
 
 
 namespace M3D_ISICG
@@ -40,7 +44,16 @@ namespace M3D_ISICG
 		TrackBallCamera _trackBallCamera;
 		BaseCamera _baseCamera;
 
+				//=============SKYBOX ============
+		BasicObjectDrawer drawer;
 
+		void renderSkyBox();
+		bool initSkyBox();
+		ProgramWrapper _programSkyBox;
+		
+		Mesh   _skyboxMesh;
+		GLuint skyboxTexture;
+		Image  image;
 		
 		void _updateViewMatrix();
 		void _updateProjectionMatrix();

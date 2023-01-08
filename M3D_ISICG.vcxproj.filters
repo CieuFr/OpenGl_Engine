@@ -222,5 +222,7 @@
     <None Include="src\lab_works\lab_work_7\shaders\ssao_blur.vert" />
     <None Include="src\lab_works\lab_work_7\shaders\sky_box.vert" />
     <None Include="src\lab_works\lab_work_7\shaders\sky_box.frag" />
+    <None Include="src\lab_works\lab_work_5\shaders\sky_box.vert" />
+    <None Include="src\lab_works\lab_work_5\shaders\sky_box.frag" />
   </ItemGroup>
 </Project>
