@@ -13,10 +13,13 @@ In this 3D Engine we have the following features :
 - Texture support
 - Skybox
 - Deffered Shading
-- Ambient Occlusion 
+- Ambient Occlusion (SSAO +) 
 - Shadow Maps
 - Tone Mapping
 
+Shadow Map demonstration : 
 ![](m3d.gif)
 
+
+Without SSAO on the left and with SSAO on the right : 
 ![](ssao_comparaison.png)
